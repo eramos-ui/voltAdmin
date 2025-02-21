@@ -1,0 +1,23 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- AlterTable
+ALTER TABLE [dbo].[User] ADD [dateModification] DATETIME2,
+[phone] NVARCHAR(1000),
+[rut] NVARCHAR(1000),
+[userModification] INT,
+[valid] BIT NOT NULL CONSTRAINT [User_valid_df] DEFAULT 1;
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

@@ -1,0 +1,358 @@
+
+export interface UserData {
+    id: number;
+    name: string;
+    email: string;
+    avatar: string | null;
+    theme: 'light' | 'dark';
+    // language: 'fr' | 'en' | 'es';    
+  }
+  export type SubMenuItem = {
+    id: number;
+    title: string;
+    path: string;
+    icon: string;
+    form: string | null;
+    processType: number | null;//1 si es wkf, 0 no
+    idActivity:number | null; //idProcess*100+idActivity
+  };
+  export type MenuItem = {
+    id: number;
+    title: string;
+    path: string;
+    icon: string;
+    form: string | null;
+    processType: number | null;
+    subMenu?: SubMenuItem[];
+  };
+
+  export type MenuConfig = {
+    //position: 'left' | 'right';
+    menuItems: MenuItem[];
+  };
+  
+  //configuración de los formularios
+  import { FormikHelpers } from "formik";
+
+  export type ValidationType = 'required' | 'maxLength' | 'minLength' | 'email' | 'minDate' | 'maxDate'
+| 'min' |'max' |'url';
+
+  export interface ValidationRule {
+    type: ValidationType;
+    value?: number ;
+    message?:string;
+  }
+  
+  export type InputType = 'text' |'input' | 'email' | 'select' | 'password' | 'date' | 'checkbox' |'textarea' | 'readonly'
+        | 'number' | 'file' | 'radio' | 'slider' | 'range' |'toggle' | 'grid' | 'multiselect'| 'autocomplete' |'rut' |'sin' | 'date';
+
+  export interface FormField { 
+    type: InputType;
+    name: string;
+    label: string;
+    autoComplete?:'on' |'off';
+    placeholder?: string;
+    visible?: boolean;
+    value: string | number | boolean | undefined;
+    row: number;
+    width: string; 
+    //widthSelect:string;//ancho fijo en pixeles para los select
+    registroInicialSelect:string;//el registro que aparece en 1er lugar
+    options?: { id: string | number; label: string }[];
+    validations?: ValidationRule[];
+    dependsOn?: string; // Nueva propiedad
+    dependentOptions?: { [key: string]: { id: string | number; label: string }[] };
+    format?: string;
+    orientation?: 'horizontal' | 'vertical'; 
+    min?: number; // Para el slider
+    max?: number; // Para el slider
+    step?: number; // Para el slider
+    titleGrid?:string,
+    labelGridAdd?: string;    
+    spFetchRows?:string; //field con el sp que carga la tabla
+    objectGrid?:string;//para el tooltips de agregar y eliminar
+    columns?: GridColumn[];// Para el grid
+    rows?: GridRowType[]; // Para el grid
+    actions?: ('add' | 'edit' | 'delete')[]; // Para el grid
+    rowHeight?: string; // Altura de las filas
+    columnWidths?: string[]; // Anchos de las columnas para el grid
+    gridWidth?:string;//ancho total grilla 
+    editFormConfig?: FormConfig; // Para el formulario de edición
+    className?: string;  // Para clases CSS personalizadas
+    style?: React.CSSProperties;  // Para estilos en línea
+    inputProps?: { [key: string]: any }; // Atributos HTML adicionales
+    formatOptions?: { [key: string]: any }; // Opciones de formato adicionales
+    conditionalStyles?: { [key: string]: React.CSSProperties }; // Estilos condicionales
+    dependentValue?:any;
+    spFetchOptions?: string;
+    spFetchSaveGrid?:string;
+    requirePassword?:boolean; 
+  }
+  export interface FrameConfig {
+    id: string;
+    frameTitle: string;
+    frameStyle: React.CSSProperties;
+    fields: FormField[];
+  }
+
+  export interface ButtonConfig {
+    id: string;
+    text: string;
+    action: string;
+    backgroundColor: string;
+    color: string;
+    padding: string;
+    borderRadius: string;
+    marginRight?: string;
+  }
+  export interface ModalStyles {
+    overlay?: React.CSSProperties;
+    content?: React.CSSProperties;
+    header?: React.CSSProperties;
+    modalTitleStyle?: React.CSSProperties; 
+  }
+ 
+  export interface FormValues {
+    [key: string]: string | number | boolean | File | undefined;
+  }
+  export interface FormConfig {
+    formTitle: string;
+    theme?: string;
+    globalStyles?: {
+      light?: React.CSSProperties;
+      dark?: React.CSSProperties;
+    };
+    preferredTheme?:string;
+    formSize?: {
+      width?: string;
+      maxWidth?: string;
+    };
+    buttons: ButtonConfig[];
+    frames?: FrameConfig[];
+    fields?: FormField[];
+    modalStyles?: ModalStyles;
+    editFormConfig?: {
+      formTitle: string;
+      requirePassword:boolean;
+      modalStyles?: ModalStyles;
+      fields: FormField[];
+    }; // Incluimos editFormConfig como opcional
+  }
+  export interface EditFormProps {
+    formConfig: FormConfig;
+    isOpen: boolean;
+    onClose: () => void;
+    initialValues: FormValues;
+    onSubmit: (values: FormValues, formikHelpers: FormikHelpers<FormValues>) => void;
+    isAdding?:boolean;
+    spFetchSaveGrid?:string;
+    theme?:string;
+    requirePassword?:boolean;
+    globalStyles?: {
+      light?: React.CSSProperties;
+      dark?: React.CSSProperties;
+    };
+    // style?: React.CSSProperties; // Para estilos en línea
+    // inputProps?: { [key: string]: any }; // Atributos HTML adicionales
+    // conditionalStyles?: { [key: string]: React.CSSProperties }; // Estilos condicionales
+  }
+  export interface OptionsSelect {
+    value: string | number ;
+    label: string ;
+  } 
+  export interface OptionSelectIcon{
+     value: string; label: string; image: string , nroAguas?:number,
+  }
+
+  export interface Comunas {
+    idComuna: number;
+    idRegion: number;
+    label:string;
+    longitud?:string;
+    latitud?:string;
+  }
+
+  export type ColumnConfig<T>= {// Tipo para configuración de las columnas de la grilla
+    label: string; // Título de la columna
+    key: keyof T; // Clave del dato en cada fila (debe existir en T)
+    visible?: boolean; // Si la columna es visible
+    type?: "string" | "number"; // Tipo de dato de la columna
+    textAlign?: "left" | "center" | "right"; // Alineación del texto
+    width?: string; // Ancho de la columna (por ejemplo, "150px")
+    widthFormEdit?:string;//el ancho en el modal
+    rowFormEdit?:number;//la fila del modal
+    labelFormEdit?:string; //label en el modal
+    styles?: React.CSSProperties; // Estilos adicionales para la columna
+    captionPosition: "left" | "top", 
+    inputType?: string,
+    options?: { value: string; label: string }[];// Opciones para selects
+    validationSchema?: any;
+    editable?:boolean,
+    row?:number;
+    dependsOn?: { field: string, value: string },
+    dependencies?:{ field: string; valueMap: Record<string, any> }[];
+    required?:boolean;
+  };
+  export type ExcelColumn = {
+    name: string;
+    inputType: string;
+    type: string;
+  };
+  export type ToDoList ={
+    idProcess:number;
+    idProcessInstance: number;
+    idActivity: number;
+    idTask: number;
+    processName:string;
+    nameActivity: string;
+    TaskAvailableDate: Date;
+    idUserCreate: string;
+    taskStatus: string;
+    specificUser: string;
+    nameRol: string;
+    activityNumber: string;
+    tipoDocumento: string;
+    nroDocumento:number;
+    url: string;
+    infoToDo: string;
+    ubicacionPanel?:string;
+    usuarioCreador?:string;
+  }
+  export interface GridRowType {
+    [key: string]: string | number | boolean  ; // Ajusta los tipos según tus necesidades
+  }      
+  export interface GridColumn {
+    name: string;
+    visible: boolean;
+    textAlign?: 'left' | 'center' | 'right';
+    typeColumn?:'number'|'string'|'rut'|'money'|'sin'|'boolean';
+    label?:string;
+    unique?: boolean;
+  }
+  export interface ActivitiesType {
+    "NumActividad":string,Actividad:string | null, FechaInicio?: string | null,"FechaTermino"?:string | null, "Duracion"?: number | string ,Presupuesto?:number | string | null
+ }
+  export type ProjectType ={
+     idProject: number;
+     projectName: string;
+     ubicacionPanel:string;
+     region:number | null;
+     comuna:number | null;
+     direccion: string | null;
+     nroEmpalmes:number | null;
+     empalmesGrid:{ nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string;
+              capacidadInyeccion: number; rutCliente: string | null; boleta:string |null; poder: string | null;
+              f2: string | null; diagrama: string | null; otrasImagenes: string | null; fechaF3: Date | null }[];
+     instalacionesGrid?:{ nroInstalacion: number; descripcionInstalacion: string | null; nroAguas: number; formaTecho: string;
+              descripcionFormaTecho: string | null; memoriaCalculo: string | null}[];	
+     techoGrid?: { nroInstalacion: number; nroAgua: number; orientacion: string | null; material: string | null;
+           otrosElementos: string, area: number; pendiente: number; imagenTecho: string | null }[];	
+     kmlFile: string | null;	
+     excelFile:  string | null;	
+     //activities:{ "NumActividad": string;Actividad: string;FechaInicio: string;FechaTermino: string;Presupuesto: number;Duracion: number;  }[]	;
+     activities:ActivitiesType[],  
+     userModification:  string ;		
+     dateModification: "" | null;	
+     state:string;
+     tipoTerreno: string | null;
+     nivelPiedras:string | null;
+     nivelFreatico:number | null;
+     nroInstalaciones:number | null;
+  }
+  export interface ProjectFormValuesType {
+    projectName: string;
+    ubicacionPanel: string;
+    tipoTerreno: string;
+    nivelPiedras: string;
+    nivelFreatico: number;
+    certificadoAcceso:string;
+    nroAguas:number;
+    nroInstalaciones:number;
+    kmlFile:string; 
+    techoGrid: { nroInstalacion: number;nroAgua: number; orientacion: string; material: string; area: number; pendiente: number, otrosElementos:string[], imagenTecho: File | null,  }[];
+    nroEmpalmes: number;
+    instalacionesGrid:{ nroInstalacion:number, descripcionInstalacion:string, nroAguas:number, formaTecho:string, descripcionFormaTecho:string, memoriaCalculo: File | null, alturaTecho:number,
+     }[],
+    empalmesGrid: { nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string, 
+      capacidadInyeccion: number, rutCliente: File, boleta: File | null, poder: File | null, diagrama: File | null, otrasImagenes:File | null
+      , f2:File | null ,fechaF3: string , }[], 
+    activities:ActivitiesType[],  
+  }
+  export interface ActivityType //extends ProjectType
+  { 
+      idProjectActivity:number; idProject:number, numActividad:string; actividad:string; fechaInicio: string; fechaTermino:string; duracion: number; 
+      presupuesto:number ,responsable:string; formaEjecucion: string; periodoControl: string; ejecutor:string; 
+      idTask:number; idTransaction:number; projectName: string; ubicacionPanel: string;tipoTerreno: string; nivelPiedras: string;  
+      nivelFreatico: number; nroInstalaciones:number;
+  }
+  export interface ActivityEmailFilesType extends ActivityType {
+      jsFiles:FilesType[]; emailTemplate:EmailTemplateType[];selectedTemplate:EmailTemplateType | null;selectedTemplateId:number;
+      proveedores:ProveedorType[] | null; anexosSelected:number[]; proveedoresSelected: number[];
+  }
+
+  export interface EmailTemplateType {
+    idEmailTemplate: number;
+    templateName: string;
+    subjectTemplate: string;
+    bodyTemplate: string;
+    metadataJSON: {};
+  }
+
+  export interface FilesType {//asociada a projectFiles
+    id: number;
+    descripcion: string;
+    fileClass: string;
+    filePath: string;
+    fileType:string;
+    filename:string;
+    nroAgua:number;
+    nroInstalacion:number;
+    subidoPor:string;
+  }
+  export interface ProveedorType {
+    id: number;
+    label:string;
+    contacto: string;
+    email:string;
+    placeholders:{};
+  }
+
+
+  export interface ProjectActivityType {
+    idProject: number;
+    idProjectActivity:number;
+    idProveedor:number;
+    proveedor: string;
+    contacto:string;
+    idActivity: number;
+    actividad:string;
+    mensaje: { email: string; asunto: string; cuerpo: string };
+    token: string;
+    fechaEnvio: string;
+    anexos:[];
+
+  } 
+
+  // export type CustomGridProps<T> = {
+  //   title?: string; // Título de la grilla
+  //   rowHeight?: string; // Alto de las filas (por ejemplo, "50px")
+  //   rowsToShow?: number; // Número de filas a mostrar
+  //   borderColor?: string; // Color del borde
+  //   borderWidth?: string; // Ancho del borde
+  //   padding?: string; // Padding dentro de cada celda
+  //   marginBottom?: string; // Espaciado inferior de la grilla
+  //   gridWidth?: string; // Ancho total de la grilla
+  //   columns: ColumnConfig<T>[]; // Configuración de las columnas
+  //   data: T[]; // Datos a mostrar en la grilla
+  //   name?: string; // Campo del formulario donde se almacenará la data
+  //   actions?: ("add" | "edit" | "delete")[]; // Acciones disponibles
+  //   actionsTooltips?: string[]; // tooltips de las Acciones 
+  //   actionsPositionTooltips?:  ("top" | "bottom" | "left" | "right")[]; // posición de los tooltips de las Acciones
+  //   onAdd?: () => void;
+  //   onEdit?: (row: T) => void;
+  //   onDelete?: (row: T) => void;
+  //   addButtonProps?: Omit<CustomButtonProps, "onClick" | "label">; // Props para CustomButton
+  //   labelButtomActions?: string[];
+  //   exportable?: boolean; // Indica si la grilla es exportable  
+  //   exportFileName?: string; // Nombre predeterminado del archivo exportado
+  // };

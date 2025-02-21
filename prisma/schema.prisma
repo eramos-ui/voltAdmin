@@ -1,0 +1,65 @@
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+  //url      = "sqlserver://localhost;database=MyDB;trustServerCertificate=true;Connection Timeout=300;Query Timeout=300"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Menu {
+  id    Int    @id @default(autoincrement())
+  title String
+  path  String
+  icon  String
+  subMenu SubMenu[]
+  form   String?
+}
+
+model SubMenu {
+  id    Int    @id @default(autoincrement())
+  title String
+  path  String
+  icon  String
+  menuId Int
+  menu   Menu   @relation(fields: [menuId], references: [id])
+  formId   String?
+}
+model User {
+  id                Int       
+  dateModification  DateTime
+  name              String
+  userModification  Int?       
+  email             String    
+  avatar            String?   @db.NVarChar(Max)
+  theme             String
+  password          String 
+  language          String 
+  resetToken        String?  
+  resetTokenExpiry  DateTime?
+  roleId            Int       // Foreign key to Role model
+  role              Role      @relation(fields: [roleId], references: [id]) // Relation to Role
+  phone             String?
+  rut               String?
+  valid             Boolean @default(true) 
+  @@id([id, dateModification]) // Definimos la clave primaria compuesta aquí
+}
+
+model Role {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique // Role name, e.g., 'admin', 'user', 'editor'
+  users  User[]  // One-to-many relation with User
+}
+model Form {
+  id               Int    @id @default(autoincrement())
+  name             String @unique
+  jsonForm         String @db.NVarChar(Max)
+  valid            Boolean @default(true)     
+}
+model RoleMenuPermissions {
+  roleId     Int
+  menuId     Int
+  subMenuId  Int
+  @@id([roleId, menuId, subMenuId])
+}
