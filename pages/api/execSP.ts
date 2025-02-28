@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'POST') {
-    const { storedProcedure, parameters } = req.body;
+    const { storedProcedure, parameters } = req.body;//recibe sp y parametros x ej de FieldComponent, los parametrso vienen listos (separados por blanco y con @)
     console.log('execSP storedProcedure, parameters',storedProcedure, parameters)
     try {
       if (!storedProcedure) {

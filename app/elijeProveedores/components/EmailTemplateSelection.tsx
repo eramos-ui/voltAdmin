@@ -1,6 +1,6 @@
 import { Field } from "formik";
-import { CustomSelect } from "@/app/components/controls";
-import { replacePlaceholders } from "@/app/utils/replacePlaceholders";
+import { CustomSelect } from "@/components/controls";
+import { replacePlaceholders } from "@/utils/replacePlaceholders";
 
 interface EmailTemplateSelectionProps {
   emailOptions: any[];

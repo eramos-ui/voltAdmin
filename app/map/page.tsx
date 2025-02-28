@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { useRouter } from "next/navigation";
 import { MapContext } from "../context";
 // import { LoadingIndicator } from "../components/LoadingIndicator"; 
-import MapComponent from "../components/maps/MapComponent";
+import MapComponent from "@/components/maps/MapComponent";
 //import "mapbox-gl/dist/mapbox-gl.css";
 
 

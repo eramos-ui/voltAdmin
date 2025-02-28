@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { CustomButton, CustomGrid } from '@/app/components/controls';
+import { CustomButton, CustomGrid } from '@/components/controls';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { LoadingIndicator } from '@/app/components/LoadingIndicator';
+import { LoadingIndicator } from '@/components/general/LoadingIndicator';
 import { GridRowType, ToDoList } from '@/types/interfaces';
 import { toDoColumns } from '@/data/modalColumns';
 const columns=toDoColumns;

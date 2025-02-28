@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
-import { FormConfig } from '@/types/interfaces';
-import { isJson } from '@/app/utils/isJson';
+import { FormConfigType } from '@/types/interfaces';
+import { isJson } from '@/utils/isJson';
 
 const prisma = new PrismaClient();
 
@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'Json not formated' });
     }
      console.log('firstRow',(isJson(firstRow.form)));
-     const formData: FormConfig = JSON.parse(firstRow.form);
+     const formData: FormConfigType = JSON.parse(firstRow.form);
      res.status(200).json(formData);//este formData es ===  data/menu-data.json
    }else{
     return res.status(404).json({ error: 'Form not found' });

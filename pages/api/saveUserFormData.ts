@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
-import { generateFileHash } from '@/app/utils/generateFileHash';
+import { generateFileHash } from '@/utils/generateFileHash';
 
 type MimeType = 'image/jpeg' | 'image/png' | 'image/gif' ;
 const mimeToExtension: Record<MimeType, string> = {

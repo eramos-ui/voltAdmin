@@ -5,7 +5,7 @@ import type { FeatureCollection , Geometry} from "geojson";
 import { MapContext } from './MapContext';
 import { mapReducer } from './mapReducer';
 
-import { PlacesContext } from '../';
+import { PlacesContext } from '..';
 
 import { directionsApi } from "@/pages/apis";
 import { DirectionsResponse } from '../../../types/directions';

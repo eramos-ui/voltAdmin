@@ -2,8 +2,10 @@
   
 "use client";
 
-import { MapView } from '@/app/components/maps/MapView';
+import { MapView } from '@/components/maps/MapView';
+// import { MapView } from '@/app/components/maps/MapView';
 import { useRouter } from 'next/navigation';
+MapView
 //import Map from 'react-map-gl/dist/esm/components/map';
 
 const NewKMLPage = () => {

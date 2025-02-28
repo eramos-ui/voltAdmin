@@ -1,23 +1,33 @@
 "use client";
 import { useEffect, useState } from 'react';
-import GoHomeButton from '../components/GoHomeButton';
+import GoHomeButton from '@/components/general/GoHomeButton';
 import { useRouter } from 'next/navigation';
 
 import { Formik, Form } from 'formik'; 
-import { getInitialValues } from '../utils/initialValues';
+import { getInitialValuesDynamicForm } from '@/utils/initialValues';
+import { FormConfigType, GridRowType } from '@/types/interfaces';
 
-import { FormConfig } from '@/types/interfaces';
-import { FormRow } from '../components/formComponents/FormRow';
-import { getValidationSchema } from '../utils/validationSchema';
-import { LoadingIndicator } from '../components/LoadingIndicator';
+import { FormRow } from '@/components/controls';
 
-const FormPage = ({ params }: { params: { subMenuId: string } }) => {//Renderiza cualquier form en la BD-Form
-  const [ formData, setFormData ] = useState<FormConfig | null>(null);//los campos del formulario
+import {  getValidationSchemaDynamicForm } from '@/utils/validationSchema';
+import { LoadingIndicator } from '@/components/general/LoadingIndicator';
+/* Renderiza cualquier form en la BD Form del los que tiene formId en la tabla Submenu y path con número /12 x ej.
+Los componente en secuencia son 1) esta página a través de 2) FormRow que utiliza 3) FieldComponent para renderizar cada campo
+Este componente consume sp: getSubMenuForm (@subMenuId) y extrae el campo jsonForm de la tabla Form con el type FormConfigType
+*/
+const FormPage = ({ params }: { params: { subMenuId: string } }) => {
+  const [ formData, setFormData ] = useState<FormConfigType | null>(null);//los campos del formulario dynamic
   const [ loading, setLoading ]   = useState(true);
   const [ error, setError ]       = useState<string | null>(null);
+  const [ gridRows, setGridRows ] = useState<GridRowType[]>( []);
   const router                    = useRouter();
-  const subMenuId = params?.subMenuId ? parseInt(params.subMenuId, 10) : 0;
-  console.log('FormPage', params);
+  const subMenuId = params?.subMenuId ? parseInt(params.subMenuId, 10) : 0;//el id del subMenu con el type FormConfigType
+  //console.log('FromPage')
+  let initialValues: { [key: string]: any } = {};
+  useEffect(()=>{
+     console.log('useEffect formData',formData);
+  },[formData])
+  
   useEffect(() => {
     async function fetchData() {
       if (subMenuId === 0) {
@@ -25,15 +35,73 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {//Renderiza
         setLoading(false);
         return;
       }  
+      let data:FormConfigType;
       try {
         //console.log('lee menú',`/api/getFormData?subMenuId=${subMenuId}`);
-        const res = await fetch(`/api/getFormData?subMenuId=${subMenuId}`);
+        const res = await fetch(`/api/getFormData?subMenuId=${subMenuId}`);//los datos del submenu { buttons, fields,formn} 
         if (!res.ok) {
           throw new Error(`Failed to fetch form data: ${res.statusText}`);
         }
-        const data: FormConfig = await res.json();        
-        //console.log('data',data);
-        setFormData(data);
+        data= await res.json();
+        
+
+        if ( data.fields && data.fields.length ===1 && data.fields[0].type ==='grid'  ) {
+          const spFetch=data.fields[0].spFetchRows || '';
+          const [spName, params] = spFetch.split('(');// Extraemos el nombre del SP y los parámetros de la cadena spFetchOptions
+          
+          //console.log('spName, params',spName, params);
+          if (!params || params.trim() === ')') { // Si no hay parámetros, simplemente ejecutamos el SP
+            //console.log('No hay param');
+            try{ //Aquí se leen los datos de la grilla
+             const response = await fetch('/api/execSP', {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json',
+               },
+               body: JSON.stringify({
+                 storedProcedure: spName,
+                 parameters: {},
+               }),
+             });
+             if (response.ok) {
+               const rows = await response.json();
+                console.log('en data grilla rows', rows);
+                console.log('en [submenuId] data',data);
+                if (data?.fields?.length) {
+                  data.fields.forEach((field) => {
+                    //console.log('field.rows',field.rows)
+                    if (field.type === 'grid' && rows) {
+                      // Manejar la inicialización de los valores dentro de la grilla
+                      initialValues[field.name] = rows.map(row => {
+                        const rowValues: { [key: string]: any } = {};
+                        field.columns?.forEach((column) => {
+                          rowValues[column.name] = row[column.name] !== undefined ? row[column.name] : '';
+                        });
+                        return rowValues;
+                      });
+                    } else {
+                      // Manejar campos escalares normales
+                      initialValues[field.name] = field.value !== undefined ? field.value : '';
+                    }
+                  });
+                } else {
+                  console.warn('No fields found in formData.');
+                  console.log('formData:', formData);
+                }
+                console.log('initialValues',initialValues);
+   
+               //setGridRows(data)
+              
+             } else {
+               console.error('Error al obtener las filas de la grilla');
+             }
+            
+           }catch (error){
+           
+           }  
+          }
+      }
+        setFormData( data );//Devuelve el campo jsonForm de la tabla Form
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -44,17 +112,63 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {//Renderiza
         setLoading(false);
       }
     }
-    fetchData();   
+    fetchData();  
+    setLoading(false); 
   }, [subMenuId]);
-  if (subMenuId === null) { 
-    return <div>No subMenuId provided</div>;
-  }
+  
+  /*
+  useEffect(()=> {     
+      const getInitialValuesDynamicForm = async (formData => {//: { fields?: FormFieldType[] }): { [key: string]: any }
+        const initialValues: { [key: string]: any }   = {};
+        const [ spFetchRows, setSpFetchRows ]         = useState<string>(''); 
+        if ( formData.fields && formData.fields.length ===1 && formData.fields[0].type ==='grid'  ) {
+          
+          const sp=formData.fields[0].spFetchRows || '';
+          console.log('formData sp',sp);
+          setSpFetchRows(sp);
+        }
+        
+        //const allValues:any[]=[];
+       // return initialValues;
+      //se requiere leer las filas de la grilla para armar los values
+      const fetchRows = async (spFetch:string) => {//función que trae los datos
+        try {        
+          const [spName, params] = spFetch.split('(');// Extraemos el nombre del SP y los parámetros de la cadena spFetchOptions
+          //console.log('spName, params',spName, params);
+          if (!params || params.trim() === ')') { // Si no hay parámetros, simplemente ejecutamos el SP
+            const response = await fetch('/api/execSP', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                storedProcedure: spName,
+                parameters: {},
+              }),
+            });
+            if (response.ok) {
+              const data = await response.json();
+              // console.log('en Mygrid data', data);
+              setGridRows(data)
+             
+            } else {
+              console.error('Error al obtener las opciones');
+            }
+          }
+          } catch (err) {
+            console.error('Error fetching options:', err);
+          } 
+            return ;
+          }
+    if (formData) fetchRows('')  
+  },[formData])
+  */
+  
   if (subMenuId === 0) {
     return <div>No valid subMenuId provided</div>;
   }
-  if (!formData || loading) {
-    return <LoadingIndicator  message='cargando' />;
-    
+  if (!formData || loading ) {
+    return <LoadingIndicator  message='cargando' />;    
   }
   const handleClose=() =>{
     router.push('/');
@@ -68,10 +182,11 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {//Renderiza
     padding: '20px', // Otros estilos que se apliquen de manera general     
   };
   const formSize = formData.formSize || {};
-  const initialValues = getInitialValues(formData);
-  const validationSchema = getValidationSchema(formData);
 
-  return (
+  // const initialValues = getInitialValuesDynamicForm(formData);
+  const validationSchema = getValidationSchemaDynamicForm(formData);
+  return (//Aquí va el despliegue de la grilla no editable con los datos de la tabla que se hace en FormRow
+
     <div
       className={`relative p-6 rounded-lg shadow-lg max-w-full mx-auto mt-8 ${themeClass}`}
       style={{
@@ -88,8 +203,15 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {//Renderiza
           console.log('Submitted Values:', values);
         }}
       >
-        {({ resetForm, dirty, values }) => {
-            //  {console.log('en JSX FormPage formData',formData);}
+        {({ resetForm, dirty, values, setFieldValue }) => {
+          // useEffect (()=>{
+          //   {console.log('en useEffect formData',formData);}
+
+          // },[formData])
+          useEffect (()=>{
+            {console.log('en useEffect en [submenuID] values',values);}
+
+          },[values])
           return(
           <>       
             <GoHomeButton isFormModified={dirty} theme={theme} />
@@ -98,13 +220,7 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {//Renderiza
                 formData.frames.map((frame, index) => {
                   //console.log('JSX frame',frame,index); 
                   return (
-                    <FormRow
-                      key={frame.id}
-                      fields={frame.fields}
-                      theme={theme}
-                      allValues={values} // Pasamos values como allValues a FormRow
-                      //maxWidth={formSize.maxWidth}
-                      width={formSize.width}
+                    <FormRow key={frame.id} fields={frame.fields} theme={theme} width={formSize.width} allValues={values} // Pasamos values como allValues a FormRow
                     />
                   )
                 })

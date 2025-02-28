@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import multer from "multer";
-import { runMiddleware } from "@/app/utils/middleware";
+import { runMiddleware } from "@/utils/middleware";
 import * as XLSX from "xlsx";
 import fs from "fs";
 
 import { ExcelColumn } from "@/types/interfaces";
-import { calculateDuration } from "@/app/utils/calculateDuration";
+import { calculateDuration } from "@/utils/calculateDuration";
 
 // Configuración de Multer para manejar archivos
 const upload = multer({ dest: "uploads/" });

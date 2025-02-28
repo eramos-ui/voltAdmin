@@ -23,6 +23,7 @@
     "bcryptjs": "^2.4.3",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
+    "dompurify": "^3.2.4",
     "dotenv": "^16.4.5",
     "formidable": "^3.5.2",
     "formik": "^2.4.6",

@@ -5,28 +5,33 @@ import { Formik, Form, Field, useFormikContext } from "formik";
 import * as Yup from "yup";
 import { FeatureCollection, Geometry } from "geojson"; 
 import { faEraser, faFloppyDisk, faMapLocation, faHome, faTrash} from '@fortawesome/free-solid-svg-icons';
-import { ProjectDetailsForm } from "@/app/components/project/ProjectDetailsForm";
-import { LocationForm } from "@/app/components/project/LocationForm";
+import { ProjectDetailsForm } from "@/components/project/ProjectDetailsForm";
+
+import { LocationForm } from "@/components/project/LocationForm";
+
 import { Comunas, GridRowType, OptionsSelect, ProjectType } from "@/types/interfaces";
-import { MapContext } from "@/app/context/map/MapContext";
-import { CustomButton, CustomFileInput, CustomGrid, CustomLabel } from "@/app/components/controls";
+import { MapContext } from "../../context"; 
+
+import { CustomButton, CustomFileInput, CustomGrid, CustomLabel } from "@/components/controls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { processFileToGeoJSON } from "@/app/utils/kmzProcessor";
-import { optionsConectionPointType, optionsLandType, OptionsProjectType, optionsStoneType, optionsCertificadoAccesoType, optionsOrientation, optionsCeilingElementType, techoOptions } from "@/data/selectType";
-import CustomModal from "@/app/components/CustomModal";
-import MapComponent from "@/app/components/maps/MapComponent";
-import { loadComunas, loadRegiones } from "@/app/utils/loadRegionesComunas";
-import ActivityUploadSection from "@/app/components/activity/ActivityUploadSection";
-import DynamicForm from "@/app/components/DynamicForm";
-import { getNextActivityId } from "@/app/utils/getNextAcivityId";
-import { updateNewProject } from "@/app/utils/updateNewProject";
+import { processFileToGeoJSON } from "@/utils/kmzProcessor";
+import { optionsConectionPointType, optionsLandType, OptionsProjectType, optionsStoneType, optionsCertificadoAccesoType, 
+         optionsOrientationType, optionsCeilingElementType, techoOptions } from "@/data/selectType";
+import CustomModal from "@/components/general/CustomModal";
+import MapComponent from "@/components/maps/MapComponent";
+import { loadComunas, loadRegiones} from "@/utils/loadRegionesComunas"
+
+import ActivityUploadSection from "@/components/activity/ActivityUploadSection";
+
+import DynamicForm from "@/components/general/DynamicForm";
+
+import { getNextActivityId } from "@/utils/getNextAcivityId";
+import { updateNewProject } from "@/utils/updateNewProject";
 import { useSession } from 'next-auth/react'; 
-import { loadDataProject } from "@/app/utils/apiHelpers";
+import { loadDataProject } from "@/utils/apiHelpers"
+
 import { activityColumns, activitiesColumnsDynamic } from "@/data/modalColumns";
-// import { useHandleDelete } from "@/app/hooks/activities/useHandleDelete";
-// import { useHandleAdd } from "@/app/hooks/activities/useHandleAdd";
-// import { useHandleSave } from "@/app/hooks/activities/useHandleSave";
-import { sortGridByActivityId } from "@/app/utils/sortGridByActivityId";
+import { sortGridByActivityId } from "@/utils/sortGridByActivityId";
 
 const validationSchema = Yup.object({
     projectName: Yup.string().required("El nombre del proyecto es obligatorio"),
@@ -54,16 +59,11 @@ const NewProjectPage = () => {
   const [ error, setError ]                                     = useState<string | null>(null);
   const [ geoJSONDataL, setGeoJSONDataL ]                       = useState<FeatureCollection<Geometry> | null>(null);//la L es por local para no confundir con setGeoJSONData del context
   const { setGeoJSONData, setSelectedKmlFile, selectedKmlFile } = useContext(MapContext);
-  const [ selectedExcel, setSelectedExcel ]                     = useState<File | null>(null);
-  const [ excelFile, setExcelFile ]                             = useState<string>('');
   const [ isModalOpen, setIsModalOpen ]                         = useState(false);
 
   const [ columnsActivities, setColumnsActivities ]             = useState<any>(activityColumns);
   const [ formColumns, setFormColumns ]                         = useState<any>();
   const [ selectedRow, setSelectedRow ]                         = useState<GridRowType | null>(null);//de las activities
-  const [ selectedRowInstalacion, setSelectedRowInstalacion ]   = useState<any | null>(null);
-  //const [ selectedRowAgua, setSelectedRowAgua ]                 = useState<any | null>(null);
-  //const [ selectedRowEmpalme, setSelectedRowEmpalme ]           = useState<any | null>(null);
   const [ isAdding, setIsAdding ]                               = useState(false);
   const [ isEditing, setIsEditing ]                             = useState(false);
   const [ editingRow, setEditingRow ]                           = useState<GridRowType | null>(null);
@@ -78,7 +78,6 @@ const NewProjectPage = () => {
         FechaInicio:"","FechaTermino":"",},],
      userModification:"", dateModification: "",state:"draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
  } );
- //console.log('activityColumns',activityColumns);
  const openMapModal = (geoJSONDataL: any) => {
     if (geoJSONDataL) {
       setGeoJSONData(geoJSONDataL);
@@ -88,9 +87,6 @@ const NewProjectPage = () => {
  };
  const cargaRegiones = async () => setRegiones( await loadRegiones());
  const cargaComunas =async () => setComunasPorRegion(await loadComunas());
-//  useEffect(() => {
-//     console.log('useEffect initialValues',initialValues);
-//  },[initialValues])
  useEffect(() => {
     const fetchData= async (idTask:number) => {
     try{
@@ -158,7 +154,8 @@ const SaveCompleteButton = ({ handleSaveComplete }: { handleSaveComplete: (value
  const handleSaveComplete= async (vals:any) =>
  { 
   console.log('save complete',vals);
-  updateNewProject(vals,Number(session?.user.id),'complete');  
+  const userModification=session?.user.email;
+  updateNewProject(vals,userModification,'complete');  
  }
  const SaveDraftButton = ({ handleSaveDraft }: { handleSaveDraft: (values: any) => void }) => {
     const { values } = useFormikContext(); // 🔹 Obtiene los valores actuales del formulario 
@@ -168,15 +165,15 @@ const SaveCompleteButton = ({ handleSaveComplete }: { handleSaveComplete: (value
     );
  };
  const handleSaveDraft= async (vals:any) =>{ 
-  console.log('handleSaveDraft');
-
+    console.log('handleSaveDraft...');
     if ( vals.projectName.length === 0 )    {
       window.alert("Para guardar un borrador mínimo debe ingresar el nombre del proyecto" );
          return;      
     } 
-    console.log('vals',vals, Number(session?.user.id));
+    const userModification=session?.user.email;
+    //console.log('session -userModification',session?.user.email, userModification);
    
-    updateNewProject(vals,Number(session?.user.id),'draft');  
+    updateNewProject(vals,userModification,'draft');  
     router.push('/');
  }
  const handleRowSelection = (row: any | null) => {//de las activities
@@ -217,7 +214,6 @@ const SaveCompleteButton = ({ handleSaveComplete }: { handleSaveComplete: (value
             const currentActivity = selectedRow["NumActividad"].toString();
             const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); // Obtener todos los IDs existentes en la grilla
             const newActivity = getNextActivityId(currentActivity,existingIds);
-            console.log('en handleAdd',newActivity);
             setNextActivity(newActivity);
             setIsAdding(true);
          };
@@ -253,7 +249,7 @@ const SaveCompleteButton = ({ handleSaveComplete }: { handleSaveComplete: (value
          return ( 
            <Form>
              <ProjectDetailsForm errors={errors} touched={touched} OptionsProjectType={OptionsProjectType} optionsLandType={optionsLandType} optionsStoneType={optionsStoneType} 
-               optionsConectionPointType={optionsConectionPointType} optionsCertificadoAccesoType={optionsCertificadoAccesoType} optionsOrientation={optionsOrientation}
+               optionsConectionPointType={optionsConectionPointType} optionsCertificadoAccesoType={optionsCertificadoAccesoType} optionsOrientationType={optionsOrientationType}
                optionsCeilingElementType={optionsCeilingElementType} techoOptions={techoOptions} 
              />
              { regiones &&
@@ -304,8 +300,6 @@ const SaveCompleteButton = ({ handleSaveComplete }: { handleSaveComplete: (value
                 /> }
                 <SaveDraftButton handleSaveDraft={handleSaveDraft} />
                 <SaveCompleteButton handleSaveComplete={handleSaveComplete} />
-                {/* <CustomButton buttonStyle="primary" size='small' htmlType='submit' tooltipContent='Guardar el proyecto' tooltipPosition='left' 
-                    icon={<FontAwesomeIcon icon={faFloppyDisk} size="lg" color="white" />} label='Guardar terminado' /> */}
               </div>
            </Form>
            )

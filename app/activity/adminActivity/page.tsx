@@ -3,16 +3,17 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react'; 
 import { useRouter, useSearchParams  } from 'next/navigation';
 import * as Yup from "yup";
-import { loadDataActivity } from '@/app/utils/apiHelpers';
+ import { loadDataActivity } from '@/utils/apiHelpers';
+
 import { ActivityType, OptionsSelect } from '@/types/interfaces';
 import { Field, Form, Formik } from 'formik';
-import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '@/app/components/controls';
+import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '@/components/controls';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEraser, faFloppyDisk, faHome } from '@fortawesome/free-solid-svg-icons';
 import { formEjecucionActividadOptions } from '@/data/selectType';
-import { LoadingIndicator } from '@/app//components/LoadingIndicator';
-import { updateActivity } from '@/app/utils/updateActivity';
-import { loadResponsables } from '@/app/utils/loadResponsables';
+import { LoadingIndicator } from '@/components/general/LoadingIndicator';
+import { updateActivity } from '@/utils/updateActivity';
+import { loadResponsables } from '@/utils/loadResponsables';
 const validationSchema = Yup.object({
     formaEjecucion: Yup.string().required("La forma de ejecución de la actividad es obligatoria"),
     responsable: Yup.string().required("Seleccione el responsable de la actividad"),
@@ -200,7 +201,7 @@ const AdminActivityPage = () => {
          }}
        </Formik>
        <CustomButton buttonStyle="primary" size="small" htmlType="button" label="Volver al página anterior" tooltipContent='Volver a seleccionar otra actividad' tooltipPosition='right' 
-          style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit } 
+          style={{ marginLeft:5 }} icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit } 
        />
      </div>     
      }

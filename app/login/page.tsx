@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useLabels } from '../hooks/useLabels';
+import { useLabels } from '@/hooks/ohers/useLabels';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 
 const LoginPage = () => {//eramos@cibeles.cl    poiuyt
+  
     const [ email, setEmail ]       = useState('');
     const [ password, setPassword ] = useState('');
     const router                    = useRouter();
@@ -22,6 +23,7 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
       router.push('/forgot-password'); // Redirige a una página para restablecer la contraseña
     };
     const handleLogin = async () => {
+      // console.log('login page handleLogin',email,password);
       const result = await signIn('credentials', {
         redirect: false, // Evita la redirección automática
         email,

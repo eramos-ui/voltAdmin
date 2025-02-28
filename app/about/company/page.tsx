@@ -2,7 +2,7 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { CustomButton } from '@/app/components/controls';
+import { CustomButton } from '@/components/controls';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 const CompanyPage = () => {

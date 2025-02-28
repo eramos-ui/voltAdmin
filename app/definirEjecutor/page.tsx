@@ -4,14 +4,14 @@ import { useRouter, useSearchParams  } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react'
 import * as Yup from "yup";;
-import { loadDataActivity } from '../utils/apiHelpers';
+import { loadDataActivity } from '@/utils/apiHelpers';
 import { ActivityType, OptionsSelect } from '@/types/interfaces';
-import { LoadingIndicator } from '../components/LoadingIndicator';
+import { LoadingIndicator } from '../../components/general/LoadingIndicator';
 import { Field, Form, Formik } from 'formik';
-import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../components/controls';
+import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk, faHome } from '@fortawesome/free-solid-svg-icons';
-import { loadEjecutores } from '../utils/loadEjecutores';
+import { loadEjecutores } from '@/utils/loadEjecutores';
 import { plazoControlOptions } from '@/data/selectType';
 
 const validationSchema = Yup.object({

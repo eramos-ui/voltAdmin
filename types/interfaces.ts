@@ -44,9 +44,9 @@ export interface UserData {
   }
   
   export type InputType = 'text' |'input' | 'email' | 'select' | 'password' | 'date' | 'checkbox' |'textarea' | 'readonly'
-        | 'number' | 'file' | 'radio' | 'slider' | 'range' |'toggle' | 'grid' | 'multiselect'| 'autocomplete' |'rut' |'sin' | 'date';
+        | 'number' | 'file' | 'radio' | 'slider' | 'range' |'toggle' | 'grid' | 'multiselect'| 'autocomplete' | 'RUT' |'sin' | 'date';
 
-  export interface FormField { 
+  export interface FormFieldType { //los campos del formulario Dynamic
     type: InputType;
     name: string;
     label: string;
@@ -56,9 +56,8 @@ export interface UserData {
     value: string | number | boolean | undefined;
     row: number;
     width: string; 
-    //widthSelect:string;//ancho fijo en pixeles para los select
     registroInicialSelect:string;//el registro que aparece en 1er lugar
-    options?: { id: string | number; label: string }[];
+    options?: { value: string | number; label: string }[];
     validations?: ValidationRule[];
     dependsOn?: string; // Nueva propiedad
     dependentOptions?: { [key: string]: { id: string | number; label: string }[] };
@@ -71,13 +70,13 @@ export interface UserData {
     labelGridAdd?: string;    
     spFetchRows?:string; //field con el sp que carga la tabla
     objectGrid?:string;//para el tooltips de agregar y eliminar
-    columns?: GridColumn[];// Para el grid
+    columns?: GridColumnType[];// Para el grid
     rows?: GridRowType[]; // Para el grid
     actions?: ('add' | 'edit' | 'delete')[]; // Para el grid
     rowHeight?: string; // Altura de las filas
     columnWidths?: string[]; // Anchos de las columnas para el grid
     gridWidth?:string;//ancho total grilla 
-    editFormConfig?: FormConfig; // Para el formulario de edición
+    editFormConfig?: FormConfigType; // Para el formulario de edición
     className?: string;  // Para clases CSS personalizadas
     style?: React.CSSProperties;  // Para estilos en línea
     inputProps?: { [key: string]: any }; // Atributos HTML adicionales
@@ -92,7 +91,7 @@ export interface UserData {
     id: string;
     frameTitle: string;
     frameStyle: React.CSSProperties;
-    fields: FormField[];
+    fields: FormFieldType[];
   }
 
   export interface ButtonConfig {
@@ -115,7 +114,7 @@ export interface UserData {
   export interface FormValues {
     [key: string]: string | number | boolean | File | undefined;
   }
-  export interface FormConfig {
+  export interface FormConfigType { //del formulario dynamic
     formTitle: string;
     theme?: string;
     globalStyles?: {
@@ -129,17 +128,17 @@ export interface UserData {
     };
     buttons: ButtonConfig[];
     frames?: FrameConfig[];
-    fields?: FormField[];
+    fields?: FormFieldType[];
     modalStyles?: ModalStyles;
     editFormConfig?: {
       formTitle: string;
       requirePassword:boolean;
       modalStyles?: ModalStyles;
-      fields: FormField[];
+      fields: FormFieldType[];
     }; // Incluimos editFormConfig como opcional
   }
-  export interface EditFormProps {
-    formConfig: FormConfig;
+  export interface EditFormProps { // formulario dynamic
+    formConfig: FormConfigType;
     isOpen: boolean;
     onClose: () => void;
     initialValues: FormValues;
@@ -156,23 +155,15 @@ export interface UserData {
     // inputProps?: { [key: string]: any }; // Atributos HTML adicionales
     // conditionalStyles?: { [key: string]: React.CSSProperties }; // Estilos condicionales
   }
-  export interface OptionsSelect {
-    value: string | number ;
-    label: string ;
-  } 
-  export interface OptionSelectIcon{
-     value: string; label: string; image: string , nroAguas?:number,
+  export interface GridColumnType { //del dynamic form
+    name: string;
+    visible: boolean;
+    textAlign?: 'left' | 'center' | 'right';
+    typeColumn?:'number'|'string'|'rut'|'money'|'sin'|'boolean';
+    label?:string;
+    unique?: boolean;
   }
-
-  export interface Comunas {
-    idComuna: number;
-    idRegion: number;
-    label:string;
-    longitud?:string;
-    latitud?:string;
-  }
-
-  export type ColumnConfig<T>= {// Tipo para configuración de las columnas de la grilla
+  export type ColumnConfigType<T>= {// Tipo para configuración de las columnas de la grilla <T> es por genérico
     label: string; // Título de la columna
     key: keyof T; // Clave del dato en cada fila (debe existir en T)
     visible?: boolean; // Si la columna es visible
@@ -193,6 +184,24 @@ export interface UserData {
     dependencies?:{ field: string; valueMap: Record<string, any> }[];
     required?:boolean;
   };
+  
+  export interface OptionsSelect {
+    value: string | number ;
+    label: string ;
+  } 
+  export interface OptionSelectIcon{
+     value: string; label: string; image: string , nroAguas?:number,
+  }
+
+  export interface Comunas {
+    idComuna: number;
+    idRegion: number;
+    label:string;
+    longitud?:string;
+    latitud?:string;
+  }
+
+
   export type ExcelColumn = {
     name: string;
     inputType: string;
@@ -218,10 +227,10 @@ export interface UserData {
     ubicacionPanel?:string;
     usuarioCreador?:string;
   }
-  export interface GridRowType {
+  export interface GridRowType {//las filas del Dynamic form-grilla
     [key: string]: string | number | boolean  ; // Ajusta los tipos según tus necesidades
   }      
-  export interface GridColumn {
+  export interface GridColumnType {
     name: string;
     visible: boolean;
     textAlign?: 'left' | 'center' | 'right';

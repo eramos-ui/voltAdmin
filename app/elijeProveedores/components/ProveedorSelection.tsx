@@ -1,5 +1,5 @@
 import { Field } from "formik";
-import { CustomSelect, CustomInput } from "@/app/components/controls";
+import { CustomSelect, CustomInput } from "@/components/controls";
 
 interface ProveedorSelectionProps {
   proveedoresOptions: any[];

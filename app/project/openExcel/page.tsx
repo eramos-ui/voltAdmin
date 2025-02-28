@@ -3,7 +3,7 @@
 "use client";
 
 import { useState } from 'react';
-import { CustomUploadExcel } from '@/app/components/controls';
+import { CustomUploadExcel } from '@/components/controls';
 import { useRouter } from 'next/navigation';
 
 const ExcelPage = () => {

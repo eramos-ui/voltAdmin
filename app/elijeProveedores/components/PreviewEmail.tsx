@@ -1,4 +1,4 @@
-import { replacePlaceholders } from "@/app/utils/replacePlaceholders";
+import { replacePlaceholders } from "@/utils/replacePlaceholders";
 
 interface PreviewEmailProps {
     editableBody: string;

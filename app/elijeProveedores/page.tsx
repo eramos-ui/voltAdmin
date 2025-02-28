@@ -5,16 +5,16 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from "yup";;
-import {  loadDataActivityWithFilesAndEmails, saveProveedorToken, sendingEmails } from '../utils/apiHelpers';
+import {  loadDataActivityWithFilesAndEmails, saveProveedorToken, sendingEmails } from '@/utils/apiHelpers';
 import { ActivityEmailFilesType,  OptionsSelect } from '@/types/interfaces';
-import { LoadingIndicator } from '../components/LoadingIndicator';
-import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../components/controls';
+import { LoadingIndicator } from '../../components/general/LoadingIndicator';
+import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from '@fortawesome/free-solid-svg-icons';
-import { compareTwoObj } from '../utils/compareTwoObj';
-import { separarCamelPascalCase } from '../utils/separarCamelPascalCase';
+import { compareTwoObj } from '@/utils/compareTwoObj';
+import { separarCamelPascalCase } from '@/utils/separarCamelPascalCase';
 import { EmailTemplateSelection, PreviewEmail, ProveedorSelection } from './components';
-import { replacePlaceholders } from '../utils/replacePlaceholders';
+import { replacePlaceholders } from '@/utils/replacePlaceholders';
 import { SendEmailButton } from './components/SendEmailButton';
 
 const validationSchema = Yup.object({

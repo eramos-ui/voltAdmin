@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLabels } from '@/hooks/ohers/useLabels';
 //import  labels  from '../../data/labels.json';
-import { useLabels } from '../hooks/useLabels';
 
 const ResetPasswordPage = () => {
   const [ password, setPassword ]               = useState('');

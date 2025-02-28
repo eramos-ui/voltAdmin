@@ -1,9 +1,14 @@
 import { useEffect, useReducer, ReactNode } from "react";
 import { PlacesContext } from "./PlacesContext";
 import { placesReducer } from "./placesReducer";
-import { getUserLocation } from "../../helpers";
+//import { getUserLocation } from "../../helpers";
+import { getUserLocation } from "@/helpers";
+
 import { searchApi } from "@/pages/apis";
-import { Feature, PlacesResponse } from '../../../types/places';//creado con una Extension desde postman
+//import { Feature, PlacesResponse } from '../../../types/places';//creado con una Extension desde postman
+import { Feature, PlacesResponse } from '../../../types/places';
+
+
 
 export interface PlacesState {
     isLoading: boolean;

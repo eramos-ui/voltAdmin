@@ -1,4 +1,4 @@
-//import { faCaretDown, faHome, faBuilding, faWarehouse, faMountain } from "@fortawesome/free-solid-svg-icons";
+//los typos y valores que se usan en los select, especialmente en DynamicForm
 export const OptionsProjectType =[
     { value: "piso", label: "En piso"},
     { value: "techo", label: "En el techo"}
@@ -27,7 +27,7 @@ export const optionsCertificadoAccesoType =[
   { value: "conAcceso", label: "Tiene acceso certificado"},
   { value: "sinCertificado", label: "No tiene acceso certificado"},
 ] 
-export const optionsOrientation = [
+export const optionsOrientationType = [
   { value: "norte", label: "Norte" },
   { value: "sur", label: "Sur" },
   { value: "este", label: "Este" },
@@ -42,12 +42,11 @@ export const optionsCeilingElementType = [
   { value: "tragaluces", label: "Tragaluz" },
 ];
 
-// export const techoOptions = [
-//   { value: "plano", label: "Techo Plano", icon: faBuilding },
-//   { value: "aDosAguas", label: "Techo a Dos Aguas", icon: faHome },
-//   { value: "aCuatroAguas", label: "Techo a Cuatro Aguas", icon: faWarehouse },
-//   { value: "techoInclinado", label: "Techo Inclinado", icon: faMountain },
-// ];
+export const optionsFormularioType = [
+  { value: "F4", label: "Formulario F4" },
+  { value: "F2", label: "Formulario F2" },
+];
+
 
 export const techoOptions = [
   { value: "aDosAguas", label: "Dos aguas",image:"/techos/dos-aguas.jpg", nroAguas:2 },

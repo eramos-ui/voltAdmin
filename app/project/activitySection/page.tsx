@@ -1,25 +1,33 @@
 "use client";
 import { useState } from 'react';
-import ActivityUploadSection from '../../components/activity/ActivityUploadSection';
-import ActivityGridSection from '../../components/activity/ActivityGridSection';
-import ActivityNavigationSection from '@/app/components/activity/ActivityNavigationSection';
-import { GridRow } from '@/types/interfaces';
-import { getNextActivityId } from '@/app/utils/getNextAcivityId';
-import { sortGridByActivityId } from '@/app/utils/sortGridByActivityId';
-import CustomModal from '@/app/components/CustomModal';
-import DynamicForm from '@/app/components/DynamicForm';
+// import ActivityUploadSection from '../../components/activity/ActivityUploadSection';
+import ActivityUploadSection from '@/components/activity/ActivityUploadSection';
+//import ActivityGridSection from '../../components/activity/ActivityGridSection';
+import ActivityGridSection from '@/components/activity/ActivityGridSection';
+//import ActivityNavigationSection from '@/app/components/activity/ActivityNavigationSection';
+import ActivityNavigationSection from '@/components/activity/ActivityNavigationSection';
+import { GridRowType } from '@/types/interfaces';
+//import { getNextActivityId } from '@/app/utils/getNextAcivityId';
+import { getNextActivityId } from '@/utils/getNextAcivityId';
+//import { sortGridByActivityId } from '@/app/utils/sortGridByActivityId';
+import { sortGridByActivityId } from '@/utils/sortGridByActivityId';
+import CustomModal from '@/components/general/CustomModal';
+import DynamicForm from '@/components/general/DynamicForm';
+
 
 const ActivitySection = () => {
-  const [ rows, setRows ]                 = useState<GridRow[]>([]);
+  const [ rows, setRows ]                 = useState<GridRowType[]>([]);
   const [ columns, setColumns ]           = useState<any>();
   const [ formColumns, setFormColumns ]   = useState<any>();
-  const [ selectedRow, setSelectedRow ]   = useState<GridRow | null>(null);
+  const [ selectedRow, setSelectedRow ]   = useState<GridRowType | null>(null);
 
   const [ isAdding, setIsAdding ]         = useState(false);
   const [ isEditing, setIsEditing ]       = useState(false);
-  const [ editingRow, setEditingRow ]     = useState<GridRow | null>(null);
+  const [ editingRow, setEditingRow ]     = useState<GridRowType | null>(null);
   const [ nextActivity, setNextActivity ] = useState<string>("");
-  const handleEdit = (row: GridRow) => {
+  const [ isDirty, setIsDirty ]           = useState(false);
+
+  const handleEdit = (row: GridRowType) => {
     setEditingRow(row);
     setIsEditing(true);
     console.log("Editar actividad:", row);
@@ -36,7 +44,7 @@ const ActivitySection = () => {
     setNextActivity(newActivity);
     setIsAdding(true);
   };
-  const handleSave = (updatedRow: GridRow) => {
+  const handleSave = (updatedRow: GridRowType) => {
     if (isAdding) {
       const newRows = rows ? sortGridByActivityId([...rows, updatedRow]) : [updatedRow];
       setRows(newRows);
@@ -59,9 +67,15 @@ const ActivitySection = () => {
     <>
     {/* {console.log('en JSX ',isEditing, isAdding)} */}
       <h1 className="text-3xl font-bold text-center">Activity section</h1>
-      <ActivityUploadSection setRows={setRows} rows={rows} setColumns={setColumns} setFormColumns={setFormColumns} /> 
+      <ActivityUploadSection 
+      //setRows={setRows} rows={rows} 
+      //setColumns={setColumns} setFormColumns={setFormColumns} 
+      /> 
       {rows.length > 0 && //grilla de actividades
-        <ActivityGridSection rows={rows} setRows={setRows} columns={columns} handleEdit={handleEdit} handleAdd={handleAdd} 
+        <ActivityGridSection 
+        //columns, handleEdit, handleAdd, selectedRow, setSelectedRow
+        //rows={rows} setRows={setRows} 
+        columns={columns} handleEdit={handleEdit} handleAdd={handleAdd} 
            selectedRow={selectedRow} setSelectedRow={setSelectedRow} 
         />
       }
@@ -70,7 +84,7 @@ const ActivitySection = () => {
            title={isAdding ?`Agregar actividad ${nextActivity}`:`Modificar actividad ${editingRow?.["NumActividad"]}`}
         > 
           <DynamicForm columns={formColumns} initialValues={editingRow || {"NumActividad": nextActivity, Actividad: "", Presupuesto: "", FechaInicio: "",
-                     FechaTermino: "", }} onSave={handleSave} onCancel={handleCancel} />
+                     FechaTermino: "", }} onSave={handleSave} onCancel={handleCancel} setIsDirty={setIsDirty}/>
         </CustomModal>
         )}
         <ActivityNavigationSection />
