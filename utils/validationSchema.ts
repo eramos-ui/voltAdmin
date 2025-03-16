@@ -1,16 +1,93 @@
 import * as Yup from 'yup';
 import { parse, isDate } from 'date-fns';
-import { FormFieldType, FrameConfig } from '@/types/interfaces';
+import { FormFieldDFType } from '@/types/interfaceDF';
 
-const buildValidationSchema = (fields: FormFieldType[]): { [key: string]: Yup.MixedSchema } => {
+
+// 🔹 Función para generar validaciones dinámicas con Yup
+export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
+  const schema: Record<string, Yup.AnySchema> = {};
+
+  fields.forEach((field, index) => {
+
+    let fieldSchema : Yup.AnySchema = Yup.mixed();
+    if (field.type === "text" || field.type === "email" || field.type === "RUT" || field.type === "input" || field.type === "textarea") {
+      fieldSchema  = Yup.string();
+    } else if (field.type === "number") {
+      fieldSchema  = Yup.number();
+    } else if (field.type === "date") {
+      fieldSchema  = Yup.date();
+    } else if (field.type === "select") {
+      //console.log('select field',field,field.options,field.spFetchOptions);
+      // 📌 Validar selects con opciones estáticas
+      fieldSchema = Yup.string()
+        .required("Debe seleccionar una opción") // 📌 Asegura que no sea vacío o null
+        //.nullable()
+        .test("validate-select", "Debe seleccionar una opción válida", (value) => {//.test("nombreDelTest", "mensajeDeError", (value) => {funciónDeValidación}) //true es válido
+          // Si tiene opciones predefinidas, validar que esté en ellas
+          if (field.options && field.options.length > 0) {
+            return field.options.some(opt => String(opt.value) === String(value));
+          }
+          // Si es dinámico, no validar hasta que tenga opciones cargadas
+          if (field.spFetchOptions && field.spFetchOptions.length > 0) return true;
+          return false;
+        });
+
+      // 📌 Validar que el valor sea mayor que 0 si la regla está definida
+      if (field.validations?.some(v => v.type === "valueGreaterThanZero")) {
+        fieldSchema = fieldSchema.test(
+          "value-greater-than-zero",
+          "El valor debe ser mayor que 0",
+          (value) => Number(value) > 0
+        );
+      }
+    }
+
+    field.validations?.forEach((rule) => {    // 🔹 Agregar validaciones según el esquema definido en la BD-json
+      switch (rule.type) {
+        case "required":
+          fieldSchema  = fieldSchema .required(rule.message || "Este campo es obligatorio");
+          break;
+        case "maxLength":
+          fieldSchema  = (fieldSchema  as Yup.StringSchema).max(Number(rule.value!), rule.message || `Máximo ${rule.value} caracteres`);
+          break;
+        case "minLength":
+          fieldSchema  = (fieldSchema  as Yup.StringSchema).min(Number(rule.value!), rule.message || `Mínimo ${rule.value} caracteres`);
+          break;
+        case "email":
+          fieldSchema  = (fieldSchema  as Yup.StringSchema).email(rule.message || "Debe ser un correo válido");
+          break;
+        case "pattern":
+          const regex = new RegExp(rule.value as string); // 📌 Convierte el string en RegExp
+          fieldSchema  = (fieldSchema  as Yup.StringSchema).matches(regex, rule.message || "Formato inválido");
+          break;
+        case "url":
+          fieldSchema  = (fieldSchema  as Yup.StringSchema).url(rule.message || "Debe ser una URL válida");
+          break;
+        case "min":
+          fieldSchema  = (fieldSchema  as Yup.NumberSchema).min(Number(rule.value!), rule.message || `Mínimo valor permitido: ${rule.value}`);
+          break;
+        case "max":
+          fieldSchema  = (fieldSchema  as Yup.NumberSchema).max(Number(rule.value!), rule.message || `Máximo valor permitido: ${rule.value}`);
+          break;
+          
+      }
+    });
+    schema[field.name] = fieldSchema;
+  });
+
+  return Yup.object().shape(schema);
+};
+
+
+const buildValidationSchema = (fields: FormFieldDFType[]): { [key: string]: Yup.MixedSchema } => {
   const schemaFields: { [key: string]: Yup.MixedSchema } = {};
 
   fields.forEach((field) => {
     if (!field.validations) return;
-
-    let schema: Yup.MixedSchema = Yup.mixed(); // Schema base
+    let schema: Yup.MixedSchema = Yup.mixed(); 
 
     field.validations.forEach((rule) => {
+      console.log('rule',field.name,rule.type);
       switch (rule.type) {
         case 'required':
           schema = schema.required('Este campo es requerido');
@@ -23,7 +100,9 @@ const buildValidationSchema = (fields: FormFieldType[]): { [key: string]: Yup.Mi
           break;
         case 'email':
           //schema = (schema as Yup.StringSchema).email('El correo no tiene un formato válido');
+          console.log('en validationSchema email',field.name,rule);
           schema = (Yup.string().email('El correo no tiene un formato válido') as unknown) as Yup.MixedSchema;
+          
           break;
         case 'minDate':
           if (typeof rule.value === 'string') {
@@ -77,22 +156,15 @@ const buildValidationSchema = (fields: FormFieldType[]): { [key: string]: Yup.Mi
   return schemaFields;
 };
 
-export const getValidationSchemaDynamicForm = (
-  formData: { frames?: FrameConfig[]; fields?: FormFieldType[] }
-): Yup.ObjectSchema<{ [key: string]: any }> => {
-  let schemaFields: { [key: string]: Yup.MixedSchema } = {};
-  if (formData.frames) {
-    formData.frames.forEach((frame) => {
-      const frameSchema = buildValidationSchema(frame.fields);
-      schemaFields = { ...schemaFields, ...frameSchema };
-    });
-  } else if (formData.fields) {
-    //console.log('formData.fields',formData.fields) 
-    schemaFields = buildValidationSchema(formData.fields);
-  }
-
-  return Yup.object().shape(schemaFields);
-};
+// export const getValidationSchemaDynamicForm = (
+//   formData: {  editFields?: FormFieldDFType[] }//frames?: FrameConfig[];
+// ): Yup.ObjectSchema<{ [key: string]: any }> => {
+//   let schemaFields: { [key: string]: Yup.MixedSchema } = {};
+//     if (formData.editFields && formData.editFields.length > 0) {
+//       schemaFields = buildValidationSchema(formData.editFields);
+//     }
+//   return Yup.object().shape(schemaFields);
+// };
 
 
 

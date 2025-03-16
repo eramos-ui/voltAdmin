@@ -88,6 +88,7 @@ export interface InputProps  extends Partial<FieldProps> {
     rows?: number; // 📌 Permite definir el número de filas en el `textarea`
     formatNumber?: boolean;
     useDecimals?:boolean;
+    visible?:boolean;
   }
 
 export const CustomInput = ({
@@ -119,21 +120,23 @@ export const CustomInput = ({
     rows = 3, // 📌 Se establece un valor predeterminado de filas
     formatNumber= false,
     useDecimals= false,
+    visible=true,
     ...props
    }: InputProps ) =>{
-    const [charCount, setCharCount] = useState((field?.value ?? value ?? "").toString().length);
+    const [charCount, setCharCount]           = useState((field?.value ?? value ?? "").toString().length);
     const [formattedValue, setFormattedValue] = useState<string>(value ? value.toString() : "");
-
+    const [ valueInside, setValueInside ]     = useState<any>( value ? value.toString() : "");
     const inputClassNames = ` 
     custom-input-field ${theme}
     ${leftIcon ? 'has-left-icon' : ''} 
     ${rightIcon ? 'has-right-icon' : ''}
   `.trim();
+    // console.log('CustomInput field',value,error);
     const inputValue = (field?.value ?? value)? field?.value ?? value:'';
     const name = field?.name || ''; // Usa un valor predeterminado si field es undefined
     const errorMessage =
      (form?.touched?.[name] && form?.errors?.[name] && typeof form?.errors?.[name] === 'string') || error; // Prioriza Formik si existe
-
+    if (!visible) return <></>;
     // 📌 Formatea el número con separadores de miles y opcionalmente decimales
     const formatNumberValue = (num: string): string => {
       if (!num) return "";
@@ -157,21 +160,22 @@ export const CustomInput = ({
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         //if (field?.onChange) field.onChange(event);
         let inputValue = event.target.value;
-
+        setValueInside(inputValue);
         if (type === "number" && formatNumber) {
           inputValue = formatNumberValue(inputValue);
           setFormattedValue(inputValue);
           if (field?.onChange) field.onChange({ ...event, target: { ...event.target, value: parseNumber(inputValue) } });
         } else if (type==='RUT'){
-            inputValue = formatRut(inputValue);
-            console.log('CustomInput rut',inputValue);
-            console.log('validateRUT',validateRUT(inputValue));
-            setFormattedValue(inputValue);
+          inputValue = formatRut(inputValue);
+          // console.log('CustomInput rut',inputValue);
+          // console.log('validateRUT',validateRUT(inputValue));
+          setFormattedValue(inputValue);
         }  else {
+          // console.log('CustomInput handleChange',inputValue);
           setFormattedValue(inputValue);
           if (field?.onChange) field.onChange(event);
         }
-    
+        
         if (onChange) onChange(event);          
         setCharCount(event.target.value.length); // 📌 Actualiza contador de caracteres
     };
@@ -222,7 +226,7 @@ export const CustomInput = ({
           minLength={minLength}
           pattern={pattern}
           // value={inputValue} // Usamos inputValue que prioriza Formik
-          value={type === "number" && formatNumber ? formattedValue :(type ==='RUT')? formattedValue : value}
+          value={type === "number" && formatNumber ? formattedValue :(type ==='RUT')? formattedValue :  valueInside}
           onChange={handleChange} // Usa handleChange que prioriza field.onChange
           autoFocus={autoFocus}
         />

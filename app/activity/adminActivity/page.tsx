@@ -41,8 +41,12 @@ const AdminActivityPage = () => {
     },[])
     useEffect(() => {
         const fetchData= async (idTask:number) => {
+          // console.log('fetchData idTask',idTask);
         try{
-          if (session?.user.id)  await loadDataActivity(idTask,session.user.id,setInitialValues);
+          if (session?.user.id)  {
+            // console.log('useEffect session',session);
+            await loadDataActivity(idTask,session.user.id,setInitialValues);
+          }
         }catch (err){
           console.log('error', err);
         }
@@ -59,7 +63,7 @@ const AdminActivityPage = () => {
      useEffect(() => { 
         if (initialValues.idProject && initialValues.idProject>0 ){
             setLoading(false);
-            console.log('use Effect initialValues',initialValues);
+            // console.log('use Effect initialValues',initialValues);
         }
 
      },[initialValues.idProject]);

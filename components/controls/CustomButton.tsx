@@ -34,7 +34,14 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
   tooltipContent,
   tooltipPosition = "top",
 }) => {
-  const handleClick = () => {
+  // const handleClick = () => {
+  //   if (!isSubmitting && onClick) {
+  //     onClick();
+  //   }
+  // };
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Si el botón es de tipo submit, dejar que el formulario maneje el evento
+    if (htmlType === "submit") return;
     if (!isSubmitting && onClick) {
       onClick();
     }
@@ -58,6 +65,7 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
         disabled={disabled || isSubmitting}
         type={htmlType}
         style={style} 
+        aria-busy={isSubmitting} // Indica que el botón está en proceso
       >
         {icon && iconPosition === "left" && (
           <span className="button-icon left">{icon}</span>

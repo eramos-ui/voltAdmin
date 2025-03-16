@@ -13,8 +13,6 @@ export { CustomTooltip }  from "./CustomTooltip";
 export { CustomToggleSwitch } from "./CustomToggleSwitch";
 export { CustomUploadExcel } from "./CustomUploadExcel";
 
-export { FieldFrame } from "../formComponents/FieldFrame";
-export { FormRow } from "../formComponents/FormRow";
 
 
 

@@ -4,30 +4,54 @@ import GoHomeButton from '@/components/general/GoHomeButton';
 import { useRouter } from 'next/navigation';
 
 import { Formik, Form } from 'formik'; 
-import { getInitialValuesDynamicForm } from '@/utils/initialValues';
-import { FormConfigType, GridRowType } from '@/types/interfaces';
+import { useSession } from 'next-auth/react';
+import bcrypt from 'bcryptjs';
+// import { getInitialValuesDynamicForm } from '@/utils/initialValues';
+import { FormConfigDFType, GridRowDFType } from '@/types/interfaceDF';
 
-import { FormRow } from '@/components/controls';
-
+import { formatRut } from '@/utils/formatRut';
 import {  getValidationSchemaDynamicForm } from '@/utils/validationSchema';
 import { LoadingIndicator } from '@/components/general/LoadingIndicator';
+import { saveFormData } from '@/utils/apiHelpers';
+import _ from "lodash";
+import GridContainer from '@/components/dynamicForm/GridContainer';
+import { EditForm } from '@/components/dynamicForm/EditForm';
 /* Renderiza cualquier form en la BD Form del los que tiene formId en la tabla Submenu y path con número /12 x ej.
-Los componente en secuencia son 1) esta página a través de 2) FormRow que utiliza 3) FieldComponent para renderizar cada campo
-Este componente consume sp: getSubMenuForm (@subMenuId) y extrae el campo jsonForm de la tabla Form con el type FormConfigType
+Los componente en secuencia son 1) esta página a través de 2) FormTableGrid que utiliza 3) GridContainer la tabla(grilla) y
+EditForm para mostrar, tanto para Editar o agregar los campos de la tabla.
+Este componente consume sp: getSubMenuForm (@subMenuId) y extrae el campo jsonForm de la tabla Form con el type FormConfigDFType tanto de la tabla
+como de la edición de las filas y que se renderizan en EditForm  en editFields.También trae las filas (rows) de la tabla que se muestran en la grilla
 */
 const FormPage = ({ params }: { params: { subMenuId: string } }) => {
-  const [ formData, setFormData ] = useState<FormConfigType | null>(null);//los campos del formulario dynamic
-  const [ loading, setLoading ]   = useState(true);
-  const [ error, setError ]       = useState<string | null>(null);
-  const [ gridRows, setGridRows ] = useState<GridRowType[]>( []);
-  const router                    = useRouter();
-  const subMenuId = params?.subMenuId ? parseInt(params.subMenuId, 10) : 0;//el id del subMenu con el type FormConfigType
+  const { data: session }                       = useSession();
+  const [ formData, setFormData ]               = useState<FormConfigDFType | null>(null);//los campos del formulario dynamic
+  const [ loading, setLoading ]                 = useState(true);
+  const [ error, setError ]                     = useState<string | null>(null);
+  const [ rows, setRows ]                       = useState<GridRowDFType[]>( []);
+  const router                                  = useRouter();
+  const [ initialValues, setInitialValues ]     = useState <{ [key: string]: any }>({} );
+  const [ table, setTable ]                     = useState<FormConfigDFType | null>(null);
+  const [ isModalOpen, setIsModalOpen ]         = useState(false);
+  const [ editingRowIndex, setEditingRowIndex ] = useState<number | null>(null);
+  const [ isAdding, setIsAdding]                = useState(false);
+  // const [ alertMessage, setAlertMessage ]   = useState<string | null>("");
+  // const [ alertDuration, setAlertDuration ] = useState<number | null>(3000);
+  // const [ alertType, setAlertType ]         = useState<'success' | 'error' | 'info'>('info');
+  const subMenuId = params?.subMenuId ? parseInt(params.subMenuId, 10) : 0;//el id del subMenu con el type FormConfigDFType
   //console.log('FromPage')
-  let initialValues: { [key: string]: any } = {};
-  useEffect(()=>{
-     console.log('useEffect formData',formData);
-  },[formData])
-  
+  // useEffect(()=>{
+  //    console.log('useEffect formData',formData?.editFields);
+  // },[formData])
+  // useEffect(() => {
+  //   if (alertMessage && alertDuration) {
+  //     console.log('en useEffect alertMessage',alertMessage);
+  //     const timer = setTimeout(() => setAlertMessage(""), alertDuration);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [alertMessage, alertDuration]);
+  const reLoad=() =>{//al cerrar el modal carga la pagina de nuevo
+    window.location.reload();
+  }
   useEffect(() => {
     async function fetchData() {
       if (subMenuId === 0) {
@@ -35,73 +59,19 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
         setLoading(false);
         return;
       }  
-      let data:FormConfigType;
+      let data:FormConfigDFType;
       try {
-        //console.log('lee menú',`/api/getFormData?subMenuId=${subMenuId}`);
+        //console.log('lee form y filas',`/api/getFormData?subMenuId=${subMenuId}`);
         const res = await fetch(`/api/getFormData?subMenuId=${subMenuId}`);//los datos del submenu { buttons, fields,formn} 
         if (!res.ok) {
           throw new Error(`Failed to fetch form data: ${res.statusText}`);
         }
         data= await res.json();
-        
-
-        if ( data.fields && data.fields.length ===1 && data.fields[0].type ==='grid'  ) {
-          const spFetch=data.fields[0].spFetchRows || '';
-          const [spName, params] = spFetch.split('(');// Extraemos el nombre del SP y los parámetros de la cadena spFetchOptions
-          
-          //console.log('spName, params',spName, params);
-          if (!params || params.trim() === ')') { // Si no hay parámetros, simplemente ejecutamos el SP
-            //console.log('No hay param');
-            try{ //Aquí se leen los datos de la grilla
-             const response = await fetch('/api/execSP', {
-               method: 'POST',
-               headers: {
-                 'Content-Type': 'application/json',
-               },
-               body: JSON.stringify({
-                 storedProcedure: spName,
-                 parameters: {},
-               }),
-             });
-             if (response.ok) {
-               const rows = await response.json();
-                console.log('en data grilla rows', rows);
-                console.log('en [submenuId] data',data);
-                if (data?.fields?.length) {
-                  data.fields.forEach((field) => {
-                    //console.log('field.rows',field.rows)
-                    if (field.type === 'grid' && rows) {
-                      // Manejar la inicialización de los valores dentro de la grilla
-                      initialValues[field.name] = rows.map(row => {
-                        const rowValues: { [key: string]: any } = {};
-                        field.columns?.forEach((column) => {
-                          rowValues[column.name] = row[column.name] !== undefined ? row[column.name] : '';
-                        });
-                        return rowValues;
-                      });
-                    } else {
-                      // Manejar campos escalares normales
-                      initialValues[field.name] = field.value !== undefined ? field.value : '';
-                    }
-                  });
-                } else {
-                  console.warn('No fields found in formData.');
-                  console.log('formData:', formData);
-                }
-                console.log('initialValues',initialValues);
-   
-               //setGridRows(data)
-              
-             } else {
-               console.error('Error al obtener las filas de la grilla');
-             }
-            
-           }catch (error){
-           
-           }  
-          }
-      }
+        // console.log('en [submenuId] data',data); 
+        // console.log('en [submenuId] data',data); 
+        setInitialValues({items:data.rows});//debe llevar el nombre para el initialValues
         setFormData( data );//Devuelve el campo jsonForm de la tabla Form
+        setRows(data.rows || []);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -116,63 +86,82 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
     setLoading(false); 
   }, [subMenuId]);
   
-  /*
-  useEffect(()=> {     
-      const getInitialValuesDynamicForm = async (formData => {//: { fields?: FormFieldType[] }): { [key: string]: any }
-        const initialValues: { [key: string]: any }   = {};
-        const [ spFetchRows, setSpFetchRows ]         = useState<string>(''); 
-        if ( formData.fields && formData.fields.length ===1 && formData.fields[0].type ==='grid'  ) {
-          
-          const sp=formData.fields[0].spFetchRows || '';
-          console.log('formData sp',sp);
-          setSpFetchRows(sp);
-        }
-        
-        //const allValues:any[]=[];
-       // return initialValues;
-      //se requiere leer las filas de la grilla para armar los values
-      const fetchRows = async (spFetch:string) => {//función que trae los datos
-        try {        
-          const [spName, params] = spFetch.split('(');// Extraemos el nombre del SP y los parámetros de la cadena spFetchOptions
-          //console.log('spName, params',spName, params);
-          if (!params || params.trim() === ')') { // Si no hay parámetros, simplemente ejecutamos el SP
-            const response = await fetch('/api/execSP', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                storedProcedure: spName,
-                parameters: {},
-              }),
-            });
-            if (response.ok) {
-              const data = await response.json();
-              // console.log('en Mygrid data', data);
-              setGridRows(data)
-             
-            } else {
-              console.error('Error al obtener las opciones');
-            }
-          }
-          } catch (err) {
-            console.error('Error fetching options:', err);
-          } 
-            return ;
-          }
-    if (formData) fetchRows('')  
-  },[formData])
-  */
-  
+ 
+  // const showAlert = (message: string, type: 'success' | 'error' | 'info', duration: number | null) => {// Función para configurar la alerta
+  //     console.log("Mostrando alerta:", message, type, duration);
+  //     setAlertMessage(message);
+  //     setAlertType(type);
+  //     setAlertDuration(duration);
+  //   };
+
+  // const grabar= async( values:any) =>{
+  //   const requirePassword=formData?.editFields?.find(field => field.type === 'password')?.requirePassword;
+  //   const password = requirePassword ? await bcrypt.hash('password123', 10) : undefined;
+  //   const spFetchSaveGrid=formData?.table.spFetchSaveGrid; 
+  //   // console.log('en FormPage grabar values',values);
+  //   const withRutFields=formData?.editFields?.filter(field => field.type === 'RUT');//field que tienen field type='RUT' para formatearlo estándar
+  //   let updateValues:any=values;
+    
+  //   if (withRutFields && withRutFields.length > 0) {
+  //      //actualizar rut de los values.items
+  //      console.log('en FormPage revisar updatedItems que no se usa');
+  //      const items=values.items;
+  //      const updatedItems=items.map((item:any) => {
+  //       const rut=formatRut(item.rut);
+  //       return {...item,rut:rut};
+  //      });
+  //     }    
+  //   let changedItem = _.differenceWith( updateValues.items,initialValues.items, _.isEqual);//devuelve los items que han cambiado (1 a la vez)
+  //   console.log('en FormPage grabar diferencias changedItems',changedItem);
+  //   if (changedItem.length >1 ) {
+  //     console.log("***Se detectaron cambios en varias filas, se grabará sólo la primera***");      
+  //   }
+  //   try {
+  //     const response = await saveFormData(
+  //       spFetchSaveGrid!,
+  //       { ...changedItem[0], idUserModification: session?.user.id, password },
+  //       formatRut,
+  //     );
+  //     if (response.success) {
+  //       alert("Grabado exitosamente");
+  //       // setTimeout(handleClose, 3000);
+  //     } else {
+  //       console.log('en FormPage grabar response',response.error);
+  //       alert(`${response.error.error}, favor comuníquelo al administrador del sistema.`);        
+  //     }
+  //   } catch (error) {
+  //     alert(`${error}, favor comuníquelo al administrador del sistema.`);
+  //   }
+  // }  
   if (subMenuId === 0) {
     return <div>No valid subMenuId provided</div>;
   }
   if (!formData || loading ) {
     return <LoadingIndicator  message='cargando' />;    
   }
-  const handleClose=() =>{
-    router.push('/');
-  }
+  const handleDelete = (index: number) => {
+    const spFetchSaveGrid=formData?.table.spFetchSaveGrid;           
+    const updateData = async () => {
+      try {
+        const response = await saveFormData(
+          spFetchSaveGrid!,
+          { ...initialValues.items[index], action:'delete',idUserModification: session?.user.id },
+          formatRut,//va la función de formatRut para que se graben los ruts est  ándar
+        );
+        if (response.success) {
+          alert("Item eliminado exitosamente");
+          // setTimeout(handleClose, 3000);
+        } else {
+          //console.log('en FormPage grabar response',response.error);
+          alert(`${response.error.error}, favor comuníquelo al administrador del sistema.`);          
+        }
+      } catch (error) {
+        alert(`${error}, favor comuníquelo al administrador del sistema.`);
+      }
+   };
+   updateData();
+   window.location.reload();//recarga la página
+  };
   const themeClass = formData.theme === 'dark' ? 'theme-dark' : 'theme-light';
   const theme=formData.theme === 'dark' ? 'dark' : 'light';
   const globalStyles = {
@@ -182,93 +171,68 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
     padding: '20px', // Otros estilos que se apliquen de manera general     
   };
   const formSize = formData.formSize || {};
-
-  // const initialValues = getInitialValuesDynamicForm(formData);
-  const validationSchema = getValidationSchemaDynamicForm(formData);
-  return (//Aquí va el despliegue de la grilla no editable con los datos de la tabla que se hace en FormRow
-
-    <div
-      className={`relative p-6 rounded-lg shadow-lg max-w-full mx-auto mt-8 ${themeClass}`}
-      style={{
-        ...globalStyles,
-        ...formSize,
-        maxWidth: formData.formSize?.maxWidth || '100%',
-      }}
-    >
-      <h1 className="text-3xl font-bold mb-4">{formData.formTitle}</h1>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={(values) => {
-          console.log('Submitted Values:', values);
+  const handleEdit = (index: number) => {
+    setEditingRowIndex(index);
+    setIsModalOpen(true);
+    setIsAdding(false);
+  };
+  const handleAdd = () => {
+    setEditingRowIndex(null);
+    setIsModalOpen(true);
+    setIsAdding(true);
+  };
+  const handleClose=() =>{
+    router.push('/');
+  }
+  const spFetchSaveGrid=formData.table.spFetchSaveGrid;
+  return (//Aquí va el despliegue de la grilla no editable con los datos de la tabla que se hace en FormTableGrid vía GridContainer
+    <>
+    {/* (() => { console.log('en jsx page ', isModalOpen); return null; })()
+    } {/* para que no marque error de {console.log ('en jsx page ',alertMessage) , null } */}
+    { formData && formData.editFields && formData.editFields !== undefined && formData.table && formData.table !== undefined &&
+      <div
+        className={`relative p-6 rounded-lg shadow-lg max-w-full mx-auto mt-8 ${themeClass}`}
+        style={{
+          ...globalStyles,
+          ...formSize,
+          maxWidth: formData.formSize?.maxWidth || '100%',
         }}
       >
-        {({ resetForm, dirty, values, setFieldValue }) => {
-          // useEffect (()=>{
-          //   {console.log('en useEffect formData',formData);}
-
-          // },[formData])
-          useEffect (()=>{
-            {console.log('en useEffect en [submenuID] values',values);}
-
-          },[values])
-          return(
+        <h1 className="text-3xl font-bold mb-4">{formData.formTitle}</h1> 
           <>       
-            <GoHomeButton isFormModified={dirty} theme={theme} />
-            <Form>
-              {formData.frames ? (//si tiene frames
-                formData.frames.map((frame, index) => {
-                  //console.log('JSX frame',frame,index); 
-                  return (
-                    <FormRow key={frame.id} fields={frame.fields} theme={theme} width={formSize.width} allValues={values} // Pasamos values como allValues a FormRow
-                    />
-                  )
-                })
-              ) : (                
-                formData.fields && (//sin frames
-                  <FormRow fields={formData.fields} theme={theme} allValues={values}  maxWidth={formSize.maxWidth}  width={formSize.width} />
-                )
-              )}
+              {formData.table.columns && formData.table.actions && formData.table.columnWidths && formData.table.editFormConfig &&               
+              <GridContainer  columns={formData.table.columns} rows={rows} actions={formData.table.actions} 
+                    columnWidths={formData.table.columnWidths} onEdit={handleEdit} handleAdd={handleAdd} table={formData.table}
+                    onDelete={handleDelete}  editFormConfig={formData.table.editFormConfig} // Pasamos el editFormConfig a GridContainer
+                    label={formData.table.label} //requerido para los tooltips de la Actions
+                    objectGrid={formData.table.objectGrid}//para el tooltips de los botones de actions
+                />
+              }
+              {isModalOpen && formData.table.editFormConfig && formData.table.columns && formData.table.editFormConfig && (
+                <EditForm isOpen={isModalOpen} onClose={() => reLoad()   } theme={formData.table.editFormConfig.theme} // onSubmit={handleFormAdd} 
+                  row={editingRowIndex !== null ? rows[editingRowIndex] : {}} columns={formData.table.columns} 
+                  formConfig={ formData.table.editFormConfig as FormConfigDFType} // Pasa el editFormConfig al componente de edición
+                  spFetchSaveGrid={spFetchSaveGrid} isAdding={isAdding} fields={formData.editFields || []} //rows={rows} //setRows={setAllValues }
+                />
+                )} 
               <div className="flex space-x-4 mt-4">
-                {formData.buttons &&
-                  formData.buttons.map((button, index) => {
-                    //console.log('JSX en FormPage',button);
-                    return (
-                    <button
-                      key={button.id}//supone que no se repite
-                      type={button.action === 'submit' ? 'submit' : 'button'}
-                      onClick={
-                        button.action === 'reset'
-                          ? () => resetForm()
-                          : button.action === 'return'
-                          ? () =>   handleClose()
-                          :() => {
-                              console.log('Form submitted with values:', values);
-                            }
-                      }
-                      className={`px-4 py-2 rounded ${
-                        button.action === 'submit'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-red-500 text-white'
-                      }`}
-                      style={{
-                        backgroundColor: button.backgroundColor,
-                        color: button.color,
-                        padding: button.padding,
-                        borderRadius: button.borderRadius,
-                        marginRight: button.marginRight || '0',
-                      }}
-                    >
-                      {button.text}
-                    </button>)
-                  })}
+              {formData.buttons &&
+                formData.buttons.map((button, index) => { //console.log('JSX en FormPage',button);
+                return ( //Volver al Menú button.action === 'return'
+                <button
+                  key={button.id} type={button.action === 'submit' ? 'submit' : 'button'}
+                  onClick={  button.action === 'return' ? () => handleClose() :() => { }}
+                  className={`px-4 py-2 rounded ${ button.action === 'submit'  ? 'bg-blue-500 text-white' : 'bg-red-500 text-white' }`}
+                  style={{backgroundColor: button.backgroundColor,color: button.color,padding:button.padding, borderRadius:button.borderRadius, marginRight: button.marginRight || '0', }}
+                >
+                  {button.text}
+                </button>)
+              })}
               </div>
-            </Form>
           </>
-          )
-        }}
-      </Formik>
-    </div>
+      </div>
+    }
+    </>  
   );
 };
 export default FormPage;

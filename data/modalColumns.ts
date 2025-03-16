@@ -14,12 +14,12 @@
         { field: "descripcionFormaTecho", valueMap: Object.fromEntries(techoOptions.map(opt => [opt.value, opt.label])), }],}, 
 
 */
-import { ColumnConfig, GridRowType } from "@/types/interfaces";
+import { ColumnConfigType, GridRowType } from "@/types/interfaces";
 import { optionsCeilingElementType, optionsFormularioType, optionsMaterialCielingType, optionsOrientationType, techoOptions } from "./selectType";
 import {ColumnDynamicForm} from "@/components/general/DynamicForm";
 
 
-  export const empalmeColumns: ColumnConfig<GridRowType>[] = [
+  export const empalmeColumns: ColumnConfigType<GridRowType>[] = [
     { key: "nroEmpalme", label: "Empalme", captionPosition: "top", editable: false, type: "string", options: undefined, width: '70px', widthFormEdit:'120px',textAlign:"right", },
     { key: "proveedor", label: "Cliente", captionPosition: "top", editable: true, type: "string" , width: '80px', widthFormEdit:'200px',rowFormEdit:1,
       required:true, labelFormEdit:"Nombre cliente" 
@@ -67,7 +67,7 @@ import {ColumnDynamicForm} from "@/components/general/DynamicForm";
     dependencies:col.dependencies,
     required: (col.required)?col.required:false,
   }));
-  export const techoColumns: ColumnConfig<GridRowType>[] = [
+  export const techoColumns: ColumnConfigType<GridRowType>[] = [
     { key: "nroInstalacion", label: "Nro Instalación", captionPosition: "top", editable: false, type: "string", options: undefined },
     { key: "nroAgua", label: "Nro Agua", captionPosition: "top", editable: false, type: "string", options: undefined },
     { key: "orientacion", label: "Orientación", captionPosition: "top", editable: true, type: "string",inputType:"select", options: optionsOrientationType,
@@ -92,7 +92,7 @@ import {ColumnDynamicForm} from "@/components/general/DynamicForm";
     row: (col.rowFormEdit)?col.rowFormEdit:1, // Definir la fila a la que pertenece (puede ajustarse según necesidades)  
     required: (col.required)?col.required:false, 
   }));  
-export const instalacionesColumns: ColumnConfig<GridRowType>[] = [
+export const instalacionesColumns: ColumnConfigType<GridRowType>[] = [
   { key: "nroInstalacion", label: "Nro. instalación", captionPosition: "top", editable: false, type: "string", options: undefined, textAlign:"right", },
   { key: "descripcionInstalacion", label: "Descripción edificio", captionPosition: "top", editable: true, type: "string",inputType:"string",required:true,
     labelFormEdit:"Descripción instalación/edificio", widthFormEdit:'300px',rowFormEdit:1, },
@@ -122,8 +122,8 @@ export const instalacionesColumnsDynamic: ColumnDynamicForm[] = instalacionesCol
   required: (col.required)?col.required:false,
 }));
 
-export const toDoColumns: ColumnConfig<GridRowType>[] = [
-  { key: "infoToDo", label: "Descripción de la tarea", captionPosition: "top", editable: false,width:'700px', type: "string", options: undefined },
+export const toDoColumns: ColumnConfigType<GridRowType>[] = [
+  { key: "infoToDo", label: "Descripción de la tarea", captionPosition: "top", editable: false,width:'840px', type: "string", options: undefined },
   { key: "idTask", label: "idTask", captionPosition: "top", editable: false, visible: false,  type: "number", width:'70px', options: undefined },
   { key: "ubicacionPanel", label: "Ubicacion panel", captionPosition: "top", editable: false, visible: false,  type: "string", width:'70px', options: undefined },
   { key: "usuarioCreador", label: "Usuario creador", captionPosition: "top", editable: false, visible: false,  type: "string", width:'70px', options: undefined },
@@ -141,7 +141,7 @@ export const toDoColumns: ColumnConfig<GridRowType>[] = [
   
 ];
 
-export const activityColumns: ColumnConfig<GridRowType>[] = [
+export const activityColumns: ColumnConfigType<GridRowType>[] = [
   { key: "NumActividad", label: "Num.Actividad", captionPosition: "top", editable: false,width:'100px', type: "string",textAlign:'left', options: undefined },
   { key: "Actividad", label: "Actividad", captionPosition: "top", editable: true, visible: true,  type: "string",textAlign:'left', width:'200px', options: undefined,
     widthFormEdit: '300px',rowFormEdit:1,labelFormEdit:'Descripción de la actividad',required: true,

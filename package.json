@@ -8,7 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "ngrok": "node scripts/ngrok.js",
+    "tunnel": "node scripts/tunnel.js",
+    "cloudflared": "node scripts/cloudflared.js",
+    "frp": "node scripts/frp.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
@@ -29,6 +33,7 @@
     "formik": "^2.4.6",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
+    "localtunnel": "^2.0.2",
     "lodash": "^4.17.21",
     "mapbox-gl": "^3.9.1",
     "mssql": "^11.0.1",
@@ -51,6 +56,7 @@
     "yup": "^1.4.0"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.10.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/formidable": "^3.4.5",
     "@types/geojson": "^7946.0.15",

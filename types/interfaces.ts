@@ -129,6 +129,7 @@ export interface UserData {
     buttons: ButtonConfig[];
     frames?: FrameConfig[];
     fields?: FormFieldType[];
+    rows?:GridRowType[];
     modalStyles?: ModalStyles;
     editFormConfig?: {
       formTitle: string;
@@ -155,14 +156,7 @@ export interface UserData {
     // inputProps?: { [key: string]: any }; // Atributos HTML adicionales
     // conditionalStyles?: { [key: string]: React.CSSProperties }; // Estilos condicionales
   }
-  export interface GridColumnType { //del dynamic form
-    name: string;
-    visible: boolean;
-    textAlign?: 'left' | 'center' | 'right';
-    typeColumn?:'number'|'string'|'rut'|'money'|'sin'|'boolean';
-    label?:string;
-    unique?: boolean;
-  }
+ 
   export type ColumnConfigType<T>= {// Tipo para configuración de las columnas de la grilla <T> es por genérico
     label: string; // Título de la columna
     key: keyof T; // Clave del dato en cada fila (debe existir en T)
@@ -229,15 +223,16 @@ export interface UserData {
   }
   export interface GridRowType {//las filas del Dynamic form-grilla
     [key: string]: string | number | boolean  ; // Ajusta los tipos según tus necesidades
-  }      
-  export interface GridColumnType {
+  } 
+  export interface GridColumnType { //del dynamic form
     name: string;
     visible: boolean;
     textAlign?: 'left' | 'center' | 'right';
     typeColumn?:'number'|'string'|'rut'|'money'|'sin'|'boolean';
     label?:string;
     unique?: boolean;
-  }
+    captionPosition:'top' | 'left';
+  }     
   export interface ActivitiesType {
     "NumActividad":string,Actividad:string | null, FechaInicio?: string | null,"FechaTermino"?:string | null, "Duracion"?: number | string ,Presupuesto?:number | string | null
  }

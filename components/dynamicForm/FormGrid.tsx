@@ -2,27 +2,34 @@
 import { useState, useRef, useEffect } from 'react';
 import { FormikHelpers, useFormikContext } from 'formik';
 import { useSession } from 'next-auth/react';
-import { FormConfigType, FormValues, FormFieldType, GridColumnType ,GridRowType } from '@/types/interfaces';
+//import { FormConfigType, FormValues, FormFieldType, GridColumnType ,GridRowType } from '@/types/interfaces';
 
-import { EditForm } from '@/components/formComponents/EditForm';
+import { EditForm } from './EditForm';
 
 import { useLabels } from '@/hooks/ohers/useLabels';
 
 import {  FaPlus } from 'react-icons/fa';
-import GridContainer from '@/components/controls/grid/GridContainer';
+import GridContainer from './GridContainer';
 import { CustomAlert } from '@/components/controls';
+import { FormConfigDFType, FormFieldDFType, FormValuesDFType, GridColumnDFType, GridRowDFType } from '@/types/interfaceDF';
+
 
 
 interface Props {
-  field: FormFieldType;  // Usamos FormField en lugar de definir cada propiedad por separado
+  field: FormFieldDFType;  // Usamos FormField en lugar de definir cada propiedad por separado
 }
 interface Props {
   titleGrid: string;
   labelGridAdd:string;
-  label: string;  name: string;  columns: GridColumnType[];  rows: GridRowType[];  actions: ('add' | 'edit' | 'delete')[];
+  label: string;  name: string;  
+  columns: GridColumnDFType[];  
+  rows: GridRowDFType[];  actions: ('add' | 'edit' | 'delete')[];
   columnWidths?: string[];  rowHeight?: string; // Altura de las filas
   gridWidth?: string;  className?: string;  borderColor?: string;  borderWidth?: string;  padding?: string;
-  marginBottom?: string;  editFormConfig?: FormConfigType;  theme?: 'light' | 'dark';  
+  marginBottom?: string;  
+  editFormConfig?: FormConfigDFType;  
+  fields: FormFieldDFType[];
+  theme?: 'light' | 'dark';  
   objectGrid?:string;//para el tooltips de los botones de actions
   spFetchRows?:string;
   spFetchSaveGrid?:string;
@@ -32,11 +39,13 @@ interface Props {
     dark?: React.CSSProperties;
   };
   width:string; 
+ 
+  setRows: (rows:FormValuesDFType[]) => void;
 }
-
+//******NO SE USA*****
 export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, objectGrid,
-  spFetchRows, spFetchSaveGrid, allValues, name,  columns,  rows,  actions,  columnWidths = [], //Aseguramos que siempre sea un array
-  editFormConfig,  rowHeight = '40px',  gridWidth = '100%',  borderColor = 'border-gray-300', // Clase predeterminada de Tailwind para el color del borde
+  spFetchRows, spFetchSaveGrid, allValues, name,  columns,  rows,setRows, actions,  columnWidths = [], //Aseguramos que siempre sea un array
+  editFormConfig,  fields,rowHeight = '40px',  gridWidth = '100%',  borderColor = 'border-gray-300', // Clase predeterminada de Tailwind para el color del borde
   borderWidth = 'border', // Clase predeterminada de Tailwind para el ancho del borde
   padding = 'p-4', // Clase predeterminada de Tailwind para el padding
   marginBottom = 'mb-4', // Clase predeterminada de Tailwind para el margen inferior
@@ -44,8 +53,8 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
 }) => { 
     //const editFormConfig=props.editFormConfig;//si es grid editFormConfig está bajo fields de la grilla en formData
   const { data: session, status }               = useSession();//aquí están los datos del user si lo requiere el fetch
-  const { setFieldValue }                       = useFormikContext<{ [key: string]: GridRowType[] }>();
-  const [ gridRows, setGridRows ]               = useState<GridRowType[]>(rows || []);
+  const { setFieldValue }                       = useFormikContext<{ [key: string]: GridRowDFType[] }>();
+  const [ gridRows, setGridRows ]               = useState<GridRowDFType[]>(rows || []);
   const [ isModalOpen, setIsModalOpen ]         = useState(false);
   const [ editingRowIndex, setEditingRowIndex ] = useState<number | null>(null);
   const [ isAdding, setIsAdding]                = useState(false);
@@ -53,9 +62,8 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
   const [ isAlertOpen, setIsAlertOpen ]         = useState(false);
   const [ nameAlert, setNameAlert ]             = useState('');
   const [ loading, setLoading ]                 = useState((spFetchRows)?true:false);
-  //console.log('en Mygrid props',props.field.requirePassword  )//.editFormConfig.requirePassword  //console.log('session',session)
-  //console.log('en Mygrid fetchGspFetchRowsrid',spFetchRows)
-   const themeStyles = session?.theme === 'dark' 
+
+  const themeStyles = session?.theme === 'dark' 
      ? props.globalStyles?.dark 
      : props.globalStyles?.light;    
   const reLoad=() =>{//al cerrar el modal carga la pagina de nuevo
@@ -171,12 +179,14 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
     // setGridRows(newRows);
     // setFieldValue(name, newRows);
   };
-  const isUniqueValue = (newRow: GridRowType, key: string): boolean => {//gridRows son las filas que hay en la grilla y newRow es la que se agrega
+  const isUniqueValue = (newRow: GridRowDFType, key: string): boolean => {//gridRows son las filas que hay en la grilla y newRow es la que se agrega
        return !gridRows.some((row, idx) => idx !== editingRowIndex && row[key] === newRow[key]);
      };
-  const handleFormSubmit = (values: FormValues, { setSubmitting }: FormikHelpers<FormValues>) => {//values son los de la fila que se edita o agrega
-    const newRow: GridRowType = {}; //para mapear los valores del formulario a una fila
-    const typeValues= ['number','string','rut','sin','boolean','money'];
+  const handleFormSubmit = (values: FormValuesDFType, { setSubmitting }: FormikHelpers<FormValuesDFType>) => {//values son los de la fila que se edita o agrega
+    const newRow: GridRowDFType = {}; //para mapear los valores del formulario a una fila
+    const typeValues= ['number','string','rut','sin','money'];
+    //const typeValues=['string','number'];
+    console.log('en FormGrid handleFormSubmit isAdding',isAdding);
     if (isAdding) {   
       for (const column of columns) {//convierte los datos del formulario values en newRow (de la grilla) 
         const value = values[column.name.toLowerCase()];
@@ -200,12 +210,13 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
              return; // No continuar si se encuentra un valor duplicado
            }
       }
-      const newRows = [...gridRows, values as GridRowType];
+      const newRows = [...gridRows, values as GridRowDFType];
       setGridRows(newRows);
+      console.log('en FormGrid handleFormSubmit newRows',newRows);
       setFieldValue(name, newRows);
     } else if (editingRowIndex !== null) {
       const newRows = [...gridRows];
-      newRows[editingRowIndex] = values as GridRowType;
+      newRows[editingRowIndex] = values as GridRowDFType;
       setGridRows(newRows);
       setFieldValue(name, newRows);
       setEditingRowIndex(null);
@@ -225,8 +236,7 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
     }
   return (
     <>
-    {/* {console.log('en render gridRows',gridRows)} */}
-      <div className={`rounded-lg ${padding} ${marginBottom} ${borderColor} ${borderWidth}`} 
+      {/* <div className={`rounded-lg ${padding} ${marginBottom} ${borderColor} ${borderWidth}`} 
                style={{ 
                 width: gridWidth,
                 backgroundColor: themeStyles?.backgroundColor,
@@ -253,12 +263,12 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
         />
         {isModalOpen && editFormConfig && (
         <EditForm isOpen={isModalOpen} onClose={() => reLoad()  } theme={props.theme} onSubmit={handleFormSubmit} 
-          initialValues={editingRowIndex !== null ? gridRows[editingRowIndex] : {}} 
+          row={editingRowIndex !== null ? gridRows[editingRowIndex] : {}} 
           requirePassword={props.field.requirePassword} formConfig={editFormConfig} // Pasa el editFormConfig al componente de edición
-          spFetchSaveGrid={spFetchSaveGrid} isAdding={isAdding}
+          spFetchSaveGrid={spFetchSaveGrid} isAdding={isAdding} fields={fields} rows={rows} setRows={setRows} columns={columns}
         />
       )} 
-      </div>
+      </div> */}
     </>
   );  
 }  

@@ -1,13 +1,14 @@
-import { GridColumnType, GridRowType } from '@/types/interfaces';
+//import { GridColumnType, GridRowType } from '@/types/interfaces';
 import { formatRut } from '@/utils/formatRut';
 import { formatMoney } from '@/utils/formatMoney';
 import {formatSIN}  from '@/utils/formatSIN';
 import FormGridActions from './FormGridActions';
+import { GridColumnDFType, GridRowDFType } from '@/types/interfaceDF';
 
 
 interface GridRowProps {
-  row: GridRowType;
-  columns: GridColumnType[];
+  row: GridRowDFType;
+  columns: GridColumnDFType[];
   columnWidths?: string[];
   onEdit: () => void;
   onDelete: () => void;
@@ -18,7 +19,7 @@ interface GridRowProps {
 
 const GridRowComponent: React.FC<GridRowProps> = ({ row, columns , actions, objectGrid, columnWidths = [], onEdit, onDelete, label }) => {
   //console.log('en GridRowComponent', actions )
-  const renderCellValue = (column: GridColumnType, value: any) => {
+  const renderCellValue = (column: GridColumnDFType, value: any) => {
     switch (column.typeColumn?.toLowerCase()) {
       case 'rut':
         return formatRut(value as string); // Formatea el RUT
@@ -28,7 +29,6 @@ const GridRowComponent: React.FC<GridRowProps> = ({ row, columns , actions, obje
         return formatMoney(value as number); // Formatea valores monetarios
       case 'number':
         return value?.toString(); // Convierte un número a string si es necesario
-
       case 'boolean':
         return value ? 'Sí' : 'No'; // Manejo de valores booleanos
 
@@ -41,7 +41,7 @@ const GridRowComponent: React.FC<GridRowProps> = ({ row, columns , actions, obje
   };
   return (
     <tr className="border-t" style={{ height: '40px' }}>
-      {columns?.map((column: GridColumnType, colIndex: number) => 
+      {columns?.map((column: GridColumnDFType, colIndex: number) => 
         column.visible ? (
           <td
             key={colIndex}

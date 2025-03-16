@@ -1,8 +1,8 @@
 import React from 'react';
-import { GridColumnType, GridRowType } from '@/types/interfaces';
+import { GridColumnDFType } from '@/types/interfaceDF';
 
 interface GridHeaderProps {
-  columns: GridColumnType[];
+  columns: GridColumnDFType[];
   columnWidths?: string[];
   actions: ('add' | 'edit' | 'delete')[];
   label: string;
@@ -17,7 +17,7 @@ const FormGridHeader: React.FC<GridHeaderProps> = ({ columns, columnWidths = [],
   return (
     <thead>
       <tr>
-        {columns?.map((column: GridColumnType, index: number) =>
+        {columns?.map((column: GridColumnDFType, index: number) =>
           column.visible ? (
             <th
               key={index}
@@ -27,7 +27,7 @@ const FormGridHeader: React.FC<GridHeaderProps> = ({ columns, columnWidths = [],
             </th>
           ) : null
         )}
-        {actions && actions.length > 0 && <th>Actions</th>}
+        {actions && actions.length > 0 && <th>Acciones</th>}
       </tr>
     </thead>
   );

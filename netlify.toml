@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NEXT_PUBLIC_SYSTEM = "1"
+  NEXT_PUBLIC_URL = "https://voltadmin.netlify.app"
+  NEXT_PUBLIC_AVATAR_BASE_URL = "https://voltadmin.netlify.app"
+  NEXT_PUBLIC_LOCALE = "es"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 

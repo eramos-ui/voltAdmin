@@ -1,10 +1,10 @@
 import React from 'react';
 import { GridColumnType, GridRowType, FormConfigType } from '@/types/interfaces';
+import GridRowComponent from '@/components/dynamicForm/GridRowComponent';
 //import { GridHeader } from './GridHeader';
-import FormGridHeader from '@/components/formComponents/FormGridHeader';
-
-import GridRowComponent from '@/components/formComponents/GridRowComponent';
-//import GridHeader from './GridHeader';
+//import FormGridHeader from '@/components/formComponents/FormGridHeader';
+// import GridRowComponent from '@/components/formComponents/GridRowComponent';
+import FormGridHeader from '@/components/dynamicForm/FormGridHeader';
 //import GridRowComponent from './GridRowComponent';
 
 interface GridContainerProps {
@@ -19,11 +19,12 @@ interface GridContainerProps {
   objectGrid?:string;//para el tooltips de los botones de actions
 }
 
-const GridContainer: React.FC<GridContainerProps> = ({ columns, rows, actions, onEdit, onDelete, columnWidths, editFormConfig, label, objectGrid }) => {
+const GridContainer: React.FC<GridContainerProps> = ({ columns, rows, actions, onEdit, 
+    onDelete, columnWidths, editFormConfig, label, objectGrid }) => {
     //console.log('en GridContainer rows ***************',rows)
     return (
     <table className="min-w-full border-collapse">
-      <FormGridHeader 
+      <FormGridHeader
       columns={columns} columnWidths={columnWidths} actions={actions} label={label} 
       />
       <tbody>

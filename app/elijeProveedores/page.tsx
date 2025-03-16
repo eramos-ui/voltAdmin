@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from "yup";;
-import {  loadDataActivityWithFilesAndEmails, saveProveedorToken, sendingEmails } from '@/utils/apiHelpers';
+import {  loadDataActivityWithFilesAndEmails, sendingEmails } from '@/utils/apiHelpers';
 import { ActivityEmailFilesType,  OptionsSelect } from '@/types/interfaces';
 import { LoadingIndicator } from '../../components/general/LoadingIndicator';
 import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';

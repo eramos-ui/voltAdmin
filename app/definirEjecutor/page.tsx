@@ -57,7 +57,7 @@ const DefineEjecutorPage = () => {
      useEffect(() => { 
         if (initialValues.idProjectActivity && initialValues.idProjectActivity>0 ){
             setLoading(false);
-            console.log('use Effect initialValues',initialValues);
+            // console.log('use Effect initialValues',initialValues);
         }
 
      },[initialValues.idProjectActivity]);

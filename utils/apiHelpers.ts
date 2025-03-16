@@ -4,7 +4,7 @@ import { replacePlaceholders } from './replacePlaceholders';
 
 const dominio= process.env.NEXT_PUBLIC_URL;
 //para upload de File
-export const saveFormData = async (
+export const saveFormData = async (//updateUsuario por ejemplo
     storedProcedure: string,
     parameters: FormValues,
     formatRut: (rut: string) => string,
@@ -25,12 +25,14 @@ export const saveFormData = async (
   
       if (!response.ok) {
         const error = await response.json();
-        return { success: false, error: error.message || response.statusText };
+        console.error("Error al consumir la API (0):", error);
+        return { success: false, error: error || response.statusText };//response.statusText es 'bad request'
       }
   
       const result = await response.json();
       return { success: true, result };
     } catch (error) {
+      console.error("Error al consumir la API (1):", error);
       return { success: false, error: error};
     }
   };
