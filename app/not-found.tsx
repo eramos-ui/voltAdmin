@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useSearchParams, usePathname } from "next/navigation";
 
 
@@ -23,12 +24,12 @@ export default function NotFoundPage() {
           Contacta a la empresa si necesitas un nuevo enlace.
         </p>
       ) : (
-        <a
+        <Link
           href="/"
           className="mt-6 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
           🔙 Volver al inicio
-        </a>
+        </Link>
       )}
       </div>
     );

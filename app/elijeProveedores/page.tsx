@@ -136,7 +136,7 @@ const ElijeProveedoresPage = () => {
     <>  {/* { console.log('JSX AdminActivity initialValues',loading,proveedoresOptions) } */}
      <div className="p-4">
        <p className="text-3xl font-bold text-center" > Define proveedores de la actividad {initialValues.numActividad}</p>
-       <p  className="text-2xl font-bold text-center"> Proceso: (N°{initialValues.idProject}) "{initialValues.projectName}"</p>
+       <p  className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`}</p>
        <Formik initialValues={initialValues} validationSchema={validationSchema} enableReinitialize  onSubmit={handleSubmit} >
          {({ values, errors, touched, setFieldValue }) => {//, handleSubmit ejecución manual de handleSubmit
           // Definimos las funciones dentro del renderizado de Formik
@@ -167,7 +167,7 @@ const ElijeProveedoresPage = () => {
             if (proveedorEdit>0 && placeholders && values.emailTemplate && values.emailTemplate.length > 0) {
               setEditableBody(replacePlaceholders(values.emailTemplate[0].bodyTemplate, placeholders));
             }
-          },[proveedorEdit, placeholders, values.emailTemplate]);
+          },[ values.emailTemplate]);
           
          return (
           <>

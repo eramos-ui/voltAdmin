@@ -218,13 +218,16 @@ const SaveCompleteButton = ({ handleSaveComplete }: { handleSaveComplete: (value
              const confirmed = window.confirm("¿Está seguro de que desea cancelar y limpiar el formulario?" );
              if (confirmed) { resetForm(); } // Limpia el formulario si el usuario confirma
            };  
-           useEffect(()=>{
-               if ( selectedRow ){
+           
+           // Este useEffect debe estar fuera del renderizado condicional
+           useEffect(() => {
+               if (selectedRow) {
                    const currentActivity = selectedRow["NumActividad"].toString();
                    const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
-                   setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
+                   setNextActivityToAdd(getNextActivityId(currentActivity, existingIds));
                }
-             },[selectedRow])
+           }, [selectedRow, values.activities]);
+           
            const handleEdit = (row: any) => {  setEditingRow(row); setIsEditing(true); setSelectedRow(row) }; 
            const handleAdd = () => {
              if (!selectedRow) {
