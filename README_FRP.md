@@ -58,7 +58,7 @@ Se ha creado un archivo `start.bat` que inicia todos los componentes necesarios:
 ```batch
 @echo off
 echo Iniciando servidor FRP...
-start "FRP Server" cmd /k "cd C:\frp && .\frps.exe -c D:\nextProject\voltAdmin\scripts\frp.ini"
+start "FRP Server" cmd /k "cd C:\frp && C:\frp\frps.exe -c D:\nextProject\voltAdmin\scripts\frp.ini"
 
 echo Iniciando cliente FRP...
 start "FRP Client" cmd /k "cd D:\nextProject\voltAdmin && npm run frp"
