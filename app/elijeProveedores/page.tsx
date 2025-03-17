@@ -54,7 +54,7 @@ const ElijeProveedoresPage = () => {
       if (idTask && idTask>0){//revisa si al abrir existe idTask. Esto indica completar proyecto
         fetchData(idTask);
       }
-     }, []);
+     }, [idTask, session?.user.id]);
      useEffect(() => {
         if (initialValues.idProjectActivity && initialValues.idProjectActivity>0 ){
             setLoading(false);
@@ -81,7 +81,16 @@ const ElijeProveedoresPage = () => {
        confirmed = window.confirm(String.fromCodePoint(0x26A0) +"¿Está seguro de cerrar el formulario y perder lo modificado?" );
        if (confirmed)  router.back();
       };
-     if ( loading ){ return <LoadingIndicator message={'cargando'} />;   }
+     
+     // Calculamos valores y renderizamos el loading fuera del return
+     if (loading) {
+       return <LoadingIndicator message={'cargando'} />;
+     }
+     
+     if (sendingEmail) {
+       return <LoadingIndicator message={'enviando correos'} />;
+     }
+     
      const handlePlaceholderChange=( values:any,val:any) =>{ // 📌 Función para actualizar los valores de los placeholders
       const id=Number(val);
       if (values.proveedores && id !== proveedorEdit){
@@ -122,17 +131,15 @@ const ElijeProveedoresPage = () => {
       const handleSubmit = (values: any) => {//no se ejecuta
         console.log("Formulario enviado con valores:", values);
       };
-      if (sendingEmail){
-        return <LoadingIndicator message={'enviando correos'} />;
-      }
+      
   return(
     <>  {/* { console.log('JSX AdminActivity initialValues',loading,proveedoresOptions) } */}
-     { !loading &&
      <div className="p-4">
        <p className="text-3xl font-bold text-center" > Define proveedores de la actividad {initialValues.numActividad}</p>
        <p  className="text-2xl font-bold text-center"> Proceso: (N°{initialValues.idProject}) "{initialValues.projectName}"</p>
        <Formik initialValues={initialValues} validationSchema={validationSchema} enableReinitialize  onSubmit={handleSubmit} >
          {({ values, errors, touched, setFieldValue }) => {//, handleSubmit ejecución manual de handleSubmit
+          // Definimos las funciones dentro del renderizado de Formik
           const handleSaveEditValue=() =>{
             if (values.proveedores){
               const newProveedores= values.proveedores.map( proveedor => proveedor.id === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
@@ -141,10 +148,8 @@ const ElijeProveedoresPage = () => {
                 setTimeout(() => { window.confirm(String.fromCodePoint(0x2705)+"Modificaciones guardadas"); window.focus();}, 0);
               }           
             }
-         }
-         useEffect(()=>{
-              if ( proveedorEdit>0 ){ if (placeholders ){ setEditableBody(replacePlaceholders(values.emailTemplate[0].bodyTemplate, placeholders)); } }
-          },[proveedorEdit])
+          }
+          
           const handleExitEditValue=() =>{ 
             if (values.proveedores){
               const newProveedores= values.proveedores.map( proveedor => proveedor.id === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
@@ -156,6 +161,14 @@ const ElijeProveedoresPage = () => {
             }
             setProveedorEdit(0);
           }
+          
+          // Usamos useEffect para actualizar el editableBody cuando cambia el proveedorEdit
+          useEffect(()=>{
+            if (proveedorEdit>0 && placeholders && values.emailTemplate && values.emailTemplate.length > 0) {
+              setEditableBody(replacePlaceholders(values.emailTemplate[0].bodyTemplate, placeholders));
+            }
+          },[proveedorEdit, placeholders, values.emailTemplate]);
+          
          return (
           <>
             <Form id="emailForm" >
@@ -263,7 +276,7 @@ const ElijeProveedoresPage = () => {
         />
        </div>
      </div>
-     }
+     {/* Fin del renderizado condicional */}
     </>
     );
 };

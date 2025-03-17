@@ -88,21 +88,32 @@ const NewProjectPage = () => {
  const cargaRegiones = async () => setRegiones( await loadRegiones());
  const cargaComunas =async () => setComunasPorRegion(await loadComunas());
  useEffect(() => {
-    const fetchData= async (idTask:number) => {
-    try{
-      if (session?.user.id)  await loadDataProject(idTask,session.user.id,setInitialValues,initialValues);
-    }catch (err){
-      console.log('error', err);
-    }
-  }  
-  setLoading(true);
-  if (idTask && idTask>0){//revisa si al abrir existe idTask. Esto indica completar proyecto
-    fetchData(idTask);  
-  } 
-  cargaRegiones();
-  cargaComunas();
-  setLoading(false);
- }, []); 
+    const fetchData = async (idTask:number) => {
+      try {
+        if (session?.user.id) {
+          await loadDataProject(idTask, session.user.id, setInitialValues, initialValues);
+        }
+      } catch (err) {
+        console.log('error', err);
+      }
+    };
+    
+    const init = async () => {
+      setLoading(true);
+      
+      if (idTask && idTask > 0) {
+        // Revisa si al abrir existe idTask. Esto indica completar proyecto
+        await fetchData(idTask);  
+      } 
+      
+      await cargaRegiones();
+      await cargaComunas();
+      
+      setLoading(false);
+    };
+    
+    init();
+ }, [idTask, session?.user.id, initialValues]); 
  const handleFileUpload = async (file: File | null) =>{
     if (!file) {
       setError("No se seleccionó ningún archivo");
@@ -177,139 +188,147 @@ const SaveCompleteButton = ({ handleSaveComplete }: { handleSaveComplete: (value
     router.push('/');
  }
  const handleRowSelection = (row: any | null) => {//de las activities
-  setSelectedRow(row);
+    setSelectedRow(row);
   };
- if ( loading ){  return( <p>Cargando...</p>);}
- if (error) return <p>{error}</p>;
- return (
+  
+  // Renderizado condicional para loading y error
+  if (loading) {
+    return <p>Cargando...</p>;
+  }
+  
+  if (error) {
+    return <p>{error}</p>;
+  }
+  
+  return (
     <>
-    {/* { console.log('JSX CreateProject initialValues',initialValues ) } */}
-     { !loading &&
-     <div className="p-4">
-       <h1 className="text-3xl font-bold text-center">{(idTask && idTask>0)?'Completar ':'Crear un nuevo '}  proyecto fotovoltáico ubicado en {(menuId ===5 )?'Piso':'Techo'}</h1>
-       <Formik
-         initialValues={initialValues}
-         validationSchema={validationSchema}
-         enableReinitialize
-         onSubmit={(values) => {  console.log('onSubmit',values);   }}         //updateNewProject(values,Number(session?.user.id),'completed'); router.push('/');
-       >
-         {({ values, errors, touched, setFieldValue, resetForm }) => {
-          const handleCancel = () => {
-            const confirmed = window.confirm("¿Está seguro de que desea cancelar y limpiar el formulario?" );
-            if (confirmed) { resetForm(); } // Limpia el formulario si el usuario confirma
-          };  
-          useEffect(()=>{
-              if ( selectedRow ){
-                  const currentActivity = selectedRow["NumActividad"].toString();
-                  const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
-                  setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
-              }
-            },[selectedRow])
-          const handleEdit = (row: any) => {  setEditingRow(row); setIsEditing(true); setSelectedRow(row) }; 
-          const handleAdd = () => {
-            if (!selectedRow) {
-              alert('Debe seleccionar la actividad previa a la que desea agregar.');
-              return;
-            }
-            const currentActivity = selectedRow["NumActividad"].toString();
-            const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); // Obtener todos los IDs existentes en la grilla
-            const newActivity = getNextActivityId(currentActivity,existingIds);
-            setNextActivity(newActivity);
-            setIsAdding(true);
-         };
-          const handleDelete = (row: any) => { //console.log('row en handleDelete',row);
-            setEditingRow(row);
-            const actividadId = row["NumActividad"];
-            const hasChildren = values.activities.some(item =>
-              item["NumActividad"].toString().startsWith(`${actividadId}.`)
-            );
-            if (hasChildren) {
-              alert(`No puedes eliminar la actividad "${actividadId} ${row.Actividad}" porque tiene actividades dependientes.`);
-              return;
-            }
-            if (window.confirm(`¿Eliminar la actividad "${actividadId} ${row.Actividad}"?`)) {
-              const newRows = values.activities.filter((item) => item["NumActividad"] !== actividadId);
-              setFieldValue("activities", newRows); // Actualizar el array en Formik
-            }
-          };
-          const handleSave = (updatedRow: GridRowType) => {//    console.log('en handleSave',updatedRow);
-            if (isAdding) {
-              const newRows = values.activities ? sortGridByActivityId([...values.activities, updatedRow]) : [updatedRow];
-              setFieldValue('activities',newRows);
-            } else if (isEditing) {
-              const updatedRows = values.activities?.map(row =>
-                row["NumActividad"] === editingRow?.["NumActividad"] ? updatedRow : row
-              );
-              setFieldValue('activities',updatedRows);
-            }
-            setIsAdding(false);
-            setIsEditing(false);
-            setEditingRow(null);
-         };
-         return ( 
-           <Form>
-             <ProjectDetailsForm errors={errors} touched={touched} OptionsProjectType={OptionsProjectType} optionsLandType={optionsLandType} optionsStoneType={optionsStoneType} 
-               optionsConectionPointType={optionsConectionPointType} optionsCertificadoAccesoType={optionsCertificadoAccesoType} optionsOrientationType={optionsOrientationType}
-               optionsCeilingElementType={optionsCeilingElementType} techoOptions={techoOptions} 
-             />
-             { regiones &&
-                 <LocationForm regiones={regiones} comunas={comunasPorRegion} errors={errors} touched={touched} />
-             } 
-             <div className="mb-4 flex items-center space-x-4" >
-                 <Field name='kmlFile' component={CustomFileInput} label="Archivo kml o kmz" accept=".kml,.kmz" className="100%"
-                  value= { selectedKmlFile } useStandaloneForm={false} showUploadButton={false} 
-                  onUploadSuccess={(file: File | null) => {setSelectedKmlFile( file ); handleFileUpload( file); setFieldValue('kmlFile',file)} } 
-                 /> 
-                  { errors.kmlFile && touched.kmlFile && (<CustomLabel label={errors.kmlFile} fontColor={'#EF4444'}/>) } 
-                  { selectedKmlFile && (<span className="ml-0 mt-2 text-blue-600 font-medium truncate max-w-xs">📄 {selectedKmlFile.name}</span>) }
-                    <CustomButton onClick={() => {openMapModal(selectedKmlFile); setIsModalOpenKML(true)}} buttonStyle="primary" htmlType="button" label="Abrir mapa" size="small"
-                    icon={<FontAwesomeIcon icon={faMapLocation} size="lg" color="white" />} style={{ marginTop:'10px' }} disabled={ !selectedKmlFile}
-                    />
-                    <CustomModal isOpen={isModalOpenKML} onClose={() => {setIsModalOpenKML(false);}} title="Mapa" height= "160vh" width="1000px"
-                    >
-                      {selectedKmlFile && (<MapComponent  geoJSONData={ geoJSONDataL} />)} 
-                    </CustomModal>
-             </div>
-             { ( idTask === 0 ) &&  <div className="mb-4 flex items-center space-x-4" > <ActivityUploadSection /> </div> }{/* setColumns={setColumnsActivities} setFormColumns={setFormColumns}  */}{/* setRows={setRows} rows={rows} */}
-             { values.activities &&  values.activities.length > 1 &&
-              <div style={{ marginLeft:"0rem"}}  >
-              <CustomGrid title="Actividades actuales" columns={columnsActivities} data={values.activities} actions={["add", "edit", "delete"]} fontSize="13px"
-                  labelButtomActions={[(selectedRow)?`Agregar actividad ${nextActivityToAdd}`:'Agregar actividad' , "", ""]}
-                  actionsTooltips={[`Agregar actividad que sigue a la seleccionada (${nextActivityToAdd})`, "Editar esta actividad", "Eliminar esta actividad"]}
-                  onAdd={ handleAdd } onEdit={handleEdit} onDelete={ handleDelete} 
-                  gridWidth="95%" rowsToShow={7} exportable={true} borderVertical={true} rowHeight="30px" selectable={true} onRowSelect={handleRowSelection}                 
-                />
-                </div>
+      <div className="p-4">
+        <h1 className="text-3xl font-bold text-center">
+          {(idTask && idTask>0) ? 'Completar ' : 'Crear un nuevo '}  
+          proyecto fotovoltáico ubicado en {(menuId === 5) ? 'Piso' : 'Techo'}
+        </h1>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          enableReinitialize
+          onSubmit={(values) => {  console.log('onSubmit',values);   }}         //updateNewProject(values,Number(session?.user.id),'completed'); router.push('/');
+        >
+          {({ values, errors, touched, setFieldValue, resetForm }) => {
+           const handleCancel = () => {
+             const confirmed = window.confirm("¿Está seguro de que desea cancelar y limpiar el formulario?" );
+             if (confirmed) { resetForm(); } // Limpia el formulario si el usuario confirma
+           };  
+           useEffect(()=>{
+               if ( selectedRow ){
+                   const currentActivity = selectedRow["NumActividad"].toString();
+                   const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
+                   setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
+               }
+             },[selectedRow])
+           const handleEdit = (row: any) => {  setEditingRow(row); setIsEditing(true); setSelectedRow(row) }; 
+           const handleAdd = () => {
+             if (!selectedRow) {
+               alert('Debe seleccionar la actividad previa a la que desea agregar.');
+               return;
              }
-              {(isEditing || isAdding) && ( /* 📌 Modal para Agregar o Editar Actividades */
-               <div style={{display: "flex",justifyContent: "center",alignItems: "center",flexDirection: "column",}}>
-                <CustomModal isOpen={isEditing || isAdding} onClose={handleCloseModal} height='70vh' width="800px"
-                  title={isAdding ?`Agregar actividad ${nextActivity}`:`Modificar actividad ${editingRow?.["NumActividad"]}`}
-                > 
-                  <DynamicForm columns={activitiesColumnsDynamic} initialValues={editingRow || {"NumActividad": nextActivity, Actividad: "", Presupuesto: "", FechaInicio: "",
-                            FechaTermino: "", }} onSave={handleSave} onCancel={handleCancel} setIsDirty={setIsDirty}   />
-                </CustomModal>
-               </div>
-              )}
-              <div className="flex justify-end space-x-3 mr-10">
-              {( idTask > 0 ) &&  <CustomButton buttonStyle="secondary" size='small' htmlType='button' tooltipContent='botar el proyecto' tooltipPosition='bottom' 
-                    onClick={ handleAbandon } icon={<FontAwesomeIcon icon={faTrash} size="lg" color="white" />} label='Abandonar proyecto'  
-                  />  }
-              {( idTask === 0 ) && <CustomButton buttonStyle="secondary" size='small' htmlType='button' tooltipContent='Limpiar el formulario' 
-                  tooltipPosition='bottom' onClick={ handleCancel } icon={<FontAwesomeIcon icon={faEraser} size="lg" color="white" />} label='Cancelar' 
-                /> }
-                <SaveDraftButton handleSaveDraft={handleSaveDraft} />
-                <SaveCompleteButton handleSaveComplete={handleSaveComplete} />
+             const currentActivity = selectedRow["NumActividad"].toString();
+             const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); // Obtener todos los IDs existentes en la grilla
+             const newActivity = getNextActivityId(currentActivity,existingIds);
+             setNextActivity(newActivity);
+             setIsAdding(true);
+          };
+           const handleDelete = (row: any) => { //console.log('row en handleDelete',row);
+             setEditingRow(row);
+             const actividadId = row["NumActividad"];
+             const hasChildren = values.activities.some(item =>
+               item["NumActividad"].toString().startsWith(`${actividadId}.`)
+             );
+             if (hasChildren) {
+               alert(`No puedes eliminar la actividad "${actividadId} ${row.Actividad}" porque tiene actividades dependientes.`);
+               return;
+             }
+             if (window.confirm(`¿Eliminar la actividad "${actividadId} ${row.Actividad}"?`)) {
+               const newRows = values.activities.filter((item) => item["NumActividad"] !== actividadId);
+               setFieldValue("activities", newRows); // Actualizar el array en Formik
+             }
+           };
+           const handleSave = (updatedRow: GridRowType) => {//    console.log('en handleSave',updatedRow);
+             if (isAdding) {
+               const newRows = values.activities ? sortGridByActivityId([...values.activities, updatedRow]) : [updatedRow];
+               setFieldValue('activities',newRows);
+             } else if (isEditing) {
+               const updatedRows = values.activities?.map(row =>
+                 row["NumActividad"] === editingRow?.["NumActividad"] ? updatedRow : row
+               );
+               setFieldValue('activities',updatedRows);
+             }
+             setIsAdding(false);
+             setIsEditing(false);
+             setEditingRow(null);
+          };
+          return ( 
+            <Form>
+              <ProjectDetailsForm errors={errors} touched={touched} OptionsProjectType={OptionsProjectType} optionsLandType={optionsLandType} optionsStoneType={optionsStoneType} 
+                optionsConectionPointType={optionsConectionPointType} optionsCertificadoAccesoType={optionsCertificadoAccesoType} optionsOrientationType={optionsOrientationType}
+                optionsCeilingElementType={optionsCeilingElementType} techoOptions={techoOptions} 
+              />
+              { regiones &&
+                  <LocationForm regiones={regiones} comunas={comunasPorRegion} errors={errors} touched={touched} />
+              } 
+              <div className="mb-4 flex items-center space-x-4" >
+                  <Field name='kmlFile' component={CustomFileInput} label="Archivo kml o kmz" accept=".kml,.kmz" className="100%"
+                   value= { selectedKmlFile } useStandaloneForm={false} showUploadButton={false} 
+                   onUploadSuccess={(file: File | null) => {setSelectedKmlFile( file ); handleFileUpload( file); setFieldValue('kmlFile',file)} } 
+                  /> 
+                   { errors.kmlFile && touched.kmlFile && (<CustomLabel label={errors.kmlFile} fontColor={'#EF4444'}/>) } 
+                   { selectedKmlFile && (<span className="ml-0 mt-2 text-blue-600 font-medium truncate max-w-xs">📄 {selectedKmlFile.name}</span>) }
+                     <CustomButton onClick={() => {openMapModal(selectedKmlFile); setIsModalOpenKML(true)}} buttonStyle="primary" htmlType="button" label="Abrir mapa" size="small"
+                     icon={<FontAwesomeIcon icon={faMapLocation} size="lg" color="white" />} style={{ marginTop:'10px' }} disabled={ !selectedKmlFile}
+                     />
+                     <CustomModal isOpen={isModalOpenKML} onClose={() => {setIsModalOpenKML(false);}} title="Mapa" height= "160vh" width="1000px"
+                     >
+                       {selectedKmlFile && (<MapComponent  geoJSONData={ geoJSONDataL} />)} 
+                     </CustomModal>
               </div>
-           </Form>
-           )
-         }}
-       </Formik>
-       <CustomButton buttonStyle="primary" size="small" htmlType="button" label="Volver al página inicial" 
-          style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit } 
-       />
-     </div>     
-     }
+              { ( idTask === 0 ) &&  <div className="mb-4 flex items-center space-x-4" > <ActivityUploadSection /> </div> }{/* setColumns={setColumnsActivities} setFormColumns={setFormColumns}  */}{/* setRows={setRows} rows={rows} */}
+              { values.activities &&  values.activities.length > 1 &&
+               <div style={{ marginLeft:"0rem"}}  >
+               <CustomGrid title="Actividades actuales" columns={columnsActivities} data={values.activities} actions={["add", "edit", "delete"]} fontSize="13px"
+                   labelButtomActions={[(selectedRow)?`Agregar actividad ${nextActivityToAdd}`:'Agregar actividad' , "", ""]}
+                   actionsTooltips={[`Agregar actividad que sigue a la seleccionada (${nextActivityToAdd})`, "Editar esta actividad", "Eliminar esta actividad"]}
+                   onAdd={ handleAdd } onEdit={handleEdit} onDelete={ handleDelete} 
+                   gridWidth="95%" rowsToShow={7} exportable={true} borderVertical={true} rowHeight="30px" selectable={true} onRowSelect={handleRowSelection}                 
+                 />
+                 </div>
+              }
+               {(isEditing || isAdding) && ( /* 📌 Modal para Agregar o Editar Actividades */
+                <div style={{display: "flex",justifyContent: "center",alignItems: "center",flexDirection: "column",}}>
+                 <CustomModal isOpen={isEditing || isAdding} onClose={handleCloseModal} height='70vh' width="800px"
+                   title={isAdding ?`Agregar actividad ${nextActivity}`:`Modificar actividad ${editingRow?.["NumActividad"]}`}
+                 > 
+                   <DynamicForm columns={activitiesColumnsDynamic} initialValues={editingRow || {"NumActividad": nextActivity, Actividad: "", Presupuesto: "", FechaInicio: "",
+                             FechaTermino: "", }} onSave={handleSave} onCancel={handleCancel} setIsDirty={setIsDirty}   />
+                 </CustomModal>
+                </div>
+               )}
+               <div className="flex justify-end space-x-3 mr-10">
+               {( idTask > 0 ) &&  <CustomButton buttonStyle="secondary" size='small' htmlType='button' tooltipContent='botar el proyecto' tooltipPosition='bottom' 
+                     onClick={ handleAbandon } icon={<FontAwesomeIcon icon={faTrash} size="lg" color="white" />} label='Abandonar proyecto'  
+                   />  }
+               {( idTask === 0 ) && <CustomButton buttonStyle="secondary" size='small' htmlType='button' tooltipContent='Limpiar el formulario' 
+                   tooltipPosition='bottom' onClick={ handleCancel } icon={<FontAwesomeIcon icon={faEraser} size="lg" color="white" />} label='Cancelar' 
+                 /> }
+                 <SaveDraftButton handleSaveDraft={handleSaveDraft} />
+                 <SaveCompleteButton handleSaveComplete={handleSaveComplete} />
+               </div>
+            </Form>
+            )
+          }}
+        </Formik>
+        <CustomButton buttonStyle="primary" size="small" htmlType="button" label="Volver al página inicial" 
+           style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit } 
+        />
+      </div>     
     </>
    );
 };
