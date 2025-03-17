@@ -56,7 +56,7 @@ const AdminActivityPage = () => {
       if (idTask && idTask>0){//revisa si al abrir existe idTask. Esto indica completar proyecto
         fetchData(idTask);  
       }     
-     }, [idTask]); 
+     }, [idTask, session?.user.id]); 
      useEffect(() =>{
         if (session)  setUserEmail(session?.user.email);
      },[session]) 
@@ -84,7 +84,7 @@ const AdminActivityPage = () => {
      { !loading &&
      <div className="p-4">
        <p className="text-3xl font-bold text-center" > Define responsable y forma de ejecución de la actividad {initialValues.numActividad}</p>
-       <p  className="text-2xl font-bold text-center"> `Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`</p>
+       <p  className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`}</p>
        <Formik
          initialValues={initialValues}
          validationSchema={validationSchema}
