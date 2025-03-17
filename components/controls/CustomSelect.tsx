@@ -50,55 +50,38 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   enabled=true,
   // dependentValue,
 }) => {
-  //console.log('en CustomSelect name',name);
-  // Si está en un contexto de Formik, utiliza useField y useFormikContext
-  //console.log('en CustomSelect',label,value);
-  const formik = name ? useFormikContext<FormikContextType<FormikValues>>() : null;
-  //const [field, meta] = useField(name);
-  const [ field, meta ]                       = name ? useField(name) : [{}, {}];
-  // const [ selectedInside, setSelectedInside ] = useState<string[] | string>();
-  const [selectedInside, setSelectedInside]   = useState<string | string[]>(field.value ?? (multiple ? [] : ""));
-  // const { values, setFieldValue }             = useFormikContext<any>(); 
-  //if (name ==='valid')  console.log('en CustomSelect meta',name,meta);
-  //const isFormikOnChange = onChange === formik?.handleChange;
-  // console.log("onChange viene de Formik:", isFormikOnChange);
-  // 📌 Obtener el valor actual correctamente (único o múltiple)
-  // const selectedValue = name
-  //   ? field.value || (multiple ? [] : "")
-  //   : value || (multiple ? [] : "");
-  const selectedValue = name ? field.value ?? (multiple ? [] : "") : value ?? (multiple ? [] : ""); 
-  // 📌 Manejador de cambio con soporte para selección múltiple con checkboxes
- useEffect(() => {
-  setSelectedInside(selectedValue);
- }, []);
-  // 📌 Manejador para selección múltiple (checkboxes)
-  /*
+  // Definimos valores por defecto para los hooks de Formik
+  const formikNoop = { handleChange: () => {}, setFieldValue: () => {} };
+  const fieldNoop = { value: undefined, onChange: () => {}, onBlur: () => {} };
+  const metaNoop = { touched: false, error: undefined };
+  
+  // Inicializamos useFormikContext y useField solo si name está definido
+  // Esto evita que los hooks se llamen condicionalmente
+  const formik = useFormikContext<FormikContextType<FormikValues>>() || formikNoop;
+  
+  // Para los campos de Formik, usamos useField solo si name está definido
+  const [field, meta] = name 
+    ? useField(name) 
+    : [fieldNoop, metaNoop];
+  
+  // El valor seleccionado depende de si estamos usando Formik o no
+  const selectedValue = name 
+    ? field.value ?? (multiple ? [] : "") 
+    : value ?? (multiple ? [] : "");
+  
+  // Estado local para el valor seleccionado
+  const [selectedInside, setSelectedInside] = useState<string | string[]>(
+    selectedValue || (multiple ? [] : "")
+  );
+  
+  // Actualizar el estado interno cuando cambia el valor externo
+  useEffect(() => {
+    setSelectedInside(selectedValue);
+  }, [selectedValue]);
+  
+  // Manejador para selección múltiple (checkboxes)
   const handleCheckboxChange = (checkedValue: string | number) => {
     let updatedValues: string[];
-    const valueStr = String(checkedValue);
-    console.log('handleCheckboxChange',selectedInside,valueStr);
-    if (Array.isArray(selectedInside)) {
-      if (selectedInside.includes(valueStr)) {
-        updatedValues = selectedInside.filter(val => val !== valueStr);
-      } else {
-        updatedValues = [...selectedInside, valueStr];
-      }
-    } else {
-      updatedValues = [valueStr];
-    }
-
-    setSelectedInside(updatedValues);
-    if (formik && name) {
-      formik.setFieldValue(name, updatedValues);
-    }
-    if (onChange && onChange !== formik?.handleChange) {
-      onChange(updatedValues);
-    }
-  };
-  */
-  const handleCheckboxChange = (checkedValue: string | number) => {
-    let updatedValues: string[];
-    //console.log('handleCheckboxChange',checkedValue);
     
     if (Array.isArray(selectedValue)) {
       if (selectedValue.includes(checkedValue)) {
@@ -110,29 +93,27 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       updatedValues = [String(checkedValue)];
     }
 
-    // 📌 Actualizar Formik si el componente está dentro de un formulario Formik
-    if (formik && name) {
-      // console.log('en CustomSelect handleCheckboxChange',name,updatedValues);
+    // Actualizar Formik si el componente está dentro de un formulario Formik
+    if (name) {
       formik.setFieldValue(name, updatedValues);
     }
     
-    // 📌 Notificar el cambio al padre (si `onChange` está definido)
-    if (onChange && onChange !== formik?.handleChange)  {
+    // Notificar el cambio al padre (si `onChange` está definido)
+    if (onChange && onChange !== formik.handleChange) {
       onChange(updatedValues);
     }
-    
   };
-  // 📌 Manejador de cambio para selección única
+  
+  // Manejador de cambio para selección única
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newValue = event.target.value;
-    //console.log('handleSelectChange',newValue);
+    
     setSelectedInside(newValue);
-    if (formik && name) {
+    
+    if (name) {
       formik.setFieldValue(name, newValue);
     }
-    // if (typeof onChange === "function") {
-    //   onChange(newValue);
-    // }
+    
     if (onChange) {
       onChange(newValue);
     }
@@ -158,11 +139,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         </div>
       ) : (
         <select
-          {...field} // 🔹 Pasa `onBlur` automáticamente que se ejecuta al salir del campo para validar en Formik
+          {...(name ? field : {})} // Solo pasamos field si name está definido
           id={id}
           name={name}
-          // value={selectedValue}
-          value={selectedInside}
+          value={selectedInside as string}
           onChange={handleSelectChange}
           className="custom-select"
           style={{ ...style, width }}
@@ -176,9 +156,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           ))}
         </select>
       )}
-           {/* 📌 Mostrar error si el campo ha sido tocado y tiene error */}
-        {/* {meta.touched && meta.error && ( <div className="error-message">{meta.error}</div> )} */}
-        {meta.error && <div className="error-message">{meta.error}</div>}    {/* dado que no fimcopma el meta.touched */}
+      {/* Mostrar error si hay un error en meta */}
+      {meta.error && <div className="error-message">{meta.error}</div>}
     </div>
   );
 };
