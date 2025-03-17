@@ -33,6 +33,20 @@ export interface CustomSelectProps {
   // dependentValue?: any;//dato para select anidado
 }
 
+// Hook personalizado que maneja de forma segura useField
+const useSafeField = (name?: string) => {
+  // Si no hay name, devolvemos valores por defecto
+  if (!name) {
+    return [
+      { value: undefined, onChange: () => {}, onBlur: () => {} },
+      { touched: false, error: undefined }
+    ];
+  }
+  
+  // Si hay name, usamos useField
+  return useField(name);
+};
+
 export const CustomSelect: React.FC<CustomSelectProps> = ({
   label,
   name,
@@ -50,19 +64,14 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   enabled=true,
   // dependentValue,
 }) => {
-  // Definimos valores por defecto para los hooks de Formik
-  const formikNoop = { handleChange: () => {}, setFieldValue: () => {} };
-  const fieldNoop = { value: undefined, onChange: () => {}, onBlur: () => {} };
-  const metaNoop = { touched: false, error: undefined };
+  // Usamos el hook personalizado que siempre se ejecuta
+  const [field, meta] = useSafeField(name);
   
-  // Inicializamos useFormikContext y useField solo si name está definido
-  // Esto evita que los hooks se llamen condicionalmente
-  const formik = useFormikContext<FormikContextType<FormikValues>>() || formikNoop;
-  
-  // Para los campos de Formik, usamos useField solo si name está definido
-  const [field, meta] = name 
-    ? useField(name) 
-    : [fieldNoop, metaNoop];
+  // Siempre inicializamos useFormikContext
+  const formik = useFormikContext<FormikContextType<FormikValues>>() || { 
+    handleChange: () => {}, 
+    setFieldValue: () => {} 
+  };
   
   // El valor seleccionado depende de si estamos usando Formik o no
   const selectedValue = name 

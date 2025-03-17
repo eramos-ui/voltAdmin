@@ -162,12 +162,15 @@ const ElijeProveedoresPage = () => {
             setProveedorEdit(0);
           }
           
-          // Usamos useEffect para actualizar el editableBody cuando cambia el proveedorEdit
-          useEffect(()=>{
-            if (proveedorEdit>0 && placeholders && values.emailTemplate && values.emailTemplate.length > 0) {
-              setEditableBody(replacePlaceholders(values.emailTemplate[0].bodyTemplate, placeholders));
+          // Actualizar editableBody cuando cambia el proveedorEdit o placeholders
+          // Este código se mueve fuera del useEffect para evitar el error
+          if (proveedorEdit > 0 && placeholders && values.emailTemplate && values.emailTemplate.length > 0) {
+            // Solo actualizamos si no tenemos ya valor o si cambió alguna dependencia
+            const newEditableBody = replacePlaceholders(values.emailTemplate[0].bodyTemplate, placeholders);
+            if (editableBody !== newEditableBody) {
+              setEditableBody(newEditableBody);
             }
-          },[ values.emailTemplate]);
+          }
           
          return (
           <>
