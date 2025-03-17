@@ -14,7 +14,7 @@ import { ModificarProveedorPage } from '@/components/cotizar/ModificarProveedor'
 const CotizarPage = () => {
   const router                                                  = useRouter();
   const searchParams                                            = useSearchParams();
-  const token                                                   = String(searchParams?.get("token"));
+  const token                                                   = searchParams?.get("token") || "";
   const [ loading, setLoading ]                                 = useState(true);
   const [ dataProjectActivity, setDataProjectActivity ]         = useState<ProjectActivityType>( );
   const [ mensaje, setMensaje ]                                 = useState<{email:string, asunto:string,cuerpo:string}>();
@@ -27,14 +27,13 @@ const CotizarPage = () => {
   const [ openModificar, setOpenModificar ]                     = useState<boolean>(false);
   const [ opcion, setOpcion ]                                   = useState<string>('cotizar');
   
-  if (!token) return notFound();;//404
-
   useEffect (()=>{
     if (dataProjectActivity && typeof dataProjectActivity === "object" && "mensaje" in dataProjectActivity) {
       setMensaje(dataProjectActivity.mensaje );
       setLoading(false);
     }      
   },[dataProjectActivity])
+  
   useEffect(()=>{
       const fetchData= async (token:string) => {
         try{
@@ -44,10 +43,14 @@ const CotizarPage = () => {
         }
       }
       setLoading(true);
-        if (token ){
-          fetchData(token);           
-        }     
-  },[]);
+      if (token){
+        fetchData(token);           
+      } else {
+        // Si no hay token, redirigir a 404
+        router.push('/404');
+      }    
+  },[token, router]);
+  
   const handleHelp=()=>{
       setOpenHelp(true);      
   }
@@ -102,101 +105,110 @@ const CotizarPage = () => {
   const handleChangeOpcion=( value: any)=>{
       setOpcion(value);
   }
-  if ( loading ){ return <LoadingIndicator message={'cargando'} />;   }
-  let costoEnPalabras=''; if (costo) costoEnPalabras= numeroATexto(costo);
-return (
-  <>
-    {
-      (dataProjectActivity && mensaje) &&
-    <div >
-      <div>
-        <CustomLabel label={`Página para ingresar su Cotización `} size='h1' />
-      </div>
-      {/* items-start space-x-4  */}
-      <div className="mb-3 flex space-x-4" style={{width:'70%'}} >
-        <CustomLabel label={`Bienvenido ${dataProjectActivity?.contacto}, email: ${mensaje.email}, Empresa: ${dataProjectActivity?.proveedor}`} size='normal+'  />
-        <CustomButton label='Modificar datos' size='small' buttonStyle= "secondary" tooltipContent='Para actualizar los datos de su empresa' onClick={handleModificarDatos}/>
-      </div>
-      <div style={{ padding: "10px", maxWidth: "1400px" }}>
-        <>
-          <CustomRadioGroup
-                label="Seleccione lo que quiere hacer "
-                size='h2'
-                options={[
-                  { id: "cotizar", label: "Cotizar" },
-                  { id: "aclarar", label: "Pedir una aclaración" },
-                ]}
-                width='100%'
-                orientation="horizontal"
-                defaultValue={opcion}
-                onChange={(value) => handleChangeOpcion(value)}
-          />
-        </>
-      </div>     
-      <div>
-        <CustomButton label='...' icon={<FontAwesomeIcon icon={faQuestion} size="lg" color="white" />} size='small' buttonStyle= "primary" 
-         tooltipContent='Instrucciones para el uso de la página' iconPosition="right" onClick={handleHelp}           
-        />
-      </div> 
-      { opcion==='cotizar' &&
-        <>
-          <div className="mb-3 flex items-start text-2xl space-x-4 ">
-              <CustomInput label={`Valor por ${dataProjectActivity?.actividad} ($)`} captionPosition='left' value={costo} required={true}
-                placeholder='Ingrese valor en pesos' type='number' width='180px'  onChange={(e) => handleValueChange( e.target.value)}
-                formatNumber={true} useDecimals={false}
-              /> 
-              { costo && costo>=0 &&
-                <CustomLabel size='normal' style={{ marginTop:20  }} label={`${costoEnPalabras} pesos.`} fontColor={'black'}/>
-              }
-          </div>  
-            
-          <div className="mb-3 flex items-start space-x-8">
-              <CustomInput label='Observación adicional que desee agregar' width="100%"  value={observacion} theme="light"
-                  onChange={(e) => handleObservacionChange( e.target.value)} maxLength={300} rows={2} multiline={true} placeholder='Aclaraciones sobre su oferta'
-              />  
-              <CustomFileInput
-                  label="Anexo opcional con detalle oferta (pdf)"
-                  width="100%"
-                  accept=".pdf"
-                  putFilenameInMessage={true}
-                  onUploadSuccess={(file: File | null) => {
-                      if (file) {
-                          console.log(`📂 Archivo subido :`, file.name);
-                          setAnexo( file.name);
-                          handleFileUpload(file);
-                      }
-                  }}
-              />
-          </div>        
-        </>
-      }
-      {opcion === 'aclarar' &&
-          <div className="mb-3" style={{width:700}}>
-            <CustomInput label='Ingrese su solicitud de aclaración ' width="100%"  value={aclaracion} theme="light"
-                onChange={(e) => handleAclaracionChange( e.target.value)} maxLength={300} rows={3} multiline={true} placeholder='Aclaraciones que solicita'
-            /> 
-          </div>
-      }
-      <div className="mt-3 flex items-start ">
-        <CustomButton buttonStyle="primary" size="small" htmlType="button" label={(opcion==='cotizar')?"Cancelar ingreso":"Salir de la página" }
-          tooltipContent='Con este botón sale de esta página y podrá ingresar posteriormente'
-          tooltipPosition='top' style={{ marginLeft:5 }} icon={<FontAwesomeIcon icon={faSignOutAlt} size="lg" color="white" />} onClick={ handleExit }
-        />
-        <CustomButton buttonStyle="primary" size="small" htmlType="button" label={(opcion==='cotizar')?"Registra cotización":'Solicitar aclaración'} 
-          tooltipContent={(opcion==='cotizar')?'Con este botón envía su cotización y cierra esta oferta':'Con este botón registra y solicita una aclaración'}
-          tooltipPosition='right' style={{ marginLeft:5 }} icon={<FontAwesomeIcon icon={faFloppyDisk} size="lg" color="white" />} onClick={ handleSave }
-        />
-      </div>
-    </div>
-    }
-    {/* 📌 Modal siempre dentro del DOM pero se muestra u oculta con isOpen */}
-    <HelperPage pageId='cotizar' openHelp={openHelp} handleCloseModal={handleCloseModal} nroHelpers={1}/>
-   { dataProjectActivity && 
-      <ModificarProveedorPage openModificar={openModificar} handleCloseModal={handleCloseModalModificar} razonSocial={dataProjectActivity?.proveedor} 
-         contacto={dataProjectActivity.contacto} email={dataProjectActivity.mensaje.email} idProveedor={dataProjectActivity.idProveedor}
-      />
+  
+  // Calculamos el costo en palabras fuera del renderizado condicional
+  let costoEnPalabras=''; 
+  if (costo) costoEnPalabras= numeroATexto(costo);
+  
+  // Renderizado condicional para el loading
+  if (loading) {
+    return <LoadingIndicator message={'cargando'} />;
   }
-  </>
-);
+  
+  // Renderizado principal
+  return (
+    <>
+      {
+        (dataProjectActivity && mensaje) &&
+        <div >
+          <div>
+            <CustomLabel label={`Página para ingresar su Cotización `} size='h1' />
+          </div>
+          {/* items-start space-x-4  */}
+          <div className="mb-3 flex space-x-4" style={{width:'70%'}} >
+            <CustomLabel label={`Bienvenido ${dataProjectActivity?.contacto}, email: ${mensaje.email}, Empresa: ${dataProjectActivity?.proveedor}`} size='normal+'  />
+            <CustomButton label='Modificar datos' size='small' buttonStyle= "secondary" tooltipContent='Para actualizar los datos de su empresa' onClick={handleModificarDatos}/>
+          </div>
+          <div style={{ padding: "10px", maxWidth: "1400px" }}>
+            <>
+              <CustomRadioGroup
+                    label="Seleccione lo que quiere hacer "
+                    size='h2'
+                    options={[
+                      { id: "cotizar", label: "Cotizar" },
+                      { id: "aclarar", label: "Pedir una aclaración" },
+                    ]}
+                    width='100%'
+                    orientation="horizontal"
+                    defaultValue={opcion}
+                    onChange={(value) => handleChangeOpcion(value)}
+              />
+            </>
+          </div>     
+          <div>
+            <CustomButton label='...' icon={<FontAwesomeIcon icon={faQuestion} size="lg" color="white" />} size='small' buttonStyle= "primary" 
+             tooltipContent='Instrucciones para el uso de la página' iconPosition="right" onClick={handleHelp}           
+            />
+          </div> 
+          { opcion==='cotizar' &&
+            <>
+              <div className="mb-3 flex items-start text-2xl space-x-4 ">
+                  <CustomInput label={`Valor por ${dataProjectActivity?.actividad} ($)`} captionPosition='left' value={costo} required={true}
+                    placeholder='Ingrese valor en pesos' type='number' width='180px'  onChange={(e) => handleValueChange( e.target.value)}
+                    formatNumber={true} useDecimals={false}
+                  /> 
+                  { costo && costo>=0 &&
+                    <CustomLabel size='normal' style={{ marginTop:20  }} label={`${costoEnPalabras} pesos.`} fontColor={'black'}/>
+                  }
+              </div>  
+                
+              <div className="mb-3 flex items-start space-x-8">
+                  <CustomInput label='Observación adicional que desee agregar' width="100%"  value={observacion} theme="light"
+                      onChange={(e) => handleObservacionChange( e.target.value)} maxLength={300} rows={2} multiline={true} placeholder='Aclaraciones sobre su oferta'
+                  />  
+                  <CustomFileInput
+                      label="Anexo opcional con detalle oferta (pdf)"
+                      width="100%"
+                      accept=".pdf"
+                      putFilenameInMessage={true}
+                      onUploadSuccess={(file: File | null) => {
+                          if (file) {
+                              console.log(`📂 Archivo subido :`, file.name);
+                              setAnexo( file.name);
+                              handleFileUpload(file);
+                          }
+                      }}
+                  />
+              </div>        
+            </>
+          }
+          {opcion === 'aclarar' &&
+              <div className="mb-3" style={{width:700}}>
+                <CustomInput label='Ingrese su solicitud de aclaración ' width="100%"  value={aclaracion} theme="light"
+                    onChange={(e) => handleAclaracionChange( e.target.value)} maxLength={300} rows={3} multiline={true} placeholder='Aclaraciones que solicita'
+                /> 
+              </div>
+          }
+          <div className="mt-3 flex items-start ">
+            <CustomButton buttonStyle="primary" size="small" htmlType="button" label={(opcion==='cotizar')?"Cancelar ingreso":"Salir de la página" }
+              tooltipContent='Con este botón sale de esta página y podrá ingresar posteriormente'
+              tooltipPosition='top' style={{ marginLeft:5 }} icon={<FontAwesomeIcon icon={faSignOutAlt} size="lg" color="white" />} onClick={ handleExit }
+            />
+            <CustomButton buttonStyle="primary" size="small" htmlType="button" label={(opcion==='cotizar')?"Registra cotización":'Solicitar aclaración'} 
+              tooltipContent={(opcion==='cotizar')?'Con este botón envía su cotización y cierra esta oferta':'Con este botón registra y solicita una aclaración'}
+              tooltipPosition='right' style={{ marginLeft:5 }} icon={<FontAwesomeIcon icon={faFloppyDisk} size="lg" color="white" />} onClick={ handleSave }
+            />
+          </div>
+        </div>
+      }
+      {/* 📌 Modal siempre dentro del DOM pero se muestra u oculta con isOpen */}
+      <HelperPage pageId='cotizar' openHelp={openHelp} handleCloseModal={handleCloseModal} nroHelpers={1}/>
+     { dataProjectActivity && 
+        <ModificarProveedorPage openModificar={openModificar} handleCloseModal={handleCloseModalModificar} razonSocial={dataProjectActivity?.proveedor} 
+           contacto={dataProjectActivity.contacto} email={dataProjectActivity.mensaje.email} idProveedor={dataProjectActivity.idProveedor}
+        />
+    }
+    </>
+  );
 }
 export default CotizarPage;
