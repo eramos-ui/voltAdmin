@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useField, useFormikContext, FormikContextType, FormikValues} from 'formik';
 import './CustomSelect.css';
 
@@ -35,17 +35,25 @@ export interface CustomSelectProps {
 
 // Hook personalizado que maneja de forma segura useField
 const useSafeField = (name?: string) => {
-  // Si no hay name, devolvemos valores por defecto
-  if (!name) {
-    return [
-      { value: undefined, onChange: () => {}, onBlur: () => {} },
-      { touched: false, error: undefined }
-    ];
-  }
+  // ✅ Siempre pasamos un nombre seguro a `useField()`
+  const safeName = name ?? "__unused_field__"; // Un nombre ficticio que no afectará el formulario
   
-  // Si hay name, usamos useField
-  return useField(name);
+  return useField(safeName);
 };
+
+
+// const useSafeField = (name?: string) => {
+//   // Si no hay name, devolvemos valores por defecto
+//   if (!name) {
+//     return [
+//       { value: undefined, onChange: () => {}, onBlur: () => {} },
+//       { touched: false, error: undefined }
+//     ];
+//   }
+  
+//   // Si hay name, usamos useField
+//   return useField(name);
+// };
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
   label,
@@ -74,9 +82,12 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   };
   
   // El valor seleccionado depende de si estamos usando Formik o no
-  const selectedValue = name 
-    ? field.value ?? (multiple ? [] : "") 
-    : value ?? (multiple ? [] : "");
+  const selectedValue = useMemo(() => {
+    return name ? field.value ?? (multiple ? [] : "") : value ?? (multiple ? [] : "");
+  }, [name, field.value, value, multiple]);
+  // const selectedValue = name 
+  //   ? field.value ?? (multiple ? [] : "") 
+  //   : value ?? (multiple ? [] : "");
   
   // Estado local para el valor seleccionado
   const [selectedInside, setSelectedInside] = useState<string | string[]>(

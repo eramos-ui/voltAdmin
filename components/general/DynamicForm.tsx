@@ -85,10 +85,10 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
     >
      {({ handleSubmit, handleChange, setFieldValue, values }) => {
         // 📌 Detectar si los valores han cambiado respecto a los iniciales
-       useEffect(() => {
-          const dirty = !isEqual(values, initialValues); // 📌 Comparar valores con lodash
-          setIsDirty(dirty);
-       }, [values, initialValues]);
+    //    useEffect(() => {
+    //       const dirty = !isEqual(values, initialValues); // 📌 Comparar valores con lodash
+    //       setIsDirty(dirty);
+    //    }, [values, initialValues]);
        return (
           <div className="dynamic-form">
               {Object.entries(groupedColumns).map(([rowNumber, rowColumns]) => (

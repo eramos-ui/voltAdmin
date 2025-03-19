@@ -1,6 +1,6 @@
 @echo off
 echo Iniciando servidor FRP...
-start "FRP Server" cmd /k "cd C:\frp && C:\frp\frps.exe -c D:\nextProject\voltAdmin\scripts\frp.ini"
+start "FRP Server" cmd /k "cd C:\frp && C:\frp\frps.exe -c D:\documents\github\voltAdmin\scripts\frp.ini"
 
 @REM echo Esperando 5 segundos para que el servidor inicie...
 @REM timeout /t 5 /nobreak > nul
@@ -13,4 +13,4 @@ timeout /t 5 /nobreak > nul
 
 echo Iniciando aplicación Next.js...
 cd D:\nextProject\voltAdmin
-npm run dev 
+@REM npm run dev 

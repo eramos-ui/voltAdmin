@@ -1,4 +1,4 @@
-import { ColumnConfig, ExcelColumn, GridRowType } from "@/types/interfaces";
+import { ColumnConfigType, ExcelColumn, GridRowType } from "@/types/interfaces";
 /*
 export type ColumnConfig<T> = { 
     label: string;
@@ -52,7 +52,7 @@ const calculateColumnWidth = (columnKey: string, data: any[]): string => {
  export const generateColumnConfig = <T extends GridRowType>(
     rows: T[], 
     excelColumns: ExcelColumn[] // 📌 Agregamos el orden de las columnas del Excel
-  ): ColumnConfig<T>[] => {
+  ): ColumnConfigType<T>[] => {
   //console.log('en generateColumnConfig rows',rows);
   if (!rows || rows.length === 0) return [];
 

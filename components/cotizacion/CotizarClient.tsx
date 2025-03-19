@@ -1,5 +1,9 @@
 "use client";
-import { notFound, useRouter, useSearchParams  } from 'next/navigation';
+
+import { notFound } from "next/navigation"; // 🔹 Importa notFound()
+
+// import { Suspense } from "react";
+import { useRouter, useSearchParams  } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { loadDataProjectActivityFromToken } from '@/utils/apiHelpers';
 import { ProjectActivityType } from '@/types/interfaces';
@@ -11,10 +15,23 @@ import { numeroATexto } from '@/utils/numeroATexto';
 import { HelperPage } from '@/components/general/Helper';
 import { ModificarProveedorPage } from '@/components/cotizar/ModificarProveedor';
 
-const CotizarPage = () => {
+export default function CotizarClient() {
+  // console.log('CotizarPage');
+//   return (
+//     <Suspense fallback={<LoadingIndicator message="Cargando página..." />}>
+//       <Cotizar />
+//     </Suspense>
+//   );
+// }
+
+// const CotizarPage = () => {
+// function Cotizar() {
   const router                                                  = useRouter();
   const searchParams                                            = useSearchParams();
   const token                                                   = searchParams?.get("token") || "";
+  if (!token) {
+    notFound(); // 🔹 Si no hay token, redirigir a 404
+  }
   const [ loading, setLoading ]                                 = useState(true);
   const [ dataProjectActivity, setDataProjectActivity ]         = useState<ProjectActivityType>( );
   const [ mensaje, setMensaje ]                                 = useState<{email:string, asunto:string,cuerpo:string}>();
@@ -26,7 +43,7 @@ const CotizarPage = () => {
   const [ openHelp, setOpenHelp ]                               = useState<boolean>(false);
   const [ openModificar, setOpenModificar ]                     = useState<boolean>(false);
   const [ opcion, setOpcion ]                                   = useState<string>('cotizar');
-  
+  console.log('CotizarClient');
   useEffect (()=>{
     if (dataProjectActivity && typeof dataProjectActivity === "object" && "mensaje" in dataProjectActivity) {
       setMensaje(dataProjectActivity.mensaje );
@@ -35,6 +52,10 @@ const CotizarPage = () => {
   },[dataProjectActivity])
   
   useEffect(()=>{
+     if (!token) {
+        router.push("/404"); // 🔹 Si no hay token, redirigir a 404
+        return;
+      }
       const fetchData= async (token:string) => {
         try{
           await loadDataProjectActivityFromToken(token,setDataProjectActivity);
@@ -51,16 +72,6 @@ const CotizarPage = () => {
       }    
   },[token, router]);
   
-  const handleHelp=()=>{
-      setOpenHelp(true);      
-  }
-  const handleModificarDatos=()=>{
-    setOpenModificar(true);
-  }
-  const handleValueChange =( value:string) =>{
-    const numericValue = Number(value.replace(/\./g, ""));
-    setCosto(numericValue);  
-  }
   const handleObservacionChange=( value:any) =>{
     setObservacion(value);  
   }
@@ -96,25 +107,20 @@ const CotizarPage = () => {
         window.location.href = `http://${url}/login`; // 🔹 Redirige si no puede cerrarse
       }
   }
-  const handleCloseModal=()=>{
-    setOpenHelp(false);
-  }
-  const handleCloseModalModificar=() =>{
-    setOpenModificar(false);
-  }
   const handleChangeOpcion=( value: any)=>{
       setOpcion(value);
-  }
-  
-  // Calculamos el costo en palabras fuera del renderizado condicional
+  } 
+  const handleCloseModalModificar=() =>{
+    setOpenModificar(false);
+  } 
+  // Se calcula el costo en palabras fuera del renderizado condicional
   let costoEnPalabras=''; 
   if (costo) costoEnPalabras= numeroATexto(costo);
   
   // Renderizado condicional para el loading
   if (loading) {
     return <LoadingIndicator message={'cargando'} />;
-  }
-  
+  }  
   // Renderizado principal
   return (
     <>
@@ -127,7 +133,7 @@ const CotizarPage = () => {
           {/* items-start space-x-4  */}
           <div className="mb-3 flex space-x-4" style={{width:'70%'}} >
             <CustomLabel label={`Bienvenido ${dataProjectActivity?.contacto}, email: ${mensaje.email}, Empresa: ${dataProjectActivity?.proveedor}`} size='normal+'  />
-            <CustomButton label='Modificar datos' size='small' buttonStyle= "secondary" tooltipContent='Para actualizar los datos de su empresa' onClick={handleModificarDatos}/>
+            <CustomButton label='Modificar datos' size='small' buttonStyle= "secondary" tooltipContent='Para actualizar los datos de su empresa' onClick={() => setOpenModificar(true)}/>
           </div>
           <div style={{ padding: "10px", maxWidth: "1400px" }}>
             <>
@@ -147,21 +153,18 @@ const CotizarPage = () => {
           </div>     
           <div>
             <CustomButton label='...' icon={<FontAwesomeIcon icon={faQuestion} size="lg" color="white" />} size='small' buttonStyle= "primary" 
-             tooltipContent='Instrucciones para el uso de la página' iconPosition="right" onClick={handleHelp}           
+             tooltipContent='Instrucciones para el uso de la página' iconPosition="right" onClick={() => setOpenHelp(true)}       
             />
           </div> 
           { opcion==='cotizar' &&
             <>
               <div className="mb-3 flex items-start text-2xl space-x-4 ">
                   <CustomInput label={`Valor por ${dataProjectActivity?.actividad} ($)`} captionPosition='left' value={costo} required={true}
-                    placeholder='Ingrese valor en pesos' type='number' width='180px'  onChange={(e) => handleValueChange( e.target.value)}
-                    formatNumber={true} useDecimals={false}
+                    placeholder='Ingrese valor en pesos' type='number' width='180px' formatNumber={true} useDecimals={false}
+                    onChange={(e) => setCosto(Number(e.target.value.replace(/\./g, "")))}
                   /> 
-                  { costo && costo>=0 &&
-                    <CustomLabel size='normal' style={{ marginTop:20  }} label={`${costoEnPalabras} pesos.`} fontColor={'black'}/>
-                  }
-              </div>  
-                
+                   {costo && costo >= 0 && <CustomLabel size="normal" label={`${numeroATexto(costo)} pesos.`} fontColor={"black"} />}
+              </div>                  
               <div className="mb-3 flex items-start space-x-8">
                   <CustomInput label='Observación adicional que desee agregar' width="100%"  value={observacion} theme="light"
                       onChange={(e) => handleObservacionChange( e.target.value)} maxLength={300} rows={2} multiline={true} placeholder='Aclaraciones sobre su oferta'
@@ -202,13 +205,12 @@ const CotizarPage = () => {
         </div>
       }
       {/* 📌 Modal siempre dentro del DOM pero se muestra u oculta con isOpen */}
-      <HelperPage pageId='cotizar' openHelp={openHelp} handleCloseModal={handleCloseModal} nroHelpers={1}/>
-     { dataProjectActivity && 
+      <HelperPage pageId='cotizar' openHelp={openHelp}  handleCloseModal={() => setOpenModificar(false)} nroHelpers={1}/>
+      { dataProjectActivity && 
         <ModificarProveedorPage openModificar={openModificar} handleCloseModal={handleCloseModalModificar} razonSocial={dataProjectActivity?.proveedor} 
            contacto={dataProjectActivity.contacto} email={dataProjectActivity.mensaje.email} idProveedor={dataProjectActivity.idProveedor}
         />
-    }
+      }
     </>
   );
 }
-export default CotizarPage;

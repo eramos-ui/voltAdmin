@@ -13,7 +13,7 @@ import AppContent from '../components/general/AppContent';
 import { MapProvider,  PlacesProvider } from '@/app/context'; //context de map mapboxgl debe ir dentro de app
 
 import { usePathname } from 'next/navigation';
-import CotizarLayout from "./cotizar/layout"; 
+//import CotizarLayout from "./cotizar/layout"; 
 
 import mapboxgl from 'mapbox-gl';
 mapboxgl.accessToken= process.env.NEXT_PUBLIC_ACCESS_token;//ojo que usar cliente para renderizar, Sólo funciona en el cliente
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
        <body>
         <ThemeProvider>
-          {!isCotizarPage ? ( // 🔹 Solo renderiza Providers en rutas normales
+          {!isCotizarPage && ( 
             <PlacesProvider>
               <MapProvider>
                 <SidebarToggleProvider>
@@ -43,8 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </SidebarToggleProvider>
               </MapProvider>
             </PlacesProvider>
-          ) : (
-            <CotizarLayout>{children}</CotizarLayout> // 🔹 En `/cotizar`, usa layout sin providers extra
           )}
         </ThemeProvider>
       </body>

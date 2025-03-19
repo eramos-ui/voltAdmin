@@ -1,4 +1,4 @@
-import { GridColumn } from '@/types/interfaces';
+import { GridColumnType } from '@/types/interfaces';
 
 export const extractColumnsFromJSON = (data: any[]): string[] => {
     const columnSet = new Set<string>();
@@ -22,8 +22,8 @@ export const extractColumnsFromJSON = (data: any[]): string[] => {
     }
     return "string";
   };
-
-  export const extractColumnsWithConfig = (data: any[]): GridColumn[] => {
+/*
+  export const extractColumnsWithConfig = (data: any[]): GridColumnType[] => {
     const columnSet = new Set<string>();
   
     data.forEach(row => {
@@ -47,4 +47,4 @@ export const extractColumnsFromJSON = (data: any[]): string[] => {
         unique: false
       };
     });
-  };
+  };*/

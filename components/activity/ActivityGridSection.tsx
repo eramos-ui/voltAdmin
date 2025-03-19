@@ -17,18 +17,18 @@ const ActivityGridSection: React.FC<ActivityGridSectionProps> = ({ columns, hand
   const [ nextActivityToAdd, setNextActivityToAdd ] = useState<string>();
   //console.log("🔹 ActivityGridSection re-render", values.activities,values.activities.length);
   //console.log("🔹 ActivityGridSection re-render", rows?.length);
-  useEffect(() => {
-    console.log("🔹 ActivityGridSection - useEffect - values.activities:", values.activities.length);
-  }, [values.activities]);
+  // useEffect(() => {
+  //   console.log("🔹 ActivityGridSection - useEffect - values.activities:", values.activities.length);
+  // }, [values.activities]);
+  useEffect(()=>{
+    if ( !selectedRow ) return;
+    const currentActivity = selectedRow["NumActividad"].toString();
+    const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
+    setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
+  },[selectedRow])
+  
   if (values.activities.length === 0) return null; 
 
-  useEffect(()=>{
-    if ( selectedRow ){
-        const currentActivity = selectedRow["NumActividad"].toString();
-        const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
-        setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
-    }
-  },[selectedRow])
   const handleRowSelection = (row: any | null) => {
     setSelectedRow(row);
   };

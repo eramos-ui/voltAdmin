@@ -53,7 +53,7 @@ const DefineEjecutorPage = () => {
       if (idTask && idTask>0){//revisa si al abrir existe idTask. Esto indica completar proyecto
         fetchData(idTask);  
       }     
-     }, []); 
+     }, [idTask, session]); 
      useEffect(() => { 
         if (initialValues.idProjectActivity && initialValues.idProjectActivity>0 ){
             setLoading(false);
@@ -72,8 +72,9 @@ const DefineEjecutorPage = () => {
     {/* { console.log('JSX AdminActivity initialValues',loading,initialValues.fechaInicio, initialValues.fechaTermino) } */}
      { !loading &&
      <div className="p-4">
-       <p className="text-3xl font-bold text-center" > Define ejecutor de la actividad {initialValues.numActividad}</p>
-       <p  className="text-2xl font-bold text-center"> Proceso: (N°{initialValues.idProject}) "{initialValues.projectName}"</p>
+       <p className="text-3xl font-bold text-center" > {`Define ejecutor de la actividad ${initialValues.numActividad}`}</p>
+       <p className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) “${initialValues.projectName}”`}</p>
+       {/* <p  className="text-2xl font-bold text-center"> `Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`</p> */}
        <Formik
          initialValues={initialValues}
          validationSchema={validationSchema}

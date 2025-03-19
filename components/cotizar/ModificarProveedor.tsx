@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CustomButton, CustomInput, CustomLabel } from "../controls";
 import CustomModal from "../general/CustomModal";
 import { faFloppyDisk, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import "@/public/styles/cotizar.css"; 
 
 type ModificarProveedorProps = {
     openModificar:boolean;  
@@ -21,7 +22,7 @@ if (!openModificar) return;
 // console.log('helpData',nroHelpers,helpData,help);
 
 return (
-  <CustomModal isOpen={openModificar} onClose={handleCloseModal} height='45vh'  title={'Modificar atributos del proveedor'} width="33%"
+  <CustomModal isOpen={openModificar} onClose={handleCloseModal} height='55vh'  title={'Modificar atributos del proveedor'} width="33%"
     //position='right'
   >
     <CustomInput label='Razón social'  captionPosition='left' placeholder='Modifique la razón social de su empresa'
@@ -33,7 +34,8 @@ return (
    <CustomInput label='Email' captionPosition='left' placeholder='Modifique el email del contacto'
         type='text' value={email} width='300px' tooltipContent='Ingrese el email del contacto de su empresa' tooltipPosition='top'
     />
-    <div className="mt-3 flex items-start ">
+    {/* <div className="mt-3 flex items-start "> */}
+    <div className="cotizar-buttons">
       <CustomButton label='Salir sin actualizar' buttonStyle="primary" size="small" icon={<FontAwesomeIcon icon={faSignOutAlt} size="lg" color="white" />} >
       </CustomButton>
       <CustomButton label='Actualizar' buttonStyle="primary" size="small" style={{ marginLeft:5 }} icon={<FontAwesomeIcon icon={faFloppyDisk} size="lg" color="white" />} >

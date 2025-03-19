@@ -3,7 +3,7 @@ import { Field } from "formik";
 import { CustomSelect } from "@/components/controls/CustomSelect";
 import { Comunas, OptionsSelect } from "@/types/interfaces";
 import { CustomInput } from "../controls";
-// import { CustomInput } from "../../../components/controls";
+
 
 interface LocationFormProps {
   regiones: OptionsSelect[];
@@ -24,21 +24,31 @@ const [ comunasPorRegion, setComunasPorRegion ] = useState<OptionsSelect[]>();
 //       console.error("Invalid region value:", value); // Manejo de errores
 //     }
 //   };
+useEffect(() => {
+  if (regionSelected) {
+    const regionData = comunas?.filter((comuna) => comuna.idRegion.toString() === regionSelected);
+    const nuevasComunas = regionData
+      ? regionData.map((comuna) => ({ value: comuna.idComuna.toString(), label: comuna.label }))
+      : [];
+    setComunasPorRegion(nuevasComunas);
+  }
+}, [regionSelected, comunas]); // Ejecuta cuando cambia `regionSelected` o `comunas`
+
 return (
     <div className="mb-1 flex items-start space-x-2">
        <div className="w-3/8">
         <Field name="region">
-          {({ field }: any) => {
-            useEffect(() => {
-                if (field.value){
-                    const regionId = field.value.toString();
-                    const regionData = comunas?.filter( comuna => comuna.idRegion.toString() === regionId);
-                    const nuevasComunas= regionData
-                    ? regionData.map((comuna) => ({ value: comuna.idComuna.toString(), label: comuna.label }))
-                    : [];  
-                    setComunasPorRegion(nuevasComunas);
-                }
-                }, [field.value]); // Ejecuta cuando hay cambios en los valores
+          {({ field, form }: any) => {
+            // useEffect(() => {
+            //     if (field.value){
+            //         const regionId = field.value.toString();
+            //         const regionData = comunas?.filter( comuna => comuna.idRegion.toString() === regionId);
+            //         const nuevasComunas= regionData
+            //         ? regionData.map((comuna) => ({ value: comuna.idComuna.toString(), label: comuna.label }))
+            //         : [];  
+            //         setComunasPorRegion(nuevasComunas);
+            //     }
+            //     }, [field.value]); // Ejecuta cuando hay cambios en los valores
             return (
             <CustomSelect
             name='region'
@@ -53,6 +63,12 @@ return (
                 width="100%"
                 error={touched.region && errors.region ? errors.region : undefined}
                 {...field}
+                onChange={(value) => {
+                  const regionValue = Array.isArray(value) ? value[0] : value; // 🔹 Tomamos el primer valor si es un array
+                  form.setFieldValue("region", regionValue);
+                  setRegionSelected(regionValue || ""); // ✅ Asegura que siempre sea un string
+                  form.setFieldValue("comuna", ""); // 🔹 Reinicia comuna cuando cambia región
+                }}
             />
             )
           }}
