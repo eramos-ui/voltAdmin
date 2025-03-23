@@ -6,11 +6,11 @@ start "FRP Server" cmd /k "cd C:\frp && C:\frp\frps.exe -c D:\documents\github\v
 @REM timeout /t 5 /nobreak > nul
 
 @REM echo Iniciando cliente FRP...
-@REM start "FRP Client" cmd /k "cd C:\frp && C:\frp\frpc.exe -c D:\nextProject\voltAdmin\scripts\frpc.ini"
+start "FRP Client" cmd /k "cd C:\frp && C:\frp\frpc.exe -c D:\nextProject\voltAdmin\scripts\frpc.ini"
 
 echo Esperando 5 segundos para que el cliente se conecte...
 timeout /t 5 /nobreak > nul
 
 echo Iniciando aplicación Next.js...
-cd D:\nextProject\voltAdmin
+cd D:\documents\github\voltAdmin
 @REM npm run dev 

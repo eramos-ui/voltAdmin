@@ -13,19 +13,16 @@ model Menu {
   title String
   path  String
   icon  String
-  subMenu SubMenu[]
   form   String?
+  idSystem Int
+  idProcess Int?
+  idActivity Int?
+  isValid Boolean @default(true) 
+  orden Int?
+  processType Int?
 }
 
-model SubMenu {
-  id    Int    @id @default(autoincrement())
-  title String
-  path  String
-  icon  String
-  menuId Int
-  menu   Menu   @relation(fields: [menuId], references: [id])
-  formId   String?
-}
+
 model User {
   id                Int       
   dateModification  DateTime
@@ -35,27 +32,29 @@ model User {
   avatar            String?   @db.NVarChar(Max)
   theme             String
   password          String 
-  language          String 
+  aditionalData     String?
   resetToken        String?  
   resetTokenExpiry  DateTime?
   roleId            Int       // Foreign key to Role model
-  role              Role      @relation(fields: [roleId], references: [id]) // Relation to Role
   phone             String?
   rut               String?
   valid             Boolean @default(true) 
+  idSystem          Int
+  idPeril           Int? 
   @@id([id, dateModification]) // Definimos la clave primaria compuesta aquí
 }
 
 model Role {
   id     Int     @id @default(autoincrement())
   name   String  @unique // Role name, e.g., 'admin', 'user', 'editor'
-  users  User[]  // One-to-many relation with User
+  rol    String
+  idProcess Int
 }
 model Form {
   id               Int    @id @default(autoincrement())
   name             String @unique
-  jsonForm         String @db.NVarChar(Max)
   valid            Boolean @default(true)     
+  jsonForm         String @db.NVarChar(Max)
 }
 model RoleMenuPermissions {
   roleId     Int

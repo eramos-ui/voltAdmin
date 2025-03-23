@@ -49,12 +49,9 @@ export default function CotizarClient() {
 
     const tokenFromQuery = router.query.token;
     if (!tokenFromQuery || typeof tokenFromQuery !== "string") {
-      // console.log("🔴 Token no encontrado, esperando actualización...");
       return;
     }
-    // console.log("🟢 Token recibido:", tokenFromQuery);
     setToken(tokenFromQuery);
-
     const fetchData = async () => {
       try {
         await loadDataProjectActivityFromToken(tokenFromQuery, setDataProjectActivity);
@@ -64,7 +61,6 @@ export default function CotizarClient() {
         router.push("/404");
       }
     };
-
     fetchData();
   }, [router.isReady, router.query.token]);
 
@@ -101,11 +97,7 @@ export default function CotizarClient() {
     if (window.opener) {
       window.close();
     }else {
-        // const url=process.env.NEXT_PUBLIC_URL;
         window.location.href = redirectUrl;
-        //router.push("./gracias");
-        // router.back();
-         // window.location.href = "https://tu-dominio.com/gracias"; // 🔹 Redirige si no puede cerrarse
       }
   }
   const handleChangeOpcion=( value: any)=>{
@@ -120,12 +112,7 @@ export default function CotizarClient() {
   if (!router.isReady || !token) {
     return <LoadingIndicator message="Cargando cotización..." />;
   }
-  // console.log("Estado actual:", {
-  //   token,
-  //   loading,
-  //   dataProjectActivity,
-  //   mensaje,
-  // });
+
   return (  // Renderizado principal
     // <div className="w-3/4 mx-auto p-6 bg-white shadow-lg rounded-lg">
     <div className="cotizar-container">
