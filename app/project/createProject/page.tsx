@@ -73,7 +73,7 @@ const NewProjectPage = () => {
         FechaInicio:"","FechaTermino":"",},],
      userModification:"", dateModification: "",state:"draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
  } );
- 
+ console.log('initialValues en createProject', initialValues);
  // Este useEffect actualiza nextActivityToAdd cuando cambia selectedRow o activities
  useEffect(() => {
    if (selectedRow) {

@@ -93,7 +93,7 @@ export default function CotizarClient() {
       if (window.opener) {
         window.close(); // 🔹 Cierra la ventana si fue abierta desde un enlace externo
       } else {
-        const url=process.env.NEXT_PUBLIC_URL;
+        const url=process.env.NEXT_PUBLIC_DOMAIN;
         window.location.href = `http://${url}/login`; // 🔹 Redirige si no puede cerrarse
       }
     }, 2000); // ⏳ Espera 2 segundos antes de salir
@@ -103,7 +103,7 @@ export default function CotizarClient() {
     if (window.opener) {
       window.close();
     }else {
-        const url=process.env.NEXT_PUBLIC_URL;
+        const url=process.env.NEXT_PUBLIC_DOMAIN;
         window.location.href = `http://${url}/login`; // 🔹 Redirige si no puede cerrarse
       }
   }

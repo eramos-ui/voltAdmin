@@ -2,7 +2,7 @@ import { ActivityEmailFilesType, ActivityType, EmailTemplateType, FilesType, For
    from '@/types/interfaces';
 import { replacePlaceholders } from './replacePlaceholders';
 
-const dominio= process.env.NEXT_PUBLIC_URL;
+const dominio= process.env.NEXT_PUBLIC_DOMAIN; 
 //para upload de File
 export const saveFormData = async (//updateUsuario por ejemplo
     storedProcedure: string,

@@ -6,7 +6,7 @@ const searchApi = axios.create({
     limit :5,
     language: 'es',
     autocomplete: true,
-    access_token:'pk.eyJ1IjoiZXJhbW9zMTUiLCJhIjoiY200cmkxM2xhMDRyYzJycHV4YmN0eWppcSJ9.Lvuuy5lsY6mB2evr8XvPxA'
+    access_token:process.env.NEXT_PUBLIC_ACCESS_token,
  }
 })
 
