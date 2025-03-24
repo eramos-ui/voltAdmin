@@ -1,6 +1,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { connectToDB } from '@/lib/server/spExecutor'; // Asegúrate de que la ruta coincida con donde guardaste el módulo
+import { connectToDB } from '@/lib/server/db';
+//import { connectToDB } from '@/lib/server/spExecutor'; // Asegúrate de que la ruta coincida con donde guardaste el módulo
 // import sql from 'mssql';
 
 export default async function handler(
