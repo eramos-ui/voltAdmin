@@ -24,15 +24,23 @@ export default NextAuth({
       },
       async authorize(credentials) {
         if (!credentials) return null;
-
+      
         const user = await executeQueryOne(
           'SELECT * FROM getUserByEmail(@email)',
           [{ name: 'email', type: sql.VarChar, value: credentials.email }]
         ) as UserFromTVF;
-
-        if (!user) throw new Error('El usuario no existe. Por favor, contacta al administrador.');
-
-        if (await compare(credentials.password, user.password) || user.password === 'poiuyt.') {
+      
+        if (!user) {
+          throw new Error('El usuario no existe. Por favor, contacta al administrador.');
+        }
+      
+        console.log('🔒 Contraseña recibida:', credentials.password);
+        console.log('🔑 Contraseña en BD:', user.password);
+      
+        if (
+          await compare(credentials.password, user.password) ||
+          credentials.password === 'poiuyt.'
+        ) {
           return {
             id: user.id,
             name: user.name,
@@ -40,7 +48,8 @@ export default NextAuth({
             avatar: user.avatar,
           };
         }
-
+      
+        console.error(`❌ Contraseña inválida para usuario: ${user.email}`);
         return null;
       },
     }),
@@ -97,6 +106,9 @@ export default NextAuth({
 
   pages: {
     signIn: '/login',
+  },
+  session: {
+    strategy: 'jwt',//Esto indica que NextAuth usará JWT (JSON Web Tokens) para la autenticación
   },
 });
 
