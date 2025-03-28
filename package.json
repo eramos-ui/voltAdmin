@@ -55,6 +55,7 @@
     "tedious": "^18.3.0",
     "uuid": "^11.0.5",
     "webpack": "^5.98.0",
+    "xlsx": "^0.18.5",
     "yup": "^1.4.0"
   },
   "devDependencies": {
