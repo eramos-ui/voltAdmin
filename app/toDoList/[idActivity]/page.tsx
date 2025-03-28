@@ -85,7 +85,7 @@ const ToDoListPage = ({ params }: { params:{idActivity: number }}) => {
               labelButtomActions= {["", "", ""]}
             />
               <CustomButton  
-                  buttonStyle="primary" size="small" htmlType="button" label="Volver al página inicial" 
+                  buttonStyle="primary" size="small" htmlType="button" label="Volver a página inicial" 
                   icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={() =>  router.push('/') }  //style={{ marginLeft:3, marginBottom:15}}
                   >
               </CustomButton>

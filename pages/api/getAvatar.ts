@@ -1,5 +1,5 @@
 
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next'; 
 import fs from 'fs';
 import path from 'path';
 import mime from 'mime-types'; // 👈 Instálalo si no lo tienes: npm i mime-types

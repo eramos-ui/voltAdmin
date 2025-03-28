@@ -101,7 +101,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
   useEffect(() => {    
     if (values.nroEmpalmes && values.nroEmpalmes > 0) {
       const currentEmpalmesGrid = Array.isArray(values.empalmesGrid) ? values.empalmesGrid : [];
-      console.log('useEffect nroEmpalmes',values.nroEmpalmes,currentEmpalmesGrid,  currentEmpalmesGrid[0].rutCliente instanceof File);
+      // console.log('useEffect nroEmpalmes',values.nroEmpalmes,currentEmpalmesGrid,  currentEmpalmesGrid[0].rutCliente instanceof File);
       const currentLength = values.empalmesGrid?.length || 0; // Evita que sea undefined
       const newLength = values.nroEmpalmes;
       if (newLength >= currentLength) {// 📌 Si `nroAguas` aumenta, agregamos nuevas filas

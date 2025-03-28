@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { executeQuery } from '@/lib/server/spExecutor';
 // import { ProjectType } from '@/types/interfaces';
-import fs from 'fs';
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   

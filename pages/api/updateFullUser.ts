@@ -42,9 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
     const email = Array.isArray(fields.email) ? fields.email[0] : fields.email;
     const theme = Array.isArray(fields.theme) ? fields.theme[0] : fields.theme;
-    const language = Array.isArray(fields.language) ? fields.language[0] : fields.language;
+    // const language = Array.isArray(fields.language) ? fields.language[0] : fields.language;
 
-    if (!userId || !name || !email || !language) {
+    if (!userId || !name || !email ) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -64,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       name,
       email,
       theme,
-      language,
+      // language,
       avatar: avatarBase64,
     };
 

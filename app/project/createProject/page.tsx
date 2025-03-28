@@ -464,7 +464,7 @@ const NewProjectPage = () => {
           buttonStyle="primary" 
           size="small" 
           htmlType="button" 
-          label="Volver al página inicial" 
+          label="Volver a página inicial" 
           style={{ marginLeft:5 }}
           icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} 
           onClick={handleExit} 
