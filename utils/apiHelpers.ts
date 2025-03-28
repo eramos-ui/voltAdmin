@@ -1,4 +1,4 @@
-import { ActivityEmailFilesType, ActivityType, EmailTemplateType, FilesType, FormValues, OptionsSelect, ProjectActivityType, ProjectType, ProveedorType } 
+import { ActivityEmailFilesType, ActivityType, EmailTemplateType, empalmesGridType, FilesType, FormValues, instalacionesGridType, OptionsSelect, ProjectActivityType, ProjectType, ProveedorType, techoGridType } 
    from '@/types/interfaces';
 import { replacePlaceholders } from './replacePlaceholders';
 
@@ -83,132 +83,332 @@ export const saveFormData = async (//updateUsuario por ejemplo
 
 
 
-export const loadDataProject = async (idTask: number,userId:number,setInitialValues:(x:ProjectType) => void,initialValues: ProjectType)=>{
-    //console.log('loadDataProject',idTask,userId);
-    try {
-      //console.log('lee projectData',`/api/getLoadProject?idTask=${idTask}`);
-      const response = await fetch(`/api/getProjectFromTask?idTask=${idTask} &userId=${userId}`);
-      // const res = await fetch(`/api/getToDoListTaskUser?userId=${userId} &idProcessidActivity=${idActivity}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch form data: ${response.statusText}`);
-      }
-      const data = await response.json();  //viene {project, files:[{}] }            
-      //const projectFileData=data;
-      console.log("✅ Datos cargados desde la API:", data);
-      // 🔹 Procesar las grillas con archivos asociados
-      //console.log('data.project',data.project.empalmesGrid,data.project.instalacionesGrid,data.project.techoGrid);
-      //console.log('data.files',data.files['1'] );
-      //console.log('data.files',data.files);
-      // 🔹 Transformar los archivos en `File`
-      const transformToFile = (fileData: any): File | null => {
-        if (!fileData) return null;
+  // export const loadDataProject = async (idTask: number,userId:number,setInitialValues:(x:ProjectType) => void,initialValues: ProjectType)=>{
+  //   //console.log('loadDataProject',idTask,userId);
+  //   try {
+  //     //console.log('lee projectData',`/api/getLoadProject?idTask=${idTask}`);
+  //     const response = await fetch(`/api/getProjectFromTask?idTask=${idTask} &userId=${userId}`);
+  //     // const res = await fetch(`/api/getToDoListTaskUser?userId=${userId} &idProcessidActivity=${idActivity}`);
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch form data: ${response.statusText}`);
+  //     }
+  //     const data = await response.json();  //viene {project, files:[{}] }            
+  //     //const projectFileData=data;
+  //     console.log("✅ Datos cargados desde la API loadDataProject:", data);
+  //     // 🔹 Procesar las grillas con archivos asociados
+  //     //console.log('data.project',data.project.empalmesGrid,data.project.instalacionesGrid,data.project.techoGrid);
+  //     //console.log('data.files',data.files['1'] );
+  //     //console.log('data.files',data.files);
+  //     // 🔹 Transformar los archivos en `File`
+  //     const transformToFile = (fileData: any): File | null => {
+  //       if (!fileData) return null;
       
-        //console.log("📂 Archivo recibido en transformToFile:", fileData);
+  //       //console.log("📂 Archivo recibido en transformToFile:", fileData);
       
-        let blob: Blob | null = null; // 📌 Cambiamos `undefined` por `null`
+  //       let blob: Blob | null = null; // 📌 Cambiamos `undefined` por `null`
       
-        //console.log('fileData.fileType',fileData.fileType ,fileData.fileContent, fileData.filePath );
-        if (fileData.fileContent) {
-          //console.log('fileData.fileType 2',fileData.fileType,typeof fileData.fileContent)
-          if (typeof fileData.fileContent !== "string") {
-            console.error(`❌ fileContent no es un string para: ${fileData.fileName}`);
-            return null;
-          }
-          try {
+  //       //console.log('fileData.fileType',fileData.fileType ,fileData.fileContent, fileData.filePath );
+  //       if (fileData.fileContent) {
+  //         //console.log('fileData.fileType 2',fileData.fileType,typeof fileData.fileContent)
+  //         if (typeof fileData.fileContent !== "string") {
+  //           console.error(`❌ fileContent no es un string para: ${fileData.fileName}`);
+  //           return null;
+  //         }
+  //         try {
            
-            if (fileData.fileType === "application/vnd.google-earth.kml+xml") {
-              //console.log("🌍 Procesando KML como texto en transformToFile");
-              blob = new Blob([fileData.fileContent], { type: fileData.fileType });
-            } else {  
-              //console.log("📊 Procesando Excel como binario en transformToFile");
-              const byteCharacters = atob(fileData.fileContent);
-              const byteNumbers = new Array(byteCharacters.length)
-              .fill(0)
-              .map((_, i) => byteCharacters.charCodeAt(i));
-              const byteArray = new Uint8Array(byteNumbers);
-              blob = new Blob([byteArray], { type: fileData.fileType });
-            }
-          } catch (error) {
-            console.error("❌ Error al convertir Base64 a Blob:", error);
-            return null;
-          }
-        } else if (fileData.filePath) {
-          console.log("📂 Creando archivo vacío para el File System:", fileData);
-          return new File([], fileData.fileName, {
-            type: fileData.fileType,
-            lastModified: fileData.lastModified || Date.now(),
-          });
-        }
+  //           if (fileData.fileType === "application/vnd.google-earth.kml+xml") {
+  //             //console.log("🌍 Procesando KML como texto en transformToFile");
+  //             blob = new Blob([fileData.fileContent], { type: fileData.fileType });
+  //           } else {  
+  //             //console.log("📊 Procesando Excel como binario en transformToFile");
+  //             const byteCharacters = atob(fileData.fileContent);
+  //             const byteNumbers = new Array(byteCharacters.length)
+  //             .fill(0)
+  //             .map((_, i) => byteCharacters.charCodeAt(i));
+  //             const byteArray = new Uint8Array(byteNumbers);
+  //             blob = new Blob([byteArray], { type: fileData.fileType });
+  //           }
+  //         } catch (error) {
+  //           console.error("❌ Error al convertir Base64 a Blob:", error);
+  //           return null;
+  //         }
+  //       } else if (fileData.filePath) {
+  //         console.log("📂 Creando archivo vacío para el File System:", fileData);
+  //         return new File([], fileData.fileName, {
+  //           type: fileData.fileType,
+  //           lastModified: fileData.lastModified || Date.now(),
+  //         });
+  //       }
       
-        if (!blob) {
-          console.error("❌ No se pudo crear un Blob válido para:", fileData.fileName);
+  //       if (!blob) {
+  //         console.error("❌ No se pudo crear un Blob válido para:", fileData.fileName);
+  //         return null;
+  //       }
+      
+  //       const finalFile = new File([blob ?? new Blob()], fileData.fileName, {
+  //         type: fileData.fileType,
+  //         lastModified: fileData.lastModified || Date.now(),
+  //       });
+      
+  //       //console.log("✅ Archivo transformado a File:", finalFile);
+  //       return finalFile;
+  //     };
+          
+  //       // 🔹 Transformar archivos Excel y KML
+  //       //console.log("📂 Excel y KML en la API:",data.project.excelFile, data.project.kmlFile); 
+  //       const projectFiles = {
+  //         kmlFile: transformToFile(data.project.kmlFile),
+  //         excelFile: transformToFile(data.project.excelFile),
+  //       };
+  //       //console.log('projectFiles',projectFiles);
+
+
+  //       //console.log('instalacionesGrid',data.project.instalacionesGrid);
+     
+  //     const empalmesGrid= data.project.empalmesGrid.map((row:any) => { 
+  //       // console.log("✅ data.files para nroEmpalme:", data.files[String(row.nroEmpalme)]);
+  //       // console.log("✅ Buscando archivo rutCliente:", data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("rutCliente")));
+  //       return {
+  //       ...row,
+  //       rutCliente: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("rutCliente"))),
+  //       boleta: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("boleta"))),
+  //       poder: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("poder"))),
+  //       f2: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("f2"))),
+  //       diagrama: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("diagrama"))),
+  //       otrasImagenes: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("otrasImagenes"))),
+  //       }});
+  //       //console.log('empalmesGrid',empalmesGrid);
+  //       const instalacionesGrid= data.project.instalacionesGrid.map((row:any) => ({
+  //         ...row,
+  //         memoriaCalculo:  transformToFile(data.files[String(row.nroInstalacion)]?.find((f:any) => f.fileClass.includes("memoriaCalculo"))),
+  //       }));
+  //       //console.log('instalacionesGrid',instalacionesGrid);
+  //       const techoGrid= data.project.techoGrid.map((row:any) => ({
+  //         ...row,
+  //         imagenTecho:  transformToFile(data.files[String(row.nroInstalacion)+'_'+ String(row.nroAgua)]?.find((f:any) => f.fileClass.includes("imagenTecho"))),
+  //       }));
+  //       //console.log('instalacionesGrid File',instalacionesGrid);
+
+  //       setInitialValues({
+  //        ...data.project,
+  //        ...projectFiles,     
+  //        empalmesGrid,
+  //        instalacionesGrid,
+  //        techoGrid,
+  //       });
+  //     //console.log('processedGrids',processedGrids);
+      
+  //       // 🔹 Asignar archivos Excel/KML al proyecto
+  //     // const projectFiles = {
+  //     //     excelFile: data.files.find((f:any) => f.fileName.includes(".xlsx")) || null,
+  //     //     kmlFile: data.files.find((f:any) => f.fileName.includes(".kml")) || null,
+  //     // };
+  //     // console.log('projectFiles',projectFiles);
+  //     return ;
+  //   } catch (err) {
+  //     console.log('error');
+  //   } 
+  // }
+
+  export const loadDataProject = async (
+    idTask: number,
+    userId: number,
+    setInitialValues: (x: ProjectType) => void,
+    initialValues: ProjectType
+  ) => {
+    try {
+      const response = await fetch(`/api/getProjectFromTask?idTask=${idTask}&userId=${userId}`);
+      if (!response.ok) throw new Error(`Failed to fetch form data: ${response.statusText}`);
+  
+      const data = await response.json();
+      const transformToFile = async (fileData: any): Promise<File | null> => {
+        // console.log("🔑 Archivo recibido en transformToFile fileData:", fileData);
+        if (!fileData) return null;
+        try {
+          if (fileData.fileContent && fileData.fileContent.length > 0) {
+            // console.log("🔑 Archivo recibido en transformToFile fileData.content:", fileData.fileContent.length);
+            const blob = new Blob([fileData.fileContent], { type: fileData.fileType });
+            return new File([blob], fileData.fileName, {
+              type: fileData.fileType,
+              lastModified: Date.now(),
+            });
+          }
+          // Si viene desde Firebase: solo creamos un File "vacío"
+          if (fileData.filePath && fileData.filePath.length > 0) {
+            // console.log("🔑 Archivo recibido en transformToFile fileData.path:", fileData.filePath.length);
+            const response = await fetch(fileData.filePath);
+            if (!response.ok) throw new Error(`Error leyendo archivo: ${fileData.filePath}`);
+            // console.log("🔑 Archivo recibido en transformToFile fileData.path response:", response.ok);
+            const blob = await response.blob();
+            // console.log("🔑 Archivo recibido en transformToFile fileData.path blob:", blob);
+            // console.log("🔑 Archivo recibido en transformToFile fileData.path file:", new File([blob], fileData.fileName, {
+            //     type: fileData.fileType,
+            //     lastModified: Date.now(),
+            //   }));
+              return new File([blob], fileData.fileName, {
+              type: fileData.fileType,
+              lastModified: Date.now(),
+            });
+          }
+          return null;
+        } catch (err) {
+          console.error(`Error en transformToFile:`, err);
           return null;
         }
-      
-        const finalFile = new File([blob ?? new Blob()], fileData.fileName, {
-          type: fileData.fileType,
-          lastModified: fileData.lastModified || Date.now(),
-        });
-      
-        //console.log("✅ Archivo transformado a File:", finalFile);
-        return finalFile;
       };
-          
-        // 🔹 Transformar archivos Excel y KML
-        //console.log("📂 Excel y KML en la API:",data.project.excelFile, data.project.kmlFile); 
-        const projectFiles = {
-          kmlFile: transformToFile(data.project.kmlFile),
-          excelFile: transformToFile(data.project.excelFile),
-        };
-        //console.log('projectFiles',projectFiles);
-
-
-        //console.log('instalacionesGrid',data.project.instalacionesGrid);
-     
-      const empalmesGrid= data.project.empalmesGrid.map((row:any) => { 
-        // console.log("✅ data.files para nroEmpalme:", data.files[String(row.nroEmpalme)]);
-        // console.log("✅ Buscando archivo rutCliente:", data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("rutCliente")));
-        return {
-        ...row,
-        rutCliente: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("rutCliente"))),
-        boleta: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("boleta"))),
-        poder: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("poder"))),
-        f2: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("f2"))),
-        diagrama: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("diagrama"))),
-        otrasImagenes: transformToFile(data.files[String(row.nroEmpalme)]?.find((f:any) => f.fileClass.includes("otrasImagenes"))),
-        }});
-        //console.log('empalmesGrid',empalmesGrid);
-        const instalacionesGrid= data.project.instalacionesGrid.map((row:any) => ({
+  
+      const projectFiles = {
+        kmlFile: await transformToFile(data.project.kmlFile),
+        excelFile: await transformToFile(data.project.excelFile),
+      };
+      // console.log("🔑 Archivo recibido en transformToFile empalmesGrid-pre:", data.project.empalmesGrid);
+      const empalmesGrid = await Promise.all(
+        data.project.empalmesGrid.map(async (row: empalmesGridType) => ({
           ...row,
-          memoriaCalculo:  transformToFile(data.files[String(row.nroInstalacion)]?.find((f:any) => f.fileClass.includes("memoriaCalculo"))),
-        }));
-        //console.log('instalacionesGrid',instalacionesGrid);
-        const techoGrid= data.project.techoGrid.map((row:any) => ({
+          rutCliente: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("rutCliente"))),
+          boleta: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("boleta"))),
+          poder: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("poder"))),
+          f2: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("f2"))),
+          diagrama: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("diagrama"))),
+          foto: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("foto"))),
+          otrasImagenes: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("otrasImagenes"))),
+        }))
+      );
+      //console.log("🔑 Archivo recibido en transformToFile empalmesGrid-post:", empalmesGrid);
+      const instalacionesGrid = await Promise.all(
+        data.project.instalacionesGrid.map(async (row: instalacionesGridType) => ({
           ...row,
-          imagenTecho:  transformToFile(data.files[String(row.nroInstalacion)+'_'+ String(row.nroAgua)]?.find((f:any) => f.fileClass.includes("imagenTecho"))),
-        }));
-        //console.log('instalacionesGrid File',instalacionesGrid);
-
-        setInitialValues({
-         ...data.project,
-         ...projectFiles,     
-         empalmesGrid,
-         instalacionesGrid,
-         techoGrid,
-        });
-      //console.log('processedGrids',processedGrids);
-      
-        // 🔹 Asignar archivos Excel/KML al proyecto
-      // const projectFiles = {
-      //     excelFile: data.files.find((f:any) => f.fileName.includes(".xlsx")) || null,
-      //     kmlFile: data.files.find((f:any) => f.fileName.includes(".kml")) || null,
-      // };
-      // console.log('projectFiles',projectFiles);
-      return ;
+          memoriaCalculo: await transformToFile(data.files[String(row.nroInstalacion)]?.find((f: any) => f.fileClass.includes("memoriaCalculo"))),
+        }))
+      );
+      // console.log("🔑 Archivo recibido en transformToFile instalacionesGrid :", instalacionesGrid );
+      const techoGrid = await Promise.all(
+        data.project.techoGrid.map(async (row: techoGridType) => ({
+          ...row,
+          imagenTecho: await transformToFile(data.files[`${row.nroInstalacion}_${row.nroAgua}`]?.find((f: any) => f.fileClass.includes("imagenTecho"))),
+        }))
+      );
+      // console.log("🔑 intitialValues en apiHelpers:", {
+      //   ...data.project,
+      //   ...projectFiles,
+      //   empalmesGrid,
+      //   instalacionesGrid,
+      //   techoGrid,
+      // });
+      setInitialValues({
+        ...data.project,
+        ...projectFiles,
+        empalmesGrid,
+        instalacionesGrid,
+        techoGrid,
+      });
     } catch (err) {
-      console.log('error');
-    } 
-  }
+      console.error("❌ Error en loadDataProject:", err);
+    }
+  };
+  
+  // export const loadDataProject = async (idTask: number, userId: number, setInitialValues: (x: ProjectType) => void, initialValues: ProjectType) => {
+  //   try {
+  //     const response = await fetch(`/api/getProjectFromTask?idTask=${idTask}&userId=${userId}`);
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch form data: ${response.statusText}`);
+  //     }
+  
+  //     const data = await response.json();
+  //     console.log("✅ Datos cargados desde la API loadDataProject:", data);
+  //     const transformToFile = async (fileData: any): Promise<File | null> => {
+  //       if (!fileData) return null;
+      
+  //       let blob: Blob | null = null;
+  //       try {
+  //         if (fileData.fileContent && fileData.fileContent.length > 0) {
+  //           console.log("🔑 Archivo recibido en transformToFile fileData.content:", fileData.content);
+  //           if (fileData.fileType === "application/vnd.google-earth.kml+xml") {
+  //             blob = new Blob([fileData.fileContent], { type: fileData.fileType });
+  //           } else {
+  //             const byteCharacters = atob(fileData.fileContent);
+  //             const byteNumbers = new Array(byteCharacters.length)
+  //             .fill(0)
+  //             .map((_, i) => byteCharacters.charCodeAt(i));
+  //             const byteArray = new Uint8Array(byteNumbers);
+  //             blob = new Blob([byteArray], { type: fileData.fileType });
+  //           }
+  //         } else if (fileData.filePath && fileData.filePath.length > 0) {
+  //           console.log("🔑 Archivo recibido en transformToFile fileData.path:", fileData.path);
+  //           // const response = await fetch(fileData.filePath);
+  //           // if (!response.ok) throw new Error(`Error descargando archivo: ${fileData.filePath}`);
+  //           // blob = await response.blob();
+  //           try {
+  //             const response = await fetch(fileData.filePath);
+  //             console.log("🔑 Archivo recibido desde Firebase:", fileData.path);
+  //             if (!response.ok) throw new Error(`❌ Error dessscargando archivo desde Firebase: ${fileData.filePath}`);
+  //             const blob = await response.blob();
+          
+  //             return new File([blob], fileData.fileName, {
+  //               type: fileData.fileType,
+  //               lastModified: fileData.lastModified || Date.now(),
+  //             });
+  //           } catch (error) {
+  //             console.error("❌ Error al recuperar archivo desde Firebase:", error);
+  //             return null;
+  //           }
+  //         }
+      
+  //         if (!blob) {
+  //           console.error("❌ No se pudo crear un Blob válido para:", fileData.fileName);
+  //           return null;
+  //         }
+      
+  //         return new File([blob], fileData.fileName, {
+  //           type: fileData.fileType,
+  //           lastModified: fileData.lastModified || Date.now(),
+  //         });
+  //       } catch (error) {
+  //         console.error(`❌ Error leyendo archivo: ${fileData.filePath}`, error);
+  //         return null;
+  //       }
+  //     };
+      
+  
+  //     const projectFiles = {
+  //       kmlFile: await transformToFile(data.project.kmlFile),
+  //       excelFile: await transformToFile(data.project.excelFile),
+  //     };
+  
+  //     const empalmesGrid = await Promise.all(data.project.empalmesGrid.map(async (row: any) => ({
+  //       ...row,
+  //       rutCliente: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("rutCliente"))),
+  //       boleta: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("boleta"))),
+  //       poder: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("poder"))),
+  //       f2: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("f2"))),
+  //       diagrama: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("diagrama"))),
+  //       otrasImagenes: await transformToFile(data.files[String(row.nroEmpalme)]?.find((f: any) => f.fileClass.includes("otrasImagenes"))),
+  //     })));
+  
+  //     const instalacionesGrid = await Promise.all(data.project.instalacionesGrid.map(async (row: any) => ({
+  //       ...row,
+  //       memoriaCalculo: await transformToFile(data.files[String(row.nroInstalacion)]?.find((f: any) => f.fileClass.includes("memoriaCalculo"))),
+  //     })));
+  
+  //     const techoGrid = await Promise.all(data.project.techoGrid.map(async (row: any) => ({
+  //       ...row,
+  //       imagenTecho: await transformToFile(data.files[`${row.nroInstalacion}_${row.nroAgua}`]?.find((f: any) => f.fileClass.includes("imagenTecho"))),
+  //     })));
+  
+  //     setInitialValues({
+  //       ...data.project,
+  //       ...projectFiles,
+  //       empalmesGrid,
+  //       instalacionesGrid,
+  //       techoGrid,
+  //     });
+  //   } catch (err) {
+  //     console.error("❌ Error en loadDataProject:", err);
+  //   }
+  // };
+  
+
+
   export const loadDataActivity= async (idTask: number,userId:number,setInitialValues:(x:ActivityType) => void)=>{
     //console.log('loadDataActivity',idTask,userId);
   

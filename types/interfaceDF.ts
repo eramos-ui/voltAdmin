@@ -122,12 +122,14 @@ export interface FormConfigDFType { //del formulario dynamic
     name: string;
     visible: boolean;
     textAlign?: 'left' | 'center' | 'right';
-    typeColumn?:'number'|'string'|'rut'|'money'|'sin'|'boolean';
+    typeColumn?:'number'|'string'|'rut'|'money'|'sin'|'boolean'|'file' | 'date';
+    //string | number | boolean | Date | null | File | undefined;
     label?:string;
     unique?: boolean;
     dependentValue?:{field:string,value:string};    
   }
   export interface FormValuesDFType {
-    [key: string]: string | number | boolean | File | undefined;
+    [key: string]: string | number | boolean| Date | File | undefined | null;
   }
-  import { FormikHelpers } from "formik";
+
+//string | number | boolean | Date | null | File | undefined;

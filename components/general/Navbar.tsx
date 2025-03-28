@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import UserAvatar from './UserAvatar';
 import UserDropdown from './UserDropdown';
 import { UserData } from '@/types/interfaces';
-// import { useSidebarToggle } from '../../app/components/SidebarToggleContext';
 import { useSidebarToggle } from '../../context/SidebarToggleContext';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -17,7 +16,6 @@ import { CustomAlert } from '../controls';
 import { compareTwoObj } from '@/utils/compareTwoObj';
 import { generateFileHash } from '@/utils/generateFileHash';
 import { fetchAvatarAsBlob } from '@/utils/fecthAvatarAsBlob';
-
 
 type NavbarProps = {
   toggleSidebar: () => void;
@@ -48,7 +46,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
       setAvatar(user?.avatar);
     }
   }, [user]);
-
   const handleLogout =() =>{
     signOut({
       callbackUrl: '/login', // Redirige al usuario a la página de login después del logout
@@ -67,7 +64,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
     setIsDropdownOpen(!isDropdownOpen);
   };
   const handleSave = async () => {//actualiza los cambios
-    //console.log(user,jsonData,compareTwoObj(user,jsonData), typeof newAvatar);
     const formData= new FormData();
     formData.append('storedProcedure', 'updateUsuario');
     if (newAvatar) {
@@ -188,8 +184,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
                     isDropdownOpen={isDropdownOpen}
                     //newAvatar={ newAvatar }
                     setNewAvatar={handleSetNewAvatar}
-                    // newLanguage={newLanguage}
-                    // setNewLanguage={setNewLanguage} 
                     disabled={isToggleButtonDisabled}
                   />
                   <button 

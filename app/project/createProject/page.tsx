@@ -12,7 +12,7 @@ import { LocationForm } from "@/components/project/LocationForm";
 import { Comunas, GridRowType, OptionsSelect, ProjectType } from "@/types/interfaces";
 import { MapContext } from "../../context"; 
 
-import { CustomButton, CustomFileInput, CustomGrid, CustomLabel } from "@/components/controls";
+import { CustomAlert, CustomButton, CustomFileInput, CustomGrid, CustomLabel } from "@/components/controls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { processFileToGeoJSON } from "@/utils/kmzProcessor";
 import { optionsConectionPointType, optionsLandType, OptionsProjectType, optionsStoneType, optionsCertificadoAccesoType, 
@@ -32,6 +32,7 @@ import { loadDataProject } from "@/utils/apiHelpers"
 
 import { activityColumns, activitiesColumnsDynamic } from "@/data/modalColumns";
 import { sortGridByActivityId } from "@/utils/sortGridByActivityId";
+import { empalmesGridType } from '../../../types/interfaces';
 
 const validationSchema = Yup.object({
     projectName: Yup.string().required("El nombre del proyecto es obligatorio"),
@@ -54,7 +55,8 @@ const NewProjectPage = () => {
   const [ geoJSONDataL, setGeoJSONDataL ]                       = useState<FeatureCollection<Geometry> | null>(null);//la L es por local para no confundir con setGeoJSONData del context
   const { setGeoJSONData, setSelectedKmlFile, selectedKmlFile } = useContext(MapContext);
   const [ isModalOpen, setIsModalOpen ]                         = useState(false);
-
+  // const [alertMessage, setAlertMessage]                         = useState<string | null>(null);
+  // const [alertType, setAlertType]                               = useState<"success" | "error" | "info">("info");
   const [ columnsActivities, setColumnsActivities ]             = useState<any>(activityColumns);
   const [ formColumns, setFormColumns ]                         = useState<any>();
   const [ selectedRow, setSelectedRow ]                         = useState<GridRowType | null>(null);//de las activities
@@ -69,15 +71,20 @@ const NewProjectPage = () => {
   const [ activities, setActivities ]                           = useState<any[]>([]);
   const [ initialValues, setInitialValues ]                     = useState <ProjectType>({ idProject:0, projectName: "",
      ubicacionPanel: (menuId === 5) ? 'piso':'techo',  region: 0, comuna: 0, direccion: "",
-     nroEmpalmes: 1,  empalmesGrid: [],  instalacionesGrid:[],techoGrid:[], kmlFile: "", excelFile: "", activities:[{"NumActividad":"1.0", Actividad:"Inicial",
-        FechaInicio:"","FechaTermino":"",},],
+     nroEmpalmes: 1,  empalmesGrid: [],  instalacionesGrid:[],techoGrid:[], kmlFile: null, excelFile: null, 
+     activities:[{"NumActividad":"1.0", Actividad:"Inicial",FechaInicio:"","FechaTermino":"",},],
      userModification:"", dateModification: "",state:"draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
  } );
- console.log('initialValues en createProject', initialValues);
+//  console.log('initialValues en createProject', initialValues);
  // Este useEffect actualiza nextActivityToAdd cuando cambia selectedRow o activities
  useEffect(() => {
+  if (initialValues) {
+    console.log('initialValues en createProject', initialValues);
+  }
+}, [initialValues]); 
+ useEffect(() => {
    if (selectedRow) {
-     const currentActivity = selectedRow["NumActividad"].toString();
+     const currentActivity = (selectedRow["NumActividad"] instanceof File) ? selectedRow["NumActividad"].name : '';
      const existingIds = new Set(activities?.map((row) => String(row["NumActividad"]))); 
      setNextActivityToAdd(getNextActivityId(currentActivity, existingIds));
    }
@@ -116,7 +123,7 @@ const NewProjectPage = () => {
       setLoading(false);
     };    
     init();
- }, [idTask, session?.user.id, initialValues]); 
+ }, [idTask, session?.user.id]); 
  
  // Este useEffect actualiza el estado activities cuando cambia initialValues.activities
  useEffect(() => {
@@ -184,7 +191,8 @@ const NewProjectPage = () => {
   const handleSaveComplete = async (vals:any) => { 
     console.log('save complete', vals);
     const userModification = session?.user.email;
-    updateNewProject(vals, userModification, 'complete');  
+    const userId = session?.user.id;
+    updateNewProject(vals, userModification,userId, 'complete');  
   };  
   const SaveDraftButton = ({ handleSaveDraft }: { handleSaveDraft: (values: any) => void }) => {
     const { values } = useFormikContext(); // 🔹 Obtiene los valores actuales del formulario 
@@ -201,13 +209,15 @@ const NewProjectPage = () => {
     );
   };
   const handleSaveDraft = async (vals:any) => { 
-    console.log('handleSaveDraft...');
+    console.log('handleSaveDraft...',session?.user.email);
     if (vals.projectName.length === 0) {
       window.alert("Para guardar un borrador mínimo debe ingresar el nombre del proyecto");
       return;      
     } 
     const userModification = session?.user.email;
-    updateNewProject(vals, userModification, 'draft');  
+    const userId = session?.user.id;
+    
+    updateNewProject(vals, userModification,userId, 'draft');  
     router.push('/');
   };  
   const handleRowSelection = (row: any | null) => {
@@ -240,7 +250,7 @@ const NewProjectPage = () => {
             const handleEdit = (row: any) => { setEditingRow(row);  setIsEditing(true);  setSelectedRow(row);  };             
             const handleAdd = () => {
               if (!selectedRow) { alert('Debe seleccionar la actividad previa a la que desea agregar.'); return;  }
-              const currentActivity = selectedRow["NumActividad"].toString();
+              const currentActivity =(selectedRow["NumActividad"])? selectedRow["NumActividad"].toString():'';
               const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
               const newActivity = getNextActivityId(currentActivity, existingIds);
               setNextActivity(newActivity);
@@ -287,7 +297,7 @@ const NewProjectPage = () => {
                   optionsCertificadoAccesoType={optionsCertificadoAccesoType} 
                   optionsOrientationType={optionsOrientationType}
                   optionsCeilingElementType={optionsCeilingElementType} 
-                  techoOptions={techoOptions} 
+                  techoOptions={techoOptions}
                 />                
                 {regiones && (
                   <LocationForm 
@@ -304,7 +314,7 @@ const NewProjectPage = () => {
                     label="Archivo kml o kmz" 
                     accept=".kml,.kmz" 
                     className="100%"
-                    value={selectedKmlFile} 
+                    // value={selectedKmlFile} 
                     useStandaloneForm={false} 
                     showUploadButton={false} 
                     onUploadSuccess={(file: File | null) => {
@@ -350,7 +360,15 @@ const NewProjectPage = () => {
                   <div className="mb-4 flex items-center space-x-4">
                     <ActivityUploadSection />
                   </div>
-                )}                
+                )}  
+                {/* {alertMessage && (
+                  <CustomAlert
+                    message={alertMessage}
+                    type={alertType}
+                    duration={3000}
+                    onClose={() => setAlertMessage(null)}
+                  />
+                )}               */}
                 {values.activities && values.activities.length > 1 && (
                   <div style={{ marginLeft:"0rem" }}>
                     <CustomGrid 

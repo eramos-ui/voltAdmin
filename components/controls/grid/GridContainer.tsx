@@ -5,11 +5,11 @@ import GridRowComponent from '@/components/dynamicForm/GridRowComponent';
 //import FormGridHeader from '@/components/formComponents/FormGridHeader';
 // import GridRowComponent from '@/components/formComponents/GridRowComponent';
 import FormGridHeader from '@/components/dynamicForm/FormGridHeader';
-//import GridRowComponent from './GridRowComponent';
+import { GridColumnDFType, GridRowDFType } from '@/types/interfaceDF';
 
 interface GridContainerProps {
-  columns: GridColumnType[];
-  rows: GridRowType[];
+  columns: GridColumnDFType[];
+  rows: GridRowDFType[];
   actions: ('add' | 'edit' | 'delete')[];
   onEdit: (index: number, editFormConfig?: FormConfigType) => void; // Pasamos el editFormConfig aquí
   onDelete: (index: number) => void;
@@ -28,7 +28,7 @@ const GridContainer: React.FC<GridContainerProps> = ({ columns, rows, actions, o
       columns={columns} columnWidths={columnWidths} actions={actions} label={label} 
       />
       <tbody>
-        {rows.map((row: GridRowType, rowIndex: number) => (
+        {rows.map((row: GridRowDFType, rowIndex: number) => (// string | number | boolean | Date | null | File | undefined
           <GridRowComponent
             key={rowIndex}
             row={row}

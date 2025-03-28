@@ -10,7 +10,7 @@ import bcrypt from 'bcryptjs';
 import { FormConfigDFType, GridRowDFType } from '@/types/interfaceDF';
 
 import { formatRut } from '@/utils/formatRut';
-import {  getValidationSchemaDynamicForm } from '@/utils/validationSchema';
+// import {  getValidationSchemaDynamicForm } from '@/utils/validationSchema';
 import { LoadingIndicator } from '@/components/general/LoadingIndicator';
 import { saveFormData } from '@/utils/apiHelpers';
 import _ from "lodash";

@@ -1,4 +1,3 @@
-
 export interface UserData {
     id: number;
     name: string;
@@ -112,7 +111,7 @@ export interface UserData {
   }
  
   export interface FormValues {
-    [key: string]: string | number | boolean | File | undefined;
+    [key: string]: string | number | boolean | File | undefined | null;
   }
   export interface FormConfigType { //del formulario dynamic
     formTitle: string;
@@ -176,7 +175,8 @@ export interface UserData {
     row?:number;
     dependsOn?: { field: string, value: string },
     dependencies?:{ field: string; valueMap: Record<string, any> }[];
-    required?:boolean;
+    required?:boolean;      
+    renderCell?: (row: T) => React.ReactNode;// ✅ Nueva propiedad para renderizado personalizado (como mostrar el nombre del archivo) cuando es file
   };
   
   export interface OptionsSelect {
@@ -222,8 +222,8 @@ export interface UserData {
     usuarioCreador?:string;
   }
   export interface GridRowType {//las filas del Dynamic form-grilla
-    [key: string]: string | number | boolean  ; // Ajusta los tipos según tus necesidades
-  } 
+    [key: string]: string | number | boolean | Date | null | File | undefined; // Ajusta los tipos según tus necesidades
+  }   
   export interface GridColumnType { //del dynamic form
     name: string;
     visible: boolean;
@@ -235,7 +235,20 @@ export interface UserData {
   }     
   export interface ActivitiesType {
     "NumActividad":string,Actividad:string | null, FechaInicio?: string | null,"FechaTermino"?:string | null, "Duracion"?: number | string ,Presupuesto?:number | string | null
- }
+   }
+  export type empalmesGridType = {//este type debe estar en apiHelpers
+    nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string; distribuidora:string;
+    capacidadInyeccion: number; rutCliente: File | null; boleta:File |null; poder: File | null; foto: File | null; f2oF4:string;
+    f2: File | null; diagrama: File | null; otrasImagenes: File | null; fechaF3: Date | null 
+    }
+  export type instalacionesGridType = {//este type debe estar en apiHelpers
+    nroInstalacion: number; descripcionInstalacion: string | null; nroAguas: number; formaTecho: string;
+    descripcionFormaTecho: string | null; memoriaCalculo: File | null
+  }
+  export type techoGridType = {//este type debe estar en apiHelpers
+    nroInstalacion: number; nroAgua: number; orientacion: string | null; material: string | null;
+    otrosElementos: string; area: number; pendiente: number; imagenTecho: File | null
+  }
   export type ProjectType ={
      idProject: number;
      projectName: string;
@@ -244,15 +257,18 @@ export interface UserData {
      comuna:number | null;
      direccion: string | null;
      nroEmpalmes:number | null;
-     empalmesGrid:{ nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string;
-              capacidadInyeccion: number; rutCliente: string | null; boleta:string |null; poder: string | null;
-              f2: string | null; diagrama: string | null; otrasImagenes: string | null; fechaF3: Date | null }[];
-     instalacionesGrid?:{ nroInstalacion: number; descripcionInstalacion: string | null; nroAguas: number; formaTecho: string;
-              descripcionFormaTecho: string | null; memoriaCalculo: string | null}[];	
-     techoGrid?: { nroInstalacion: number; nroAgua: number; orientacion: string | null; material: string | null;
-           otrosElementos: string, area: number; pendiente: number; imagenTecho: string | null }[];	
-     kmlFile: string | null;	
-     excelFile:  string | null;	
+     //  empalmesGrid:{ nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string; distribuidora:string;
+     //           capacidadInyeccion: number; rutCliente: File | null; boleta:File |null; poder: File | null;fotos: File | null; f2oF4:string;
+     //           f2: File | null; diagrama: File | null; otrasImagenes: File | null; fechaF3: Date | null }[];
+     empalmesGrid:empalmesGridType[];
+     //  instalacionesGrid?:{ nroInstalacion: number; descripcionInstalacion: string | null; nroAguas: number; formaTecho: string;
+     //           descripcionFormaTecho: string | null; memoriaCalculo: File | null}[];	
+     instalacionesGrid:instalacionesGridType[];
+     //  techoGrid?: { nroInstalacion: number; nroAgua: number; orientacion: string | null; material: string | null;
+     //        otrosElementos: string, area: number; pendiente: number; imagenTecho: File | null }[];	
+     techoGrid?:techoGridType[];
+     kmlFile: File | null;	
+     excelFile:  File | null;	
      //activities:{ "NumActividad": string;Actividad: string;FechaInicio: string;FechaTermino: string;Presupuesto: number;Duracion: number;  }[]	;
      activities:ActivitiesType[],  
      userModification:  string ;		
@@ -273,13 +289,14 @@ export interface UserData {
     nroAguas:number;
     nroInstalaciones:number;
     kmlFile:string; 
-    techoGrid: { nroInstalacion: number;nroAgua: number; orientacion: string; material: string; area: number; pendiente: number, otrosElementos:string[], imagenTecho: File | null,  }[];
+    // techoGrid: { nroInstalacion: number;nroAgua: number; orientacion: string; material: string; area: number; pendiente: number, otrosElementos:string[], imagenTecho: File | null,  }[];
+    techoGrid:techoGridType[];
     nroEmpalmes: number;
-    instalacionesGrid:{ nroInstalacion:number, descripcionInstalacion:string, nroAguas:number, formaTecho:string, descripcionFormaTecho:string, memoriaCalculo: File | null, alturaTecho:number,
-     }[],
-    empalmesGrid: { nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string, 
-      capacidadInyeccion: number, rutCliente: File, boleta: File | null, poder: File | null, diagrama: File | null, otrasImagenes:File | null
-      , f2:File | null ,fechaF3: string , }[], 
+    instalacionesGrid:instalacionesGridType[];
+    // empalmesGrid: { nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string, 
+    //   capacidadInyeccion: number, rutCliente: File, boleta: File | null, poder: File | null, diagrama: File | null, otrasImagenes:File | null
+    //   , f2:File | null ,fechaF3: string , }[], 
+    empalmesGrid:empalmesGridType[],
     activities:ActivitiesType[],  
   }
   export interface ActivityType //extends ProjectType
@@ -337,26 +354,4 @@ export interface UserData {
 
   } 
 
-  // export type CustomGridProps<T> = {
-  //   title?: string; // Título de la grilla
-  //   rowHeight?: string; // Alto de las filas (por ejemplo, "50px")
-  //   rowsToShow?: number; // Número de filas a mostrar
-  //   borderColor?: string; // Color del borde
-  //   borderWidth?: string; // Ancho del borde
-  //   padding?: string; // Padding dentro de cada celda
-  //   marginBottom?: string; // Espaciado inferior de la grilla
-  //   gridWidth?: string; // Ancho total de la grilla
-  //   columns: ColumnConfig<T>[]; // Configuración de las columnas
-  //   data: T[]; // Datos a mostrar en la grilla
-  //   name?: string; // Campo del formulario donde se almacenará la data
-  //   actions?: ("add" | "edit" | "delete")[]; // Acciones disponibles
-  //   actionsTooltips?: string[]; // tooltips de las Acciones 
-  //   actionsPositionTooltips?:  ("top" | "bottom" | "left" | "right")[]; // posición de los tooltips de las Acciones
-  //   onAdd?: () => void;
-  //   onEdit?: (row: T) => void;
-  //   onDelete?: (row: T) => void;
-  //   addButtonProps?: Omit<CustomButtonProps, "onClick" | "label">; // Props para CustomButton
-  //   labelButtomActions?: string[];
-  //   exportable?: boolean; // Indica si la grilla es exportable  
-  //   exportFileName?: string; // Nombre predeterminado del archivo exportado
-  // };
+ 

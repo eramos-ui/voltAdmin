@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Formik } from "formik";
-import isEqual from "lodash/isEqual"; 
 import * as Yup from "yup";
 import { CustomInput } from "../controls/CustomInput";
 import { CustomButton } from "../controls/CustomButton";
@@ -11,6 +10,7 @@ import { faEraser, faFloppyDisk,} from '@fortawesome/free-solid-svg-icons';
 import { CustomDate } from "../controls";
 import { CustomSelectIcon } from "../controls/CustomSelectIcon";
 import './DynamicForm.css';
+
 const validInputTypes = ["text", "number", "email", "password", "url", "tel", "search", "color", "file"] as const;
 type InputType = typeof validInputTypes[number];
 // const isValidInputType = (type?: string): type is InputType => {
@@ -44,6 +44,7 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
     handleFileUpload?: (file: File | null, rowIndex?: number, field?: string) => void;
   }) => {
   console.log('DynamicForm columns',columns);
+  console.log('DynamicForm initialValues',initialValues);
   useEffect(() => {
     setIsDirty(false); // 📌 Inicializa como no modificado al cargar
   }, []);
@@ -103,11 +104,18 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                                   {col.inputType === "file" ? (
                                       <CustomFileInput id={col.field} name={col.field} label={col.headerName} width={col.width} accept=".pdf, .jpg"
                                           putFilenameInMessage={true}  value={values[col.field]}  disabled={isDisabled} required={col.required}
-                                          onUploadSuccess={(file: File | null) => {
-                                              if (file) {//   console.log(`📂 Archivo subido (${col.field}):`, file.name);
-                                                  setFieldValue(col.field, file.name);
-                                                  handleFileUpload?.(file, rowIndex, col.field);
-                                              }
+                                        //   onUploadSuccess={(file: File | null) => {
+                                        //       if (file) {//   console.log(`📂 Archivo subido (${col.field}):`, file.name);
+                                        //           setFieldValue(col.field, file.name);
+                                        //           handleFileUpload?.(file, rowIndex, col.field);
+                                        //       }
+                                        //   }}
+                                        onUploadSuccess={(file: File | null) => {
+                                            console.log('🔑 Archivo subido en DynamicForm-JSX:', file);
+                                            if (file) {
+                                              setFieldValue(col.field, file); // ← ahora se guarda el File real
+                                              handleFileUpload?.(file, rowIndex, col.field);
+                                            }
                                           }}
                                         />
                                   ) : col.inputType === "date" ? (

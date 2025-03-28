@@ -1,34 +1,79 @@
+import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
-webpack: (config, { isServer, dev, webpack }) => {
-  if (!isServer) {
-    config.plugins.push(new NodePolyfillPlugin());
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    domains: ['firebasestorage.googleapis.com'],
+  },
 
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'url': require.resolve('url/'),
-      // ... los otros aliases
-    };
+  webpack: (config, { isServer, dev, webpack }) => {
+    if (!isServer) {
+      config.plugins.push(new NodePolyfillPlugin());
 
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      // fallbacks necesarios
-    };
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        url: require.resolve('url/'),
+        // agrega más aliases si los tienes
+      };
 
-    config.plugins.push(
-      new webpack.ProvidePlugin({
-        process: 'process/browser',
-        Buffer: ['buffer', 'Buffer'],
-      })
-    );
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        // fallbacks necesarios
+      };
 
-    config.ignoreWarnings = [
-      /Critical dependency/,
-      /UnhandledSchemeError/,
-    ];
-  }
+      config.plugins.push(
+        new webpack.ProvidePlugin({
+          process: 'process/browser',
+          Buffer: ['buffer', 'Buffer'],
+        })
+      );
 
-  return config;
-}
+      config.ignoreWarnings = [
+        /Critical dependency/,
+        /UnhandledSchemeError/,
+      ];
+    }
+
+    return config;
+  },
+};
+
+export default nextConfig;
+
+
+
+// webpack: (config, { isServer, dev, webpack }) => {
+//   if (!isServer) {
+//     config.plugins.push(new NodePolyfillPlugin());
+
+//     config.resolve.alias = {
+//       ...config.resolve.alias,
+//       'url': require.resolve('url/'),
+//       // ... los otros aliases
+//     };
+
+//     config.resolve.fallback = {
+//       ...config.resolve.fallback,
+//       // fallbacks necesarios
+//     };
+
+//     config.plugins.push(
+//       new webpack.ProvidePlugin({
+//         process: 'process/browser',
+//         Buffer: ['buffer', 'Buffer'],
+//       })
+//     );
+
+//     config.ignoreWarnings = [
+//       /Critical dependency/,
+//       /UnhandledSchemeError/,
+//     ];
+//   }
+
+//   return config;
+// }
 
 
 

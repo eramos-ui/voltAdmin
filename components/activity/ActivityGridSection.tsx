@@ -22,7 +22,7 @@ const ActivityGridSection: React.FC<ActivityGridSectionProps> = ({ columns, hand
   // }, [values.activities]);
   useEffect(()=>{
     if ( !selectedRow ) return;
-    const currentActivity = selectedRow["NumActividad"].toString();
+    const currentActivity = ( selectedRow["NumActividad"])?selectedRow["NumActividad"].toString():'';
     const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
     setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
   },[selectedRow])

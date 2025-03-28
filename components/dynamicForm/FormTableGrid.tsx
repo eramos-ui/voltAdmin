@@ -89,6 +89,7 @@ export const FormTableGrid: React.FC<FormRowProps> =
     setIsModalOpen(true);
     setIsAdding(true);
   };
+  /* sacado al hacer el build
   const handleFormAdd = (values: FormValuesDFType, { setSubmitting }: FormikHelpers<FormValuesDFType>) => {//values son los de la fila que se edita o agrega
     const newRow: GridRowDFType = {}; //para mapear los valores del formulario a una fila
     const typeValues= ['number','string','rut','sin','boolean','money'];
@@ -129,7 +130,8 @@ export const FormTableGrid: React.FC<FormRowProps> =
     }
     setIsModalOpen(false);
     setSubmitting(false);
-  }; 
+  };
+  */ 
   const handleEdit = (index: number) => {
     setEditingRowIndex(index);
     setIsModalOpen(true);

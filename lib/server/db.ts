@@ -42,6 +42,7 @@ function getDbConfig(): sql.config {
     },
     port: Number(process.env.DB_PORT || 1433),
     connectionTimeout: 30000,
+    requestTimeout: 60000,
   };
 }
 
@@ -55,7 +56,7 @@ export async function connectToDB(): Promise<sql.ConnectionPool> {
     const pool = await sql.connect(config);
     sqlConnection.isConnected = 1;
     sqlConnection.pool = pool;
-    console.log('✅ Conexión a SQL Server establecida');
+    console.log('✅ En getDbConfig Conexión a SQL Server establecida');
     return pool;
   } catch (error) {
     console.error('❌ Error conectando a SQL Server:', error);

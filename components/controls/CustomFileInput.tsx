@@ -57,20 +57,35 @@ export const CustomFileInput: React.FC<Props> = ({
   //const { setValue }                     = getFieldHelpers(name!); 
   //console.log('CustomFileInput',label,width);
   useEffect(() => {
-    //console.log('CustomFileInput',width);
-    if (value) {
-      //if (putFilenameInMessage){
-        if (typeof value === "string") {
-          setMessage(value); // ✅ Muestra el nombre si es string
-        } else if (value instanceof File) {
-          setMessage(value.name); // ✅ Muestra el nombre si es un archivo
-        }
-      // }else {
-      //   setMessage('archivo subido OK');
-      // }
+    const actualValue = value ?? field?.value;
+    if (actualValue) {
+      if (typeof actualValue === "string") {
+        setMessage(actualValue);
+      } else if (actualValue instanceof File) {
+        setMessage(actualValue.name);
+        setFile(actualValue);
+      }
       setMessageType("success");
     }
-  }, [value]); // Actualiza si cambia el `value`
+  }, [value, field?.value]);
+  // useEffect(() => {
+  //   //console.log('CustomFileInput',width);
+  //   if (value) {
+  //     //if (putFilenameInMessage){
+  //       if (typeof value === "string") {
+  //         //console.log('CustomFileInput string',name,value);
+  //         setMessage(value); // ✅ Muestra el nombre si es string
+  //       } else if (value instanceof File) {
+  //         console.log('CustomFileInput FILE',name,value);
+  //         setMessage(value.name); // ✅ Muestra el nombre si es un archivo
+  //         setFile(value); 
+  //       }
+  //     // }else {
+  //     //   setMessage('archivo subido OK');
+  //     // }
+  //     setMessageType("success");
+  //   }
+  // }, [value]); // Actualiza si cambia el `value`
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const selectedFile = event.target.files?.[0] || null;

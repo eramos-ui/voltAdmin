@@ -1,10 +1,11 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { executeQuery } from '@/lib/server/spExecutor';
-import { ProjectType } from '@/types/interfaces';
+// import { ProjectType } from '@/types/interfaces';
 import fs from 'fs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  
   if (req.method !== "GET") return res.status(405).json({ error: "Método no permitido" });
 
   const { idTask, userId } = req.query;
@@ -13,22 +14,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const query = `EXEC getProjectFromTask @idTask= ${Number(idTask)}, @userId = ${Number(userId)}`;
     const result = await executeQuery(query);
-
     if (!result || result.length === 0) {
       return res.status(404).json({ error: "Proyecto no encontrado" });
     }
-
+    
     const projectData = JSON.parse(JSON.stringify(result));
     const idProject = projectData[0].idProject;
     const project = projectData[0];
-
+    
     const queryFiles = `EXEC filesFromProject @idProject= ${Number(idProject)}`;
     const resultFiles = await executeQuery(queryFiles);
     const projectFiles = JSON.parse(JSON.stringify(resultFiles));
-
+    
     const excelFile = projectFiles.find((file: any) => file.fileName.endsWith(".xlsx"));
     const kmlFile = projectFiles.find((file: any) => file.fileName.endsWith(".kml"));
-
+    
     const processedProject = {
       ...project,
       excelFile: {
@@ -50,7 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       instalacionesGrid: project.instalacionesGrid ? JSON.parse(project.instalacionesGrid) : [],
       techoGrid: project.techoGrid ? JSON.parse(project.techoGrid) : [],
     };
-
+    // console.log("🔑 En getProjectFromTask projectFiles:", projectFiles.length);
+    
     const processedFiles = await Promise.all(
       projectFiles.map(async (file: any) => {
         if (!file) return null;
@@ -82,24 +83,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             fileContent: fileContentBase64,
           };
         } else if (file.filePath) {
-          let fileSize = 0;
-          let fileBuffer = null;
           try {
-            fileBuffer = fs.readFileSync(file.filePath);
-            fileSize = fs.statSync(file.filePath).size;
+            const response = await fetch(file.filePath);
+            if (!response.ok) throw new Error(`Error leyendo archivo: ${file.filePath}`);
+            
+            const blobBuffer = await response.arrayBuffer();
+            const fileBuffer = Buffer.from(blobBuffer);
+            const fileSize = fileBuffer.length;
+        
+            return {
+              fileClass: file.fileClass,
+              fileName: file.fileName,
+              fileType: file.fileType,
+              filePath: file.filePath,
+              fileSize,
+              lastModified,
+              row: file.row,
+              fileContent: fileBuffer.toString("base64"),
+            };
           } catch (error) {
-            console.error(`❌ Error leyendo archivo: ${file.filePath}`, error);
+            console.error(`❌ Error leyendo archivo desde URL Firebase: ${file.filePath}`, error);
           }
-          return {
-            fileClass: file.fileClass,
-            fileName: file.fileName,
-            fileType: file.fileType,
-            filePath: file.filePath,
-            fileSize,
-            lastModified,
-            row: file.row,
-            fileContent: fileBuffer ? fileBuffer.toString("base64") : null,
-          };
         } else if (file.fileContent) {
           const fileSize = file.fileContent.length;
           return {
@@ -115,7 +119,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return null;
       }).filter(Boolean)
     );
-
+    // console.log("🔑 En getProjectFromTask processedFiles:", processedFiles.length);
     const filesByRow = processedFiles.reduce((acc: any, file: any) => {
       if (!file.row) return acc;
       if (!acc[file.row]) acc[file.row] = [];

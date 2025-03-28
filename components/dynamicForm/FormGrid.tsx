@@ -182,6 +182,7 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
   const isUniqueValue = (newRow: GridRowDFType, key: string): boolean => {//gridRows son las filas que hay en la grilla y newRow es la que se agrega
        return !gridRows.some((row, idx) => idx !== editingRowIndex && row[key] === newRow[key]);
      };
+     /* sacado al hacer el build
   const handleFormSubmit = (values: FormValuesDFType, { setSubmitting }: FormikHelpers<FormValuesDFType>) => {//values son los de la fila que se edita o agrega
     const newRow: GridRowDFType = {}; //para mapear los valores del formulario a una fila
     const typeValues= ['number','string','rut','sin','money'];
@@ -224,6 +225,7 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
     setIsModalOpen(false);
     setSubmitting(false);
   }; 
+  */
   if (isAlertOpen){
     const messageAlert=`${labels?.grid.errorMsgDuplicate}`
      return (

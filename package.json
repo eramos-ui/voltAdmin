@@ -28,6 +28,7 @@
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.4",
     "dotenv": "^16.4.5",
+    "firebase-admin": "^13.2.0",
     "formidable": "^3.5.2",
     "formik": "^2.4.6",
     "jsonwebtoken": "^9.0.2",

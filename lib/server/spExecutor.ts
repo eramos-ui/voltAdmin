@@ -44,7 +44,7 @@ export const executeSP = async <T = any>(
   params: { name: string; type: ISqlTypeFactory; value: any }[] = []
 ): Promise<any[]> => {
   try {
-    console.log(`▶️ Ejecutando SP: ${spName} con params:`, params);
+    console.log(`▶️ Ejecutando SP: ${spName} con nro. params:`, params.length);
     const pool = await connectToDB();
     const request = pool.request();
         params.forEach(param => {
@@ -256,10 +256,10 @@ export const executeSPScalar = async (
     );
 
     const result = await request.execute(procedureName);
-
+    console.log(`✅ En executeSPScalar ${procedureName}`);
     return result.recordset.length > 0 ? result.recordset[0] : null;
   } catch (error) {
-    console.error(`❌ Error ejecutando SP "${procedureName}":`, error);
+    console.error(`❌ Error en executeSPScalar SP "${procedureName}":`, error);
     return null;
   }
 };

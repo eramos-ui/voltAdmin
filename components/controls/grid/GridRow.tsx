@@ -120,7 +120,8 @@ type GridRowProps<T> = {
                   fontSize,
                 }}
               >
-                { formattedValue}
+                {col.renderCell ? col.renderCell(row) : formattedValue}
+                {/* { formattedValue} */}
               </div> 
 
             )

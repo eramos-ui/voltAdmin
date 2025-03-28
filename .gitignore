@@ -2,10 +2,10 @@
 
 # dependencies
 /node_modules
+/credentials/firebase-service-account.json
 /.pnp
 .pnp.js
 .yarn/install-state.gz
-
 # testing
 /coverage
 

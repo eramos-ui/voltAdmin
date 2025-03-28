@@ -1,46 +1,69 @@
-export const updateNewProject = async ( values:any, userModification:any, state:string) =>{
-  console.log('en updateNewProject values',values, userModification,state); 
+export const updateNewProject = async ( values:any, userModification:any, userId:any, state:string) =>{
+  // console.log('en util/updateNewProject values**', userModification, userId, state); 
 
     try {
       const convertFileToBase64 = async (file: File | null): Promise<{ fileName: string; fileType: string; fileData: string } | null> => {
-        if (!file || !(file instanceof File)) {
-          console.warn("⚠️ Archivo no válido o no existe:", file);
+        // console.log("📥 Archivo recibido en convertFileToBase64:", file, "tipo:", typeof file);
+        if (!(file instanceof File)) {
+          // console.warn("⚠️ Archivo no es instancia de File o no existe:", file);
           return null;
         }
-        const arrayBuffer = await file.arrayBuffer();
-          // 🔹 Asegurar el tipo MIME para KML
-        const correctedFileType =
-        file.type || (file.name.endsWith(".kml") ? "application/vnd.google-earth.kml+xml" : "application/octet-stream");
+        // console.log("📦 Archivo recibido en convertFileToBase64:", file);
 
-        return {
-          fileName: file.name,
-          fileType: correctedFileType,
-          fileData: Buffer.from(arrayBuffer).toString("base64"),
-        };
+        try {
+          const arrayBuffer = await file.arrayBuffer?.();
+          if (!arrayBuffer) {
+            console.warn("⚠️ No se pudo obtener arrayBuffer");
+            return null;
+          }
+
+          const correctedFileType =
+            file.type || (file.name?.endsWith(".kml") ? "application/vnd.google-earth.kml+xml" : "application/octet-stream");
+
+          return {
+            fileName: file.name || "archivo_sin_nombre",
+            fileType: correctedFileType,
+            fileData: Buffer.from(arrayBuffer).toString("base64"),
+          };
+        } catch (error) {
+            console.error("❌ Error convirtiendo archivo:", error);
+            return null;
+        }
       };
-     
+      
       // 🔹 Convertir archivos pequeños
-     const excelFile = await convertFileToBase64(values.excelFile);
-     const kmlFile = await convertFileToBase64(values.kmlFile);
-
+      const excelFile =await convertFileToBase64(values.excelFile );
+      const kmlFile = await convertFileToBase64(values.kmlFile );
       // 🔹 Convertir archivos de cada grilla
-      const convertGridFiles = async (grid: any[], fileKeys: string[]) => {
+      const convertGridFiles = async (
+        grid: any[],
+        fileKeys: string[],
+        rowIdKey: string | string[]
+      ): Promise<any[]> => {
         return await Promise.all(
           grid.map(async (row) => {
-            const newRow = { ...row };
+            const newRow = { ...row };      
+            // Construir rowId usando una o más claves
+            const rowId = Array.isArray(rowIdKey)
+              ? rowIdKey.map((key) => String(row[key])).join("_")
+              : String(row[rowIdKey]);      
+            newRow.rowId = rowId;      
             for (const key of fileKeys) {
+              const originalFile = row[key];
+              // console.log(`🔍 Revisando archivo para key "${key}"`, originalFile);
               newRow[key] = await convertFileToBase64(row[key]);
             }
-            return newRow;
+             return newRow;
           })
         );
       };
+      
   
-      const empalmesGrid = await convertGridFiles(values.empalmesGrid, ["rutCliente", "boleta", "poder","f2","diagrama","otrasImagenes"]);
-      const instalacionesGrid = await convertGridFiles(values.instalacionesGrid, ["memoriaCalculo"]);
-      const techoGrid = await convertGridFiles(values.techoGrid, ["imagenTecho"]);
-  //console.log('values antes de enviar a la API saveProject',values);
-      const valuesFull={...values, userModification}
+      const empalmesGrid = await convertGridFiles(values.empalmesGrid, ["rutCliente", "boleta", "poder","f2","diagrama","otrasImagenes","fotos"], "nroEmpalme");
+      const instalacionesGrid = await convertGridFiles(values.instalacionesGrid, ["memoriaCalculo"], "nroInstalacion");
+      const techoGrid = await convertGridFiles(values.techoGrid, ["imagenTecho"], ["nroInstalacion", "nroAgua"]);
+      const valuesFull={...values, userModification,userId}
+      // console.log('values antes de enviar a la API saveProject',valuesFull);
       // 🔹 Enviar los datos a la API
       const response = await fetch("/api/saveProject", {
         method: "POST",

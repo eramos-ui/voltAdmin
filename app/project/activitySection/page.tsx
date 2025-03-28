@@ -37,7 +37,7 @@ const ActivitySection = () => {
       alert(`Debe seleccionar la actividad previa a la que desea agregar.`);
       return;
     }
-    const currentActivity = selectedRow["NumActividad"].toString();
+    const currentActivity = ( selectedRow["NumActividad"])?selectedRow["NumActividad"].toString():'';
     const existingIds = new Set(rows?.map((row) => String(row["NumActividad"]))); // Obtener todos los IDs existentes en la grilla
     const newActivity = getNextActivityId(currentActivity,existingIds);
     console.log("Agregar nueva actividad", selectedRow,newActivity);
