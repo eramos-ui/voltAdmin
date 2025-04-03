@@ -4,7 +4,7 @@ import { executeSP } from '@/lib/server/spExecutor';
 import sql from 'mssql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('API saveWithJson', req.body);
+  //console.log('API saveWithJson', req.body);
 
   if (req.method === 'POST') {
     const { storedProcedure, parameters } = req.body;

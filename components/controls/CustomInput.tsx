@@ -123,15 +123,15 @@ export const CustomInput = ({
     visible=true,
     ...props
    }: InputProps ) =>{
-    const [charCount, setCharCount]           = useState((field?.value ?? value ?? "").toString().length);
-    const [formattedValue, setFormattedValue] = useState<string>(value ? value.toString() : "");
-    const [ valueInside, setValueInside ]     = useState<any>( value ? value.toString() : "");
+    const [ charCount, setCharCount ]           = useState((field?.value ?? value ?? "").toString().length);
+    const [ formattedValue, setFormattedValue ] = useState<string>(value ? value.toString() : "");
+    const [ valueInside, setValueInside ]       = useState<any>( value ? value.toString() : "");
     const inputClassNames = ` 
     custom-input-field ${theme}
     ${leftIcon ? 'has-left-icon' : ''} 
     ${rightIcon ? 'has-right-icon' : ''}
   `.trim();
-    // console.log('CustomInput field',value,error);
+    // if (type ==='RUT') console.log('**CustomInput field', value, error,form?.touched,form?.errors);
     const inputValue = (field?.value ?? value)? field?.value ?? value:'';
     const name = field?.name || ''; // Usa un valor predeterminado si field es undefined
     const errorMessage =

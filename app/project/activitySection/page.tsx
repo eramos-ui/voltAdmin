@@ -8,7 +8,7 @@ import ActivityGridSection from '@/components/activity/ActivityGridSection';
 import ActivityNavigationSection from '@/components/activity/ActivityNavigationSection';
 import { GridRowType } from '@/types/interfaces';
 //import { getNextActivityId } from '@/app/utils/getNextAcivityId';
-import { getNextActivityId } from '@/utils/getNextAcivityId';
+import { getNextActivityId } from '@/utils/getNextActivityId';
 //import { sortGridByActivityId } from '@/app/utils/sortGridByActivityId';
 import { sortGridByActivityId } from '@/utils/sortGridByActivityId';
 import CustomModal from '@/components/general/CustomModal';

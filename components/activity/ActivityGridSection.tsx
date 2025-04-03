@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFormikContext } from "formik";
 import { CustomGrid } from '@/components/controls/CustomGrid';
 import { GridRowType, ProjectType } from '@/types/interfaces';
-import { getNextActivityId } from '@/utils/getNextAcivityId';
+import { getNextActivityId } from '@/utils/getNextActivityId';
 
 interface ActivityGridSectionProps { //rows: GridRowType[]; // setRows: (rows: GridRowType[]) => void;
   columns: any;
@@ -25,7 +25,7 @@ const ActivityGridSection: React.FC<ActivityGridSectionProps> = ({ columns, hand
     const currentActivity = ( selectedRow["NumActividad"])?selectedRow["NumActividad"].toString():'';
     const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
     setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
-  },[selectedRow])
+  },[selectedRow, values.activities])
   
   if (values.activities.length === 0) return null; 
 

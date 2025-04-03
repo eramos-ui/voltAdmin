@@ -185,6 +185,7 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
     router.push('/');
   }
   const spFetchSaveGrid=formData.table.spFetchSaveGrid;
+
   return (//Aquí va el despliegue de la grilla no editable con los datos de la tabla que se hace en FormTableGrid vía GridContainer
     <>
     {/* (() => { console.log('en jsx page ', isModalOpen); return null; })()
@@ -203,7 +204,7 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
               {formData.table.columns && formData.table.actions && formData.table.columnWidths && formData.table.editFormConfig &&               
               <GridContainer  columns={formData.table.columns} rows={rows} actions={formData.table.actions} 
                     columnWidths={formData.table.columnWidths} onEdit={handleEdit} handleAdd={handleAdd} table={formData.table}
-                    onDelete={handleDelete}  editFormConfig={formData.table.editFormConfig} // Pasamos el editFormConfig a GridContainer
+                    onDelete={handleDelete} editFormConfig={formData.table.editFormConfig} // Pasamos el editFormConfig a GridContainer
                     label={formData.table.label} //requerido para los tooltips de la Actions
                     objectGrid={formData.table.objectGrid}//para el tooltips de los botones de actions
                 />
@@ -212,7 +213,7 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
                 <EditForm isOpen={isModalOpen} onClose={() => reLoad()   } theme={formData.table.editFormConfig.theme} // onSubmit={handleFormAdd} 
                   row={editingRowIndex !== null ? rows[editingRowIndex] : {}} columns={formData.table.columns} 
                   formConfig={ formData.table.editFormConfig as FormConfigDFType} // Pasa el editFormConfig al componente de edición
-                  spFetchSaveGrid={spFetchSaveGrid} isAdding={isAdding} fields={formData.editFields || []} //rows={rows} //setRows={setAllValues }
+                  requirePassword={formData.table.requirePassword} spFetchSaveGrid={spFetchSaveGrid} isAdding={isAdding} fields={formData.editFields || []} //rows={rows} //setRows={setAllValues }
                 />
                 )} 
               <div className="flex space-x-4 mt-4">

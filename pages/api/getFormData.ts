@@ -6,7 +6,7 @@ import { isJson } from '@/utils/isJson';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { subMenuId } = req.query;
-
+  console.log('getFormData',subMenuId);
   if (!subMenuId || Array.isArray(subMenuId)) {
     return res.status(400).json({ error: 'Invalid subMenuId' });
   }

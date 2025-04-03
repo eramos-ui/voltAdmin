@@ -43,13 +43,14 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
   const [ isDirtyAguas, setIsDirtyAguas ]                            = useState(false);
   const [ selectedInstalacion, setSelectedInstalacion ]              = useState<number>(0);
   const [ selectedRowAgua, setSelectedRowAgua ]                      = useState<any | null>(null);
-  useEffect(() =>{
-    console.log('useEffect  empalmeColumnsDynamic',  empalmeColumnsDynamic);
-  },[ empalmeColumnsDynamic])
-  useEffect(() =>{
+  // useEffect(() =>{
+  //   console.log('useEffect  empalmeColumnsDynamic',  empalmeColumnsDynamic);
+  // },[ empalmeColumnsDynamic])
+  // useEffect(() =>{
+
     //console.log('useEffect  values.empalmesGrid',  values.empalmesGrid[0].rutCliente instanceof File);
-    console.log('useEffect  values',  values);
-  },[ values])
+  //   console.log('useEffect  values',  values);
+  // },[ values])
   const handleCancel = (isDirty: boolean, setEditing: (val: boolean) => void) => {
     if (isDirty) {
       if (window.confirm("Tienes cambios sin guardar. ¿Deseas salir?")) {
@@ -59,30 +60,31 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
       setEditing(false);
     }
   };
-  const ajustaFilasAguasInstalacion=()=>{
-    const currentTechoGrid = Array.isArray(values.techoGrid) ? values.techoGrid : [];
-    const rowInstalacion=Array.isArray( values.instalacionesGrid.filter(rw => rw.nroInstalacion === selectedInstalacion))
-    ? values.instalacionesGrid.filter(rw => rw.nroInstalacion === selectedInstalacion) : [];
-    const aguasInstalacion=Array.isArray( values.techoGrid.filter( inst => inst.nroInstalacion === selectedInstalacion ))
-    ?values.techoGrid.filter( inst => inst.nroInstalacion === selectedInstalacion ):[];
-    const currentLength=aguasInstalacion?.length || 0;
-    const newLength=rowInstalacion[0]?.nroAguas;
-    if (newLength > currentLength) {
-      const nuevasFilas = Array.from({ length: newLength - currentLength }, (_, index) => ({
-        nroInstalacion: selectedInstalacion, nroAgua: currentLength + index + 1,orientacion:"",material:"",area:0,pendiente:0,
-        formaTecho: "",descripcionFormaTecho:"",imagenTecho:null,
-      }));
-      setFieldValue("techoGrid", [...currentTechoGrid, ...nuevasFilas]);
-    } else if (newLength <= currentLength) {
-      setFieldValue("techoGrid", values.techoGrid.slice(0, newLength));  
+
+  useEffect(()=>{
+    const ajustaFilasAguasInstalacion=()=>{
+      const currentTechoGrid = Array.isArray(values.techoGrid) ? values.techoGrid : [];
+      const rowInstalacion=Array.isArray( values.instalacionesGrid.filter(rw => rw.nroInstalacion === selectedInstalacion))
+      ? values.instalacionesGrid.filter(rw => rw.nroInstalacion === selectedInstalacion) : [];
+      const aguasInstalacion=Array.isArray( values.techoGrid.filter( inst => inst.nroInstalacion === selectedInstalacion ))
+      ?values.techoGrid.filter( inst => inst.nroInstalacion === selectedInstalacion ):[];
+      const currentLength=aguasInstalacion?.length || 0;
+      const newLength=rowInstalacion[0]?.nroAguas;
+      if (newLength > currentLength) {
+        const nuevasFilas = Array.from({ length: newLength - currentLength }, (_, index) => ({
+          nroInstalacion: selectedInstalacion, nroAgua: currentLength + index + 1,orientacion:"",material:"",area:0,pendiente:0,
+          formaTecho: "",descripcionFormaTecho:"",imagenTecho:null,
+        }));
+        setFieldValue("techoGrid", [...currentTechoGrid, ...nuevasFilas]);
+      } else if (newLength <= currentLength) {
+        setFieldValue("techoGrid", values.techoGrid.slice(0, newLength));  
+      }
     }
-  }
-  useEffect(()=>{
-      if (selectedInstalacion >0 ){ ajustaFilasAguasInstalacion();   }
-  },[values.instalacionesGrid, selectedInstalacion ])
-  useEffect(()=>{
-     ajustaFilasAguasInstalacion();
-  },[values.instalacionesGrid])
+    if (selectedInstalacion >0 ){ ajustaFilasAguasInstalacion();   }
+  },[values.instalacionesGrid, selectedInstalacion, setFieldValue, values.techoGrid])
+  // useEffect(()=>{
+  //    ajustaFilasAguasInstalacion();
+  // },[values.instalacionesGrid])
   useEffect(() => {
     if (values.nroInstalaciones && values.nroInstalaciones > 0) {
       const currentInstalacionesGrid = Array.isArray(values.instalacionesGrid) ? values.instalacionesGrid : [];
@@ -97,7 +99,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
         setFieldValue("instalacionesGrid", values.instalacionesGrid.slice(0, newLength));
       }
     }
-  }, [values.nroInstalaciones, setFieldValue]);
+  }, [values.nroInstalaciones, setFieldValue, values.instalacionesGrid]);
   useEffect(() => {    
     if (values.nroEmpalmes && values.nroEmpalmes > 0) {
       const currentEmpalmesGrid = Array.isArray(values.empalmesGrid) ? values.empalmesGrid : [];
@@ -116,7 +118,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
         setFieldValue("empalmesGrid", values.empalmesGrid.slice(0, newLength));
       }
     }
-  }, [values.nroEmpalmes, setFieldValue]);
+  }, [values.nroEmpalmes, setFieldValue, values.empalmesGrid]);
   const handleEditAgua = (row: GridRowType) => {//clic sobre el botón acciones 'edit'
     const rowIndex = values.techoGrid.findIndex((r) => r.nroInstalacion === row.nroInstalacion && r.nroAgua === row.nroAgua);
     if (rowIndex !== -1) {
@@ -250,6 +252,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
     };
     setFieldValue("techoGrid", updatedTechos);
   }; 
+  // console.log('JSX ProjectDetailsForm fechaF3',values.empalmesGrid);
   return (
     <>    {/* {console.log('JSX ProjectDetailsForm',values.techoGrid,selectedInstalacion)} */}
        <div className="mb-1 flex items-start space-x-2">

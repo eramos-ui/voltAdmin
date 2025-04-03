@@ -62,7 +62,7 @@ export default function CotizarClient() {
       }
     };
     fetchData();
-  }, [router.isReady, router.query.token]);
+  }, [router]);//router.isReady, router.query.token
 
   
   const handleObservacionChange=( value:any) =>{

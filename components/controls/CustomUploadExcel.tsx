@@ -49,7 +49,7 @@ export const CustomUploadExcel: React.FC<CombinedProps> = ({
       setSelectedFile(value);
       onUploadSuccess?.(value);
     }
-  }, [value]); 
+  }, [value, onUploadSuccess]); 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
         const selectedFile = event.target.files[0];

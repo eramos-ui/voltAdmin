@@ -1,4 +1,3 @@
-import { ActivityEmailFilesType } from "@/types/interfaces";
 import { useFormikContext } from "formik";
 
 interface SendEmailButtonProps {

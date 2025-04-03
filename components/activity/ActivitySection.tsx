@@ -5,7 +5,7 @@ import ActivityGridSection from './ActivityGridSection';
 // import ActivityNavigationSection from '@/app/components/activity/ActivityNavigationSection';
 import ActivityNavigationSection from './ActivityNavigationSection';
 import { GridRowType } from '@/types/interfaces';
-import { getNextActivityId } from '@/utils/getNextAcivityId';
+import { getNextActivityId } from '@/utils/getNextActivityId';
 import { sortGridByActivityId } from '@/utils/sortGridByActivityId';
 import CustomModal from '@/components/general/CustomModal';
 import DynamicForm from '../general/DynamicForm';

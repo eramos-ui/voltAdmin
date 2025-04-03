@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (sendTo.length === 0 ){
       return res.status(400).json({ message: "No se encontraron destinatarios." });
     }
-    //console.log('sendTo en API',attachments);
+    console.log('sendTo en API',attachments);
 
     // 📌 Procesar los archivos adjuntos
     //const formattedAttachments = attachments?.map((file: { filePath: string; fileType: string; filename: string }) => ({

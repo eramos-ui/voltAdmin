@@ -90,6 +90,7 @@ export interface FormConfigDFType { //del formulario dynamic
     editFields?: FormFieldDFType[];
     rows?:GridRowDFType[];
     modalStyles?: ModalStylesDFType;
+    requirePassword?:boolean;
     editFormConfig?: {
       formTitle: string;
       requirePassword:boolean;

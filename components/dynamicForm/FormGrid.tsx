@@ -69,12 +69,51 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
   const reLoad=() =>{//al cerrar el modal carga la pagina de nuevo
          window.location.reload();
   }
-  const fetchRows = async (spFetch:string) => {//función que trae los datos
-    setLoading(true);
-    try {        
-      const [spName, params] = spFetch.split('(');// Extraemos el nombre del SP y los parámetros de la cadena spFetchOptions
-      //console.log('spName, params',spName, params);
-      if (!params || params.trim() === ')') { // Si no hay parámetros, simplemente ejecutamos el SP
+  useEffect(() => {
+    const fetchRows = async (spFetch:string) => {//función que trae los datos
+      setLoading(true);
+      try {        
+        const [spName, params] = spFetch.split('(');// Extraemos el nombre del SP y los parámetros de la cadena spFetchOptions
+        //console.log('spName, params',spName, params);
+        if (!params || params.trim() === ')') { // Si no hay parámetros, simplemente ejecutamos el SP
+          const response = await fetch('/api/execSP', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              storedProcedure: spName,
+              parameters: {},
+            }),
+          });
+          if (response.ok) {
+            const data = await response.json();
+            // console.log('en Mygrid data', data);
+            setGridRows(data)
+          } else {
+            console.error('Error al obtener las opciones');
+          }
+          setLoading(false);
+          return;
+        }       
+        const parameterNames = params.replace(')', '').split(',').map((param) => param.trim().replace('@', ''));  // Manejar el caso donde hay parámetros
+        const combinedValues = { // Combinar valores de allValues y sesión
+          ...allValues, // Valores provenientes de los campos del formulario
+          userId: session?.user?.id, // Incluyendo el id del usuario desde la sesión
+          email: session?.user?.email, // Puedes incluir otros campos de la sesión si lo necesitas
+        };        
+        //const missingParams = parameterNames.filter((paramName) => !combinedValues[paramName]); // Verificar si todos los parámetros necesarios tienen valor
+        // Si hay parámetros que no tienen valor, no ejecutar el fetch (esto mejor desecharlo xq tb se debe actualizar si no hay  nada en el select padre)
+        // if (missingParams.length > 0) {
+        //   console.log(`Faltan parámetros para ejecutar el SP: ${missingParams.join(', ')}`);
+        //   setLoading(false);
+        //   return;
+        // }
+        const parameters = parameterNames.reduce((acc, paramName) => { // Crear un objeto con los valores de los parámetros usando sus nombres reales
+          acc[`@${paramName}`] = combinedValues[paramName];
+          return acc;
+        }, {} as Record<string, any>);
+        // Realizar la solicitud a la API
         const response = await fetch('/api/execSP', {
           method: 'POST',
           headers: {
@@ -82,60 +121,21 @@ export const FormGrid: React.FC<Props> = ({  label, titleGrid, labelGridAdd, obj
           },
           body: JSON.stringify({
             storedProcedure: spName,
-            parameters: {},
+            parameters,
           }),
-        });
+        });       
         if (response.ok) {
           const data = await response.json();
-          // console.log('en Mygrid data', data);
           setGridRows(data)
         } else {
           console.error('Error al obtener las opciones');
         }
+      } catch (err) {
+        console.error('Error fetching options:', err);
+      } finally {
         setLoading(false);
-        return;
-      }       
-      const parameterNames = params.replace(')', '').split(',').map((param) => param.trim().replace('@', ''));  // Manejar el caso donde hay parámetros
-      const combinedValues = { // Combinar valores de allValues y sesión
-        ...allValues, // Valores provenientes de los campos del formulario
-        userId: session?.user?.id, // Incluyendo el id del usuario desde la sesión
-        email: session?.user?.email, // Puedes incluir otros campos de la sesión si lo necesitas
-      };        
-      //const missingParams = parameterNames.filter((paramName) => !combinedValues[paramName]); // Verificar si todos los parámetros necesarios tienen valor
-      // Si hay parámetros que no tienen valor, no ejecutar el fetch (esto mejor desecharlo xq tb se debe actualizar si no hay  nada en el select padre)
-      // if (missingParams.length > 0) {
-      //   console.log(`Faltan parámetros para ejecutar el SP: ${missingParams.join(', ')}`);
-      //   setLoading(false);
-      //   return;
-      // }
-      const parameters = parameterNames.reduce((acc, paramName) => { // Crear un objeto con los valores de los parámetros usando sus nombres reales
-        acc[`@${paramName}`] = combinedValues[paramName];
-        return acc;
-      }, {} as Record<string, any>);
-      // Realizar la solicitud a la API
-      const response = await fetch('/api/execSP', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          storedProcedure: spName,
-          parameters,
-        }),
-      });       
-      if (response.ok) {
-        const data = await response.json();
-        setGridRows(data)
-      } else {
-        console.error('Error al obtener las opciones');
       }
-    } catch (err) {
-      console.error('Error fetching options:', err);
-    } finally {
-      setLoading(false);
-    }
-   };
-  useEffect(() => {
+     };
     if (!spFetchRows) return;
      fetchRows(spFetchRows);
   }, [spFetchRows, allValues, session]);

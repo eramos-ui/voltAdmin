@@ -21,7 +21,7 @@ export const MapView = () =>{
         
         setMap( map );
        }
-    },[ isLoading ])
+    },[ isLoading, setMap, userLocation ])
 
     if ( isLoading ) {
         return (<LoadingIndicator  message='cargando' />)

@@ -6,7 +6,7 @@ import { FormFieldDFType } from '@/types/interfaceDF';
 // 🔹 Función para generar validaciones dinámicas con Yup
 export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
   const schema: Record<string, Yup.AnySchema> = {};
-
+  // console.log('getValidationSchemaDynamicForm',fields);
   fields.forEach((field, index) => {
 
     let fieldSchema : Yup.AnySchema = Yup.mixed();
@@ -41,7 +41,7 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
         );
       }
     }
-
+    
     field.validations?.forEach((rule) => {    // 🔹 Agregar validaciones según el esquema definido en la BD-json
       switch (rule.type) {
         case "required":
@@ -59,6 +59,7 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
         case "pattern":
           const regex = new RegExp(rule.value as string); // 📌 Convierte el string en RegExp
           fieldSchema  = (fieldSchema  as Yup.StringSchema).matches(regex, rule.message || "Formato inválido");
+          // if (field.type === "RUT") console.log('RUT field',rule,regex,fieldSchema);
           break;
         case "url":
           fieldSchema  = (fieldSchema  as Yup.StringSchema).url(rule.message || "Debe ser una URL válida");
@@ -74,7 +75,7 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
     });
     schema[field.name] = fieldSchema;
   });
-
+  //console.log('schema',schema);
   return Yup.object().shape(schema);
 };
 

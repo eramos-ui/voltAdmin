@@ -35,9 +35,10 @@ export const MapProvider = ({ children }: Props) => {
     const [ state, dispatch ] = useReducer( mapReducer, INITIAL_STATE );
     const { places }          = useContext( PlacesContext );
     //const [selectedKmlFile, setSelectedKmlFile] = useState<File | null>(null);
-
     useEffect(() => {
         state.markers.forEach( marker => marker.remove() );
+    }, [state.markers]);
+    useEffect(() => {
         const newMarkers: Marker[] = [];
 
         for (const place of places) {
@@ -58,7 +59,7 @@ export const MapProvider = ({ children }: Props) => {
         // Todo: limpiar polyline
         dispatch({ type: 'setMarkers', payload: newMarkers });
         
-    }, [ places ])
+    }, [ places,state.map])//,state.markers 
      
 
     const setMap = ( map: Map ) => {

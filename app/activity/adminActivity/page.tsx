@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react'; 
 import { useRouter, useSearchParams  } from 'next/navigation';
 import * as Yup from "yup";
- import { loadDataActivity } from '@/utils/apiHelpers';
+import { loadDataActivity } from '@/utils/apiHelpers';
 
 import { ActivityType, OptionsSelect } from '@/types/interfaces';
 import { Field, Form, Formik } from 'formik';

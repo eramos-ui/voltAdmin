@@ -40,7 +40,7 @@ const ToDoListPage = ({ params }: { params:{idActivity: number }}) => {
     }
     fetchData(user.id); 
     //setIsLoading(false);
-  },[ user ])
+  },[ user, idActivity ])
   useEffect(()=>{
     if (rows && rows.length>0){
       const { nameActivity, processName } =rows[0];      
@@ -58,13 +58,7 @@ const ToDoListPage = ({ params }: { params:{idActivity: number }}) => {
       const ubicacionPanel=row.ubicacionPanel;
       const menu= (ubicacionPanel === 'techo')?'4':'5';
       let newUrl=row.url;//viene de cada actividad
-      newUrl=newUrl.replace("${menu}", menu).replace("${idTask}", idTask);
-      // console.log('handleEdit idTask',idTask);
-      // console.log('rows en ToDoList',rows.find(r=>r.idTask === row.idTask));
-      // console.log('row en ToDoList',row);
-      // console.log('newUrl en ToDoList',newUrl);
-
-      
+      newUrl=newUrl.replace("${menu}", menu).replace("${idTask}", idTask);      
       router.push(newUrl);
   }
   return (

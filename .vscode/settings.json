@@ -8,4 +8,6 @@
     "#9CDD29",
     "#0098FA"
 ],
+"appService.defaultWebAppToDeploy": "",
+"appService.deploySubpath": ".next",
 }

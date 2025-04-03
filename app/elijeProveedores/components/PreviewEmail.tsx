@@ -22,7 +22,8 @@ interface PreviewEmailProps {
     
             <h3 className="font-semibold">📩 Cuerpo del correo:</h3>
             <div className="bg-white p-3 rounded text-gray-800 border"
-            dangerouslySetInnerHTML={{ __html: editableBody.replace("{CotizacionURL}", (placeholders.CotizacionURL.length>0)?placeholders.CotizacionURL:'http:\\evolusol\...') }}
+            dangerouslySetInnerHTML={{ __html: editableBody.replace("{CotizacionURL}", 
+                (placeholders.CotizacionURL.length>0)?placeholders.CotizacionURL:'http:\\evolusol\...') }}
             />
         </div>
         </div>

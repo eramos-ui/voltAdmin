@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Field } from "formik";
+import { useFormikContext, Field } from "formik";
+
 import { CustomSelect } from "@/components/controls/CustomSelect";
-import { Comunas, OptionsSelect } from "@/types/interfaces";
+import { Comunas, OptionsSelect, ProjectFormValuesType } from "@/types/interfaces";
 import { CustomInput } from "../controls";
 
 
@@ -13,9 +14,17 @@ interface LocationFormProps {
 }
 
 export const LocationForm: React.FC<LocationFormProps> = ({ regiones, comunas, errors, touched }) => {
-const [ regionSelected, setRegionSelected ] =useState<string>('');
+const { values, setFieldValue } = useFormikContext<ProjectFormValuesType>(); // ✅ Especifica el tipo // Hook de Formik para manejar valores
+const [ regionSelected, setRegionSelected ] =useState<number>(0);
+const [ comunaelected, setComunaSelected ] =useState<number>(0);
 const [ comunasPorRegion, setComunasPorRegion ] = useState<OptionsSelect[]>(); 
-//console.log('comunas en LocationForm',comunas);
+useEffect(() => {
+  if (values){
+    // console.log('LocationForm',values.comuna,values.region);
+    setRegionSelected(values.region);
+    setComunaSelected(values.comuna);
+  }
+},[values]);
 // const handleRegionChange = (value: string | number | null, setFieldValue: (field: string, value: any) => void) => {
 //     console.log('handleRegionChange');
 //     if (typeof value === "string") {
@@ -26,9 +35,9 @@ const [ comunasPorRegion, setComunasPorRegion ] = useState<OptionsSelect[]>();
 //   };
 useEffect(() => {
   if (regionSelected) {
-    const regionData = comunas?.filter((comuna) => comuna.idRegion.toString() === regionSelected);
+    const regionData = comunas?.filter((comuna) => comuna.idRegion === regionSelected);
     const nuevasComunas = regionData
-      ? regionData.map((comuna) => ({ value: comuna.idComuna.toString(), label: comuna.label }))
+      ? regionData.map((comuna) => ({ value: comuna.idComuna, label: comuna.label }))
       : [];
     setComunasPorRegion(nuevasComunas);
   }
@@ -63,11 +72,12 @@ return (
                 width="100%"
                 error={touched.region && errors.region ? errors.region : undefined}
                 {...field}
-                onChange={(value) => {
-                  const regionValue = Array.isArray(value) ? value[0] : value; // 🔹 Tomamos el primer valor si es un array
+                onChange={(value:number) => {
+                  console.log('LocationForm onChange',value);
+                  const regionValue:number = Array.isArray(value) ? Number(value[0]) : 0; // 🔹 Tomamos el primer valor si es un array
                   form.setFieldValue("region", regionValue);
-                  setRegionSelected(regionValue || ""); // ✅ Asegura que siempre sea un string
-                  form.setFieldValue("comuna", ""); // 🔹 Reinicia comuna cuando cambia región
+                  setRegionSelected(regionValue); // ✅ Asegura que siempre sea un string
+                  form.setFieldValue("comuna", 0); // 🔹 Reinicia comuna cuando cambia región
                 }}
             />
             )
@@ -100,7 +110,7 @@ return (
             error={touched.direccion && errors.direccion ? errors.direccion : undefined}
             required
             theme="light"
-            width="100%" // Define el ancho como un porcentaje
+            width="54%" // Define el ancho como un porcentaje
         />
       </div>      
     </div>

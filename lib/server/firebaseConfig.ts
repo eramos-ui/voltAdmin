@@ -37,18 +37,19 @@
 // const bucket = admin.storage().bucket();
 
 // export { admin, bucket };
-import admin from 'firebase-admin';
 //import serviceAccount from '@/credentials/firebase-service-account.json';
 // const serviceAccount = JSON.parse(
-//   process.env.FIREBASE_SERVICE_ACCOUNT_KEY || "{}"
+//  process.env.FIREBASE_SERVICE_ACCOUNT_KEY || "{}"
 // );
+import admin from 'firebase-admin';
 if (!admin.apps.length) {
   admin.initializeApp({
     // credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+     projectId: process.env.FIREBASE_PROJECT_ID,
+     privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+     //privateKey: process.env.FIREBASE_PRIVATE_KEY,
+     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     }),
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET, // reemplaza con tu bucket real si es distinto
   });

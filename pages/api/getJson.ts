@@ -14,7 +14,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    console.log('📦 Ejecutando storedProcedure:', storedProcedure);
+    console.log('📦 Ejecutando storedProcedure:', storedProcedure); 
 
     // Construir parámetros en formato seguro
     const paramArray = parameters

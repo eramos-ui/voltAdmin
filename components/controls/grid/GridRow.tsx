@@ -74,7 +74,7 @@ type GridRowProps<T> = {
       updateColumnWidth(colKey, `${idealWidth}px`); // 📌 Actualiza el ancho en CustomGrid
     }
   });
-}, [row]);
+}, [row,updateColumnWidth,columnWidths]);
 //console.log('rowRef',rowRef.current);
   return (
     <>

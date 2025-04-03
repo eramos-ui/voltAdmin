@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from "yup";;
-import {  loadDataActivityWithFilesAndEmails, sendingEmails } from '@/utils/apiHelpers';
+// import {  loadDataActivityWithFilesAndEmails, sendingEmails } from '@/utils/apiHelpers';
+import { loadDataActivityWithFilesAndEmails, sendingEmails } from '@/utils/ApiEmail';
 import { ActivityEmailFilesType,  OptionsSelect } from '@/types/interfaces';
 import { LoadingIndicator } from '../../components/general/LoadingIndicator';
 import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';
@@ -148,8 +149,7 @@ const ElijeProveedoresPage = () => {
                 setTimeout(() => { window.confirm(String.fromCodePoint(0x2705)+"Modificaciones guardadas"); window.focus();}, 0);
               }           
             }
-          }
-          
+          }          
           const handleExitEditValue=() =>{ 
             if (values.proveedores){
               const newProveedores= values.proveedores.map( proveedor => proveedor.id === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
@@ -160,8 +160,7 @@ const ElijeProveedoresPage = () => {
               }           
             }
             setProveedorEdit(0);
-          }
-          
+          }          
           // Actualizar editableBody cuando cambia el proveedorEdit o placeholders
           // Este código se mueve fuera del useEffect para evitar el error
           if (proveedorEdit > 0 && placeholders && values.emailTemplate && values.emailTemplate.length > 0) {
@@ -170,8 +169,7 @@ const ElijeProveedoresPage = () => {
             if (editableBody !== newEditableBody) {
               setEditableBody(newEditableBody);
             }
-          }
-          
+          }          
          return (
           <>
             <Form id="emailForm" >
@@ -211,61 +209,61 @@ const ElijeProveedoresPage = () => {
                 }
             </div>
             <div className="p-6 max-w-5xl mx-auto bg-white rounded-lg shadow">
-                  { emailOptions &&
-                  <>
-                    <EmailTemplateSelection emailOptions={emailOptions} values={values} setFieldValue={setFieldValue} setEditableBody={setEditableBody} 
-                     placeholders={placeholders} />
-                    {values.selectedTemplate && (
-                      <div className="mb-3 mp-6 flex items-start space-x-2">  {/* 📌 Formulario de Placeholders para Editar */}
-                          <>
-                            <h3 className="text-lg font-semibold mt-4">✏️ Edita los Valores</h3>
-                            <div className="grid grid-cols-2 gap-1 mb-4">
-                            {
-                            <>
-                              { (values.proveedores &&  values.proveedoresSelected && values.proveedores.length>0 &&  values.proveedoresSelected.length>0 ) &&
-                                <div className="grid-cols-3 gap-1 mb-4 ml-1" >
-                                  <label className="block text-sm font-medium">Elija proveedor a revisar</label>
-                                  <CustomSelect label='' width='180px' theme="light" value={String(proveedorEdit) } onChange={(e) =>  handlePlaceholderChange(values, e)}
-                                      options={values.proveedores.filter((obj:any) => values.proveedoresSelected.includes(obj.id)).map((pr:any) => { return {value:pr.id,label:pr.label }})}
-                                  />
-                                </div>
-                              }
-                            </>
-                            }
+              { emailOptions &&
+              <>
+                <EmailTemplateSelection emailOptions={emailOptions} values={values} setFieldValue={setFieldValue} 
+                  setEditableBody={setEditableBody} placeholders={placeholders} />
+                {values.selectedTemplate && (
+                  <div className="mb-3 mp-6 flex items-start space-x-2">  {/* 📌 Formulario de Placeholders para Editar */}
+                      <>
+                        <h3 className="text-lg font-semibold mt-4">✏️ Edita los Valores</h3>
+                        <div className="grid grid-cols-2 gap-1 mb-4">
+                        {
+                        <>
+                          { (values.proveedores && values.proveedoresSelected && values.proveedores.length>0 && values.proveedoresSelected.length>0 ) &&
+                            <div className="grid-cols-3 gap-1 mb-4 ml-1" >
+                              <label className="block text-sm font-medium">Elija proveedor a revisar</label>
+                              <CustomSelect label='' width='180px' theme="light" value={String(proveedorEdit) } onChange={(e) =>  handlePlaceholderChange(values, e)}
+                                  options={values.proveedores.filter((obj:any) => values.proveedoresSelected.includes(obj.id)).map((pr:any) => { return {value:pr.id,label:pr.label }})}
+                              />
                             </div>
-                            {  proveedorEdit>0  &&
-                            <div className="grid grid-cols-2 gap-3 mb-4">
-                            {Object.keys(placeholders).map((key) =>
-                              key !== "CotizacionURL" &&  key !== "Actividad" &&   key !== "NombreContratante" &&(key === "Observacion"  //// 🔹 Observacion ocupa una fila completa
-                                ? <div key={key} className="col-span-2">
-                                   <CustomInput label='Observación que inserta en el mensaje' width="100%" name={key} value={placeholders[key]} theme="light"
-                                      onChange={(e) => handleTemplateChange(values, key, e.target.value)} maxLength={300} rows={2} multiline={true} // 🔹 Activa el modo multilínea
-                                   />
-                                  </div>
-                               :  <div key={key}>
-                                   <label className="block text-sm font-medium">{separarCamelPascalCase(key)}</label>
-                                   <CustomInput label='' width="200px" theme="light" name={key} value={placeholders[key]} onChange={(e) => handleTemplateChange(values, key, e.target.value)} />
-                                  </div>
-                              )
-                            )}
-                            </div>
-                            }
-                          </>
-                      </div>
-                    )}
-                    { proveedorEdit>0 &&
-                     <div className="mt-1 mb-2 flex justify-end ">
-                      <CustomButton buttonStyle="secondary" size="small" htmlType="button" label="cancelar" tooltipContent='elimina y cierra cambios editados proveedor'
-                          tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExitEditValue }
-                      />
-                      <CustomButton buttonStyle="secondary" size="small" htmlType="button" label="aplicar cambios" tooltipContent='guardar los cambios editados'
-                          tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={handleSaveEditValue }
-                      />
-                     </div>
-                    }
-                  </>
-                  }
-                </div>
+                          }
+                        </>
+                        }
+                        </div>
+                        {  proveedorEdit>0  &&
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                        {Object.keys(placeholders).map((key) =>
+                          key !== "CotizacionURL" &&  key !== "Actividad" &&   key !== "NombreContratante" &&(key === "Observacion"  //// 🔹 Observacion ocupa una fila completa
+                            ? <div key={key} className="col-span-2">
+                                <CustomInput label='Observación que inserta en el mensaje' width="100%" name={key} value={placeholders[key]} theme="light"
+                                  onChange={(e) => handleTemplateChange(values, key, e.target.value)} maxLength={300} rows={2} multiline={true} // 🔹 Activa el modo multilínea
+                                />
+                              </div>
+                            :  <div key={key}>
+                                <label className="block text-sm font-medium">{separarCamelPascalCase(key)}</label>
+                                <CustomInput label='' width="200px" theme="light" name={key} value={placeholders[key]} onChange={(e) => handleTemplateChange(values, key, e.target.value)} />
+                              </div>
+                          )
+                        )}
+                        </div>
+                        }
+                      </>
+                  </div>
+                )}
+                { proveedorEdit>0 &&
+                  <div className="mt-1 mb-2 flex justify-end ">
+                  <CustomButton buttonStyle="secondary" size="small" htmlType="button" label="cancelar" tooltipContent='elimina y cierra cambios editados proveedor'
+                      tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExitEditValue }
+                  />
+                  <CustomButton buttonStyle="secondary" size="small" htmlType="button" label="aplicar cambios" tooltipContent='guardar los cambios editados'
+                      tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={handleSaveEditValue }
+                  />
+                  </div>
+                }
+              </>
+              }
+            </div>
             </Form> 
             {(values.selectedTemplate && values.proveedoresSelected && proveedorEdit>0) && <PreviewEmail editableBody={editableBody} values={values} placeholders={placeholders} /> }
             {proveedorEdit === 0 && <SendEmailButton handleSendEmail={handleSendEmail}  />}   {/* 📌 Botón de Enviar Email */}
@@ -278,8 +276,7 @@ const ElijeProveedoresPage = () => {
             tooltipPosition='right' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit }
         />
        </div>
-     </div>
-     {/* Fin del renderizado condicional */}
+     </div> {/* Fin del renderizado condicional */}
     </>
     );
 };

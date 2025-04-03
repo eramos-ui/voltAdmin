@@ -207,7 +207,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
               </label>
               <select 
                 value={newTheme} 
-                onChange={(e) => setNewTheme(e.target.value as 'light' | 'dark')} 
+                onChange={(e) => {setShowSaveButton(true);setNewTheme(e.target.value as 'light' | 'dark')}} 
                 className="mt-1 block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 disabled={disabled}
               >

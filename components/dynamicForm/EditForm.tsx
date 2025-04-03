@@ -49,7 +49,7 @@ export const EditForm: React.FC<EditFormProps> = ({
   columns,
   isAdding,
   spFetchSaveGrid,
-  requirePassword,
+  requirePassword=false,
   ...props
 }) => {
   const { theme: themeEdit, formSize, formTitle, modalStyles } = formConfig;
@@ -57,6 +57,7 @@ export const EditForm: React.FC<EditFormProps> = ({
   // const [ alertMessage, setAlertMessage ]                      = useState<string | null>(null);
   // const [ alertDuration, setAlertDuration ]                    = useState<number | null>(null);
   // const [ alertType, setAlertType ]                            = useState<'success' | 'error' | 'info'>('info');
+  // console.log('EditForm requirePassword',requirePassword);
   const theme: 'light' | 'dark' = themeEdit === 'dark' ? 'dark' : 'light';
   const esNumero = (valor: string): boolean => { //establece si un string puede ser un numero
     if (valor.length === 0) return false;
@@ -64,9 +65,10 @@ export const EditForm: React.FC<EditFormProps> = ({
   };
   //grabar
   const grabar = async( values:any) =>{
-    const requirePassword=fields.find(field => field.type === 'password')?.requirePassword;
-    const password = requirePassword ? await bcrypt.hash('password123', 10) : undefined;
-    const withRutFields=fields.filter(field => field.type === 'RUT');//field que tienen field type='RUT' para formatearlo estándar
+  // const requirePassword=fields.find(field => field.type === 'password')?.requirePassword;
+  const password = requirePassword ? await bcrypt.hash('password123', 10) : undefined;
+  // console.log('grabar',fields,requirePassword,password);    return;
+  const withRutFields=fields.filter(field => field.type === 'RUT');//field que tienen field type='RUT' para formatearlo estándar
     let updateValues:any=values;
     if (withRutFields && withRutFields.length > 0) {
         //actualizar rut de los values[field.name] cuando es un rut para que se graben ###.###.###-# , se hace 2 veces porque formatRut lo repite

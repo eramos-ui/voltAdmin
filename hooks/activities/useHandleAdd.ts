@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { FormikValues } from "formik";
-import { getNextActivityId } from "../../utils/getNextAcivityId";
+import { getNextActivityId } from "../../utils/getNextActivityId";
 
 export const useHandleAdd = (
   values: FormikValues,

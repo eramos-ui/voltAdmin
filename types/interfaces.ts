@@ -24,27 +24,21 @@ export interface UserData {
     processType: number | null;
     subMenu?: SubMenuItem[];
   };
-
   export type MenuConfig = {
     //position: 'left' | 'right';
     menuItems: MenuItem[];
-  };
-  
+  };  
   //configuración de los formularios
   import { FormikHelpers } from "formik";
-
   export type ValidationType = 'required' | 'maxLength' | 'minLength' | 'email' | 'minDate' | 'maxDate'
 | 'min' |'max' |'url';
-
   export interface ValidationRule {
     type: ValidationType;
     value?: number ;
     message?:string;
-  }
-  
+  }  
   export type InputType = 'text' |'input' | 'email' | 'select' | 'password' | 'date' | 'checkbox' |'textarea' | 'readonly'
         | 'number' | 'file' | 'radio' | 'slider' | 'range' |'toggle' | 'grid' | 'multiselect'| 'autocomplete' | 'RUT' |'sin' | 'date';
-
   export interface FormFieldType { //los campos del formulario Dynamic
     type: InputType;
     name: string;
@@ -92,7 +86,6 @@ export interface UserData {
     frameStyle: React.CSSProperties;
     fields: FormFieldType[];
   }
-
   export interface ButtonConfig {
     id: string;
     text: string;
@@ -108,8 +101,7 @@ export interface UserData {
     content?: React.CSSProperties;
     header?: React.CSSProperties;
     modalTitleStyle?: React.CSSProperties; 
-  }
- 
+  } 
   export interface FormValues {
     [key: string]: string | number | boolean | File | undefined | null;
   }
@@ -154,8 +146,7 @@ export interface UserData {
     // style?: React.CSSProperties; // Para estilos en línea
     // inputProps?: { [key: string]: any }; // Atributos HTML adicionales
     // conditionalStyles?: { [key: string]: React.CSSProperties }; // Estilos condicionales
-  }
- 
+  } 
   export type ColumnConfigType<T>= {// Tipo para configuración de las columnas de la grilla <T> es por genérico
     label: string; // Título de la columna
     key: keyof T; // Clave del dato en cada fila (debe existir en T)
@@ -178,7 +169,6 @@ export interface UserData {
     required?:boolean;      
     renderCell?: (row: T) => React.ReactNode;// ✅ Nueva propiedad para renderizado personalizado (como mostrar el nombre del archivo) cuando es file
   };
-  
   export interface OptionsSelect {
     value: string | number ;
     label: string ;
@@ -186,7 +176,6 @@ export interface UserData {
   export interface OptionSelectIcon{
      value: string; label: string; image: string , nroAguas?:number,
   }
-
   export interface Comunas {
     idComuna: number;
     idRegion: number;
@@ -194,8 +183,6 @@ export interface UserData {
     longitud?:string;
     latitud?:string;
   }
-
-
   export type ExcelColumn = {
     name: string;
     inputType: string;
@@ -281,6 +268,9 @@ export interface UserData {
   }
   export interface ProjectFormValuesType {
     projectName: string;
+    region:number;
+    comuna:number;
+    direccion: string;
     ubicacionPanel: string;
     tipoTerreno: string;
     nivelPiedras: string;
@@ -310,7 +300,6 @@ export interface UserData {
       jsFiles:FilesType[]; emailTemplate:EmailTemplateType[];selectedTemplate:EmailTemplateType | null;selectedTemplateId:number;
       proveedores:ProveedorType[] | null; anexosSelected:number[]; proveedoresSelected: number[];
   }
-
   export interface EmailTemplateType {
     idEmailTemplate: number;
     templateName: string;
@@ -318,7 +307,6 @@ export interface UserData {
     bodyTemplate: string;
     metadataJSON: {};
   }
-
   export interface FilesType {//asociada a projectFiles
     id: number;
     descripcion: string;
@@ -337,8 +325,6 @@ export interface UserData {
     email:string;
     placeholders:{};
   }
-
-
   export interface ProjectActivityType {
     idProject: number;
     idProjectActivity:number;
@@ -351,7 +337,5 @@ export interface UserData {
     token: string;
     fechaEnvio: string;
     anexos:[];
-
   } 
-
- 
+  

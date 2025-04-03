@@ -26,7 +26,7 @@ const ActivityUploadSection: React.FC<ActivityUploadSectionProps> = (   ) => { /
 
   const handleUploadExcel = async (excelFile: File | null) => {
     if (!excelFile) return;
-    if ( values.activities && values.activities.length>0 ){
+    if ( values.activities && values.activities.length>1 ){
         if (!window.confirm(`Al cargar el nuevo Excel se recargará la grilla de actividades perdiendo el actual contenido. ¿Recarga otro excel?`))  return;
     }
     const response = await uploadExcelFile(excelFile, "/api/uploadExcel");

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Formik } from "formik";
+import { Formik, useFormikContext } from "formik";
 import * as Yup from "yup";
 import { CustomInput } from "../controls/CustomInput";
 import { CustomButton } from "../controls/CustomButton";
@@ -10,6 +10,7 @@ import { faEraser, faFloppyDisk,} from '@fortawesome/free-solid-svg-icons';
 import { CustomDate } from "../controls";
 import { CustomSelectIcon } from "../controls/CustomSelectIcon";
 import './DynamicForm.css';
+import { isEqual } from "lodash";
 
 const validInputTypes = ["text", "number", "email", "password", "url", "tel", "search", "color", "file"] as const;
 type InputType = typeof validInputTypes[number];
@@ -43,11 +44,11 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
     rowIndex?:number;
     handleFileUpload?: (file: File | null, rowIndex?: number, field?: string) => void;
   }) => {
-  console.log('DynamicForm columns',columns);
-  console.log('DynamicForm initialValues',initialValues);
+   //console.log('DynamicForm columns',columns);
+  // console.log('DynamicForm initialValues',initialValues);
   useEffect(() => {
     setIsDirty(false); // 📌 Inicializa como no modificado al cargar
-  }, []);
+  }, [setIsDirty]);
   // Crear un esquema de validación dinámico
   const validationSchema = Yup.object(
     columns
@@ -76,6 +77,16 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
        });
      }
   };
+  const FormObserver = ({ initialValues, setIsDirty }: { initialValues: any, setIsDirty: (dirty: boolean) => void }) => {
+    // 📌 Detectar si los valores han cambiado respecto a los iniciales
+    const { values } = useFormikContext<any>(); // 🔹 Obtiene los valores actuales del formulario   
+    useEffect(() => {
+      const dirty = !isEqual(values, initialValues);
+      setIsDirty(dirty);
+      //console.log('FormObserver dirty',dirty);
+    }, [values, initialValues, setIsDirty]);
+    return null;
+  };
   return (
     <Formik initialValues={initialValues} validationSchema={validationSchema}
       onSubmit={(values, { setSubmitting }) => { //console.log("🔄 Enviando valores editados:", values);
@@ -85,11 +96,9 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
       }}
     >
      {({ handleSubmit, handleChange, setFieldValue, values }) => {
-        // 📌 Detectar si los valores han cambiado respecto a los iniciales
-    //    useEffect(() => {
-    //       const dirty = !isEqual(values, initialValues); // 📌 Comparar valores con lodash
-    //       setIsDirty(dirty);
-    //    }, [values, initialValues]);
+      // useEffect(() => {  console.log('DynamicForm values',values); }, [values]);
+      //FormObserver es para detectar si los valores han cambiado respecto a los iniciales sin poner un useEffect que No puede ir aquí
+      <FormObserver initialValues={initialValues} setIsDirty={setIsDirty} />
        return (
           <div className="dynamic-form">
               {Object.entries(groupedColumns).map(([rowNumber, rowColumns]) => (
@@ -104,12 +113,6 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                                   {col.inputType === "file" ? (
                                       <CustomFileInput id={col.field} name={col.field} label={col.headerName} width={col.width} accept=".pdf, .jpg"
                                           putFilenameInMessage={true}  value={values[col.field]}  disabled={isDisabled} required={col.required}
-                                        //   onUploadSuccess={(file: File | null) => {
-                                        //       if (file) {//   console.log(`📂 Archivo subido (${col.field}):`, file.name);
-                                        //           setFieldValue(col.field, file.name);
-                                        //           handleFileUpload?.(file, rowIndex, col.field);
-                                        //       }
-                                        //   }}
                                         onUploadSuccess={(file: File | null) => {
                                             console.log('🔑 Archivo subido en DynamicForm-JSX:', file);
                                             if (file) {
@@ -119,7 +122,9 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                                           }}
                                         />
                                   ) : col.inputType === "date" ? (
-                                      <CustomDate label={col.headerName} name={col.field} theme="light" width="80px" disabled={isDisabled} />
+                                      <CustomDate label={col.headerName} name={col.field} theme="light" width="80px" value={values[col.field]}
+                                       disabled={false} //disabled={isDisabled} 
+                                      />
                                   ) : col.inputType === "select" && col.options ? (
                                       <CustomSelect  id={col.field} name={col.field} label={col.headerName} options={col.options} value={values[col.field]}
                                           multiple={col.multiple} onChange={(value) => handleChange({ target: { name: col.field, value } })}
