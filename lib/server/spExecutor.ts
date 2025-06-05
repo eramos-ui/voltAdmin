@@ -10,7 +10,7 @@ import { connectToDB } from './db';
 //   user: process.env.DB_USER || 'sa',
 //   password: process.env.DB_PASSWORD || 'as',
 //   server: process.env.DB_SERVER || 'localhost',
-//   database: process.env.NEXT_PUBLIC_FWK_BD || 'fotvAdmin',
+//   database: process.env.DB_NAME || 'fotvAdmin',
 //   options: {
 //     trustServerCertificate: true,
 //     encrypt: true, // obligatorio si usas ngrok o conexiones remotas
@@ -103,6 +103,7 @@ export const executeQuery = async <T = any>(
   query: string,
   params: { name: string; type: ISqlTypeFactory; value: any }[] = []
 ): Promise<T[]> => {
+  // console.log('En executeQuery connectToDB',connectToDB);
   try {
     console.log(`📥 Ejecutando consulta: "${query}" con params:`, params);
 
@@ -115,7 +116,7 @@ export const executeQuery = async <T = any>(
 
     const result = await request.query(query);
 
-    console.log(`✅ Consulta ejecutada correctamente (${result.recordset.length} filas)`);
+    console.log(`✅ Consulta ${query} ejecutada correctamente (${result.recordset.length} filas)`);
 
     return result.recordset;
   } catch (error) {

@@ -1,3 +1,4 @@
+//api/sendEmail
 import { NextApiRequest, NextApiResponse } from "next";
 import nodemailer from "nodemailer";
 import path from "path";
@@ -42,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         attachments: attachments, // 📌 Agregar adjuntos
       };
 
-       //console.log('mailOptions',mailOptions);
+       console.log('mailOptions',mailOptions);
       // 📌 Enviar el email
       await transporter.sendMail(mailOptions);
       console.log(`📩 Email enviado a ${to.email} ${to.placeholders.NombreProveedor}`);

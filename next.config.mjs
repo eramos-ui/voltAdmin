@@ -1,46 +1,50 @@
-import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
+// import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ['firebasestorage.googleapis.com'],
-  },
-
-  webpack: (config, { isServer, dev, webpack }) => {
-    if (!isServer) {
-      config.plugins.push(new NodePolyfillPlugin());
-
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        url: require.resolve('url/'),
-        // agrega más aliases si los tienes
-      };
-
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        // fallbacks necesarios
-      };
-
-      config.plugins.push(
-        new webpack.ProvidePlugin({
-          process: 'process/browser',
-          Buffer: ['buffer', 'Buffer'],
-        })
-      );
-
-      config.ignoreWarnings = [
-        /Critical dependency/,
-        /UnhandledSchemeError/,
-      ];
-    }
-
-    return config;
-  },
+  output: 'standalone'
 };
-
 export default nextConfig;
+// const nextConfig = {
+//   images: {
+//     domains: ['firebasestorage.googleapis.com'],
+//   },
+
+//   webpack: (config, { isServer, dev, webpack }) => {
+//     if (!isServer) {
+//       config.plugins.push(new NodePolyfillPlugin());
+
+//       config.resolve.alias = {
+//         ...config.resolve.alias,
+//         url: require.resolve('url/'),
+//         // agrega más aliases si los tienes
+//       };
+
+//       config.resolve.fallback = {
+//         ...config.resolve.fallback,
+//         // fallbacks necesarios
+//       };
+
+//       config.plugins.push(
+//         new webpack.ProvidePlugin({
+//           process: 'process/browser',
+//           Buffer: ['buffer', 'Buffer'],
+//         })
+//       );
+
+//       config.ignoreWarnings = [
+//         /Critical dependency/,
+//         /UnhandledSchemeError/,
+//       ];
+//     }
+
+//     return config;
+//   },
+// };
+
+//export default nextConfig;
 
 
 
@@ -75,7 +79,7 @@ export default nextConfig;
 //   return config;
 // }
 
-
+ 
 
 
 

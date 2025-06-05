@@ -1,3 +1,6 @@
+
+/*
+//Borrado al sacar Fireba
 import { v4 as uuidv4 } from 'uuid';
 import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, cert, App } from 'firebase-admin/app';
@@ -62,3 +65,4 @@ export const uploadFileToFirebase = async ({
 
   return downloadURL;
 };
+ */

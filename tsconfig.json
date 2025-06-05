@@ -36,13 +36,10 @@
     "types/**/*.d.ts",
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
+    "**/*.tsx", 
     ".next/types/**/*.ts",
     "lib/api.ts",
-    "prisma/seed.ts",
     "scripts/**/*",
-    "prisma/seed.js",
-    "populate.js"
   ],
   "exclude": [
     "node_modules"

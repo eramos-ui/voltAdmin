@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import { FieldProps } from 'formik';
 import './CustomInput.css';
 import { CustomTooltip } from './CustomTooltip';
@@ -18,6 +18,7 @@ export interface InputProps  extends Partial<FieldProps> {
       * caption position
     */    
     captionPosition?: 'left' | 'top';
+    
     /**
       * placeholder
     */   
@@ -126,11 +127,19 @@ export const CustomInput = ({
     const [ charCount, setCharCount ]           = useState((field?.value ?? value ?? "").toString().length);
     const [ formattedValue, setFormattedValue ] = useState<string>(value ? value.toString() : "");
     const [ valueInside, setValueInside ]       = useState<any>( value ? value.toString() : "");
+    
     const inputClassNames = ` 
     custom-input-field ${theme}
     ${leftIcon ? 'has-left-icon' : ''} 
     ${rightIcon ? 'has-right-icon' : ''}
   `.trim();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(()=>{//🔹 Si se usa formatNumber, se formatea el valor inicial
+    if (formatNumber ){ 
+      const formattedValue=formatNumberValue(valueInside)
+      setFormattedValue(formattedValue);
+    }    
+  },[valueInside,formatNumber,setFormattedValue]);
     // if (type ==='RUT') console.log('**CustomInput field', value, error,form?.touched,form?.errors);
     const inputValue = (field?.value ?? value)? field?.value ?? value:'';
     const name = field?.name || ''; // Usa un valor predeterminado si field es undefined
@@ -162,6 +171,7 @@ export const CustomInput = ({
         let inputValue = event.target.value;
         setValueInside(inputValue);
         if (type === "number" && formatNumber) {
+          // console.log('CustomInput handleChange formatNumber',inputValue);
           inputValue = formatNumberValue(inputValue);
           setFormattedValue(inputValue);
           if (field?.onChange) field.onChange({ ...event, target: { ...event.target, value: parseNumber(inputValue) } });

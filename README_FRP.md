@@ -5,6 +5,8 @@
 - Node.js y npm instalados
 - Proyecto Next.js configurado
 
+# "dev": "node add-ip-to-azure-sql.js && next dev ", 
+
 ## Instalación de FRP
 
 1. Descargar FRP versión 0.61.2 desde:

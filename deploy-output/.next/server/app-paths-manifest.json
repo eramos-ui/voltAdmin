@@ -1,0 +1,22 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/[subMenuId]/page": "app/[subMenuId]/page.js",
+  "/about/team/page": "app/about/team/page.js",
+  "/about/company/page": "app/about/company/page.js",
+  "/activity/adminActivity/page": "app/activity/adminActivity/page.js",
+  "/definirEjecutor/page": "app/definirEjecutor/page.js",
+  "/forgot-password/page": "app/forgot-password/page.js",
+  "/login/page": "app/login/page.js",
+  "/elijeProveedores/page": "app/elijeProveedores/page.js",
+  "/map/page": "app/map/page.js",
+  "/page": "app/page.js",
+  "/project/newKML/page": "app/project/newKML/page.js",
+  "/project/activitySection/page": "app/project/activitySection/page.js",
+  "/project/openExcel/page": "app/project/openExcel/page.js",
+  "/project/createProject/page": "app/project/createProject/page.js",
+  "/project/toDoList/page": "app/project/toDoList/page.js",
+  "/register/page": "app/register/page.js",
+  "/reset-password/page": "app/reset-password/page.js",
+  "/toDoList/[idActivity]/page": "app/toDoList/[idActivity]/page.js",
+  "/upload-avatar/route": "app/upload-avatar/route.js"
+}

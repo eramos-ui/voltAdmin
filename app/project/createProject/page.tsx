@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef, useCallback } from "react";
 import { useRouter, useSearchParams  } from 'next/navigation';
 import { Formik, Form, Field, useFormikContext } from "formik";
 import * as Yup from "yup";
@@ -11,22 +11,23 @@ import { LocationForm } from "@/components/project/LocationForm";
 import { Comunas, GridRowType, OptionsSelect, ProjectType } from "@/types/interfaces";
 import { MapContext } from "../../context"; 
 
-import {  CustomButton, CustomFileInput, CustomGrid, CustomLabel } from "@/components/controls";
+import { CustomButton, CustomFileInput, CustomGrid, CustomLabel } from "@/components/controls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { processFileToGeoJSON } from "@/utils/kmzProcessor";
 import { optionsConectionPointType, optionsLandType, OptionsProjectType, optionsStoneType, optionsCertificadoAccesoType, 
          optionsOrientationType, optionsCeilingElementType, techoOptions } from "@/data/selectType";
 import CustomModal from "@/components/general/CustomModal";
 import MapComponent from "@/components/maps/MapComponent";
-import { loadComunas, loadRegiones} from "@/utils/loadRegionesComunas"
 import ActivityUploadSection from "@/components/activity/ActivityUploadSection";
 import DynamicForm from "@/components/general/DynamicForm";
 import { getNextActivityId } from "@/utils/getNextActivityId";
-import { updateNewProject } from "@/utils/updateNewProject";
 import { useSession } from 'next-auth/react'; 
-import { loadDataProject } from "@/utils/apiHelpers"
 import { activityColumns, activitiesColumnsDynamic } from "@/data/modalColumns";
 import { sortGridByActivityId } from "@/utils/sortGridByActivityId";
+
+import { formatProjectForFormik } from "@/utils/projectUtils/formatProjectForFormik";
+import { getProjectById } from "@/app/services/projects/getProjectById";
+import { updateProject } from "@/app/services/projects/updateProject";
 
 const validationSchema = Yup.object({
     projectName: Yup.string().required("El nombre del proyecto es obligatorio"),
@@ -36,11 +37,13 @@ const validationSchema = Yup.object({
     nivelPiedras: Yup.string().required("El nivel de piedras es obligatorio"),
     nivelFreatico: Yup.string().required("El nivel freático es obligatorio"),
   });
+  
 const NewProjectPage = () => {
   const router                                                  = useRouter();
   const searchParams                                            = useSearchParams();
-  const menuId                                                  = Number(searchParams?.get("menuId"));
+  const menuId                                                  = Number(searchParams?.get("menuId"));//4 es techo, 5 es piso
   const idTask                                                  = Number(searchParams?.get("idTask"));
+  const nroDocumento                                            = Number(searchParams?.get("nroDocumento"));
   const [ regiones, setRegiones ]                               = useState<OptionsSelect[]>();
   const [ comunasPorRegion, setComunasPorRegion ]               = useState<Comunas[]>(); 
   const [ loading, setLoading ]                                 = useState(true);
@@ -48,10 +51,8 @@ const NewProjectPage = () => {
   const [ geoJSONDataL, setGeoJSONDataL ]                       = useState<FeatureCollection<Geometry> | null>(null);//la L es por local para no confundir con setGeoJSONData del context
   const { setGeoJSONData, setSelectedKmlFile, selectedKmlFile } = useContext(MapContext);
   const [ isModalOpen, setIsModalOpen ]                         = useState(false);
-  // const [alertMessage, setAlertMessage]                         = useState<string | null>(null);
-  // const [alertType, setAlertType]                               = useState<"success" | "error" | "info">("info");
+
   const [ columnsActivities, setColumnsActivities ]             = useState<any>(activityColumns);
-  const [ formColumns, setFormColumns ]                         = useState<any>();
   const [ selectedRow, setSelectedRow ]                         = useState<GridRowType | null>(null);//de las activities
   const [ isAdding, setIsAdding ]                               = useState(false);
   const [ isEditing, setIsEditing ]                             = useState(false);
@@ -63,29 +64,64 @@ const NewProjectPage = () => {
   const [ nextActivityToAdd, setNextActivityToAdd ]             = useState<string>();
   const [ activities, setActivities ]                           = useState<any[]>([]);
   const [ initialValues, setInitialValues ]                     = useState <ProjectType>({ idProject:0, projectName: "",
-     ubicacionPanel: (menuId === 5) ? 'piso':'techo',  region: 0, comuna: 0, direccion: "",
-     nroEmpalmes: 1,  empalmesGrid: [],  instalacionesGrid:[],techoGrid:[], kmlFile: null, excelFile: null, 
-     activities:[{"NumActividad":"1.0", Actividad:"Inicial",FechaInicio:"","FechaTermino":"",},],
-     userModification:"", dateModification: "",state:"draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
+     ubicacionPanel: (menuId === 5) ? 'piso':'techo',  idRegion: 0, idComuna: 0, direccion: "",
+     nroEmpalmes: 1,  empalmesGrid: [],  instalacionesGrid:[],techoGrid:[], kmlFileName: null, kmlFileContent: null, excelFileId: null, 
+     activities:[{"numActividad":"1.0", actividad:"Inicial",fechaInicio:"","fechaTermino":"",duracion:0,"presupuesto": 0},],
+     userModification:"", dateModification: "",state: "draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
  } );
-//  console.log('initialValues en createProject', initialValues);
- useEffect(() =>  {
-  const cargaRegiones = async () => setRegiones(await loadRegiones());
-  const cargaComunas = async () => setComunasPorRegion(await loadComunas()); 
-  cargaRegiones();
-  cargaComunas();
- }, []);
+//  console.log('initialValues en createProject', menuId,idTask,session?.user.id);
+ const fetchRegiones = async (): Promise<OptionsSelect[]> => {
+  const res = await fetch('/api/catalogs/regiones');
+  if (!res.ok) throw new Error('Error al cargar regiones');
+  return await res.json();
+ }; 
+
  useEffect(() => {
+  fetchRegiones().then(setRegiones);
+ }, []);
+ const loadProject =useCallback( async () => {  
+   try {
+     const raw = await getProjectById(nroDocumento);
+     const formatted = formatProjectForFormik(raw);
+     // 🔹 Carga archivos desde GridFS o contenido base64
+     let excelFile: File | null = null;
+     if (formatted.excelFileId) {
+       const res = await fetch(`/api/files/${formatted.excelFileId}`);
+       const blob = await res.blob();
+       excelFile = new File([blob], formatted.excelFileName || 'archivo.xlsx', { type: blob.type });
+     }
+     let kmlFile: File | null = null;
+     if (formatted.kmlFileContent) {
+       const blob = new Blob([formatted.kmlFileContent], { type: 'application/vnd.google-earth.kml+xml' });
+       kmlFile = new File([blob], formatted.kmlFileName || 'archivo.kml');
+     }
+     setInitialValues({
+       ...formatted,
+       excelFile,
+       kmlFile,
+       idTask
+     });
+     setLoading(false);
+   } catch (error) {
+     console.error('Error al cargar proyecto:', error);
+   }
+  }, [nroDocumento, idTask]); 
+ useEffect(() => {
+  if (nroDocumento > 0) {loadProject() } else { setLoading(false); }
+}, [nroDocumento,loadProject]);
+
+useEffect(() => {
    if (selectedRow) {
-     const currentActivity = (selectedRow["NumActividad"] instanceof File) ? selectedRow["NumActividad"].name : '';
-     const existingIds = new Set(activities?.map((row) => String(row["NumActividad"]))); 
+     const currentActivity = (selectedRow["numActividad"])? selectedRow["numActividad"].toString():'';
+     const existingIds = new Set(activities?.map((row) => String(row["numActividad"]))); 
+    //  console.log('en NewProjectPage useEffect selectedRow existingIds',existingIds,currentActivity);
      setNextActivityToAdd(getNextActivityId(currentActivity, existingIds));
    }
  }, [selectedRow, activities]); 
  const openMapModal = (geoJSONDataL: any) => {
     if (geoJSONDataL) {
       setGeoJSONData(geoJSONDataL);
-      setSelectedKmlFile(selectedKmlFile);
+      setSelectedKmlFile(selectedKmlFile); 
       setIsModalOpen(true); // 📌 Abre el modal      
     }
  }; 
@@ -93,7 +129,8 @@ const NewProjectPage = () => {
     const fetchData = async (idTask:number) => {
       try {
         if (session?.user.id) {
-          await loadDataProject(idTask, session.user.id, setInitialValues, initialValues);
+          // await loadDataProject(idTask, Number(session.user.id), setInitialValues, initialValuesRef.current);
+          loadProject();
         }
       } catch (err) {
         console.log('error', err);
@@ -105,18 +142,15 @@ const NewProjectPage = () => {
         await fetchData(idTask);  
       } 
       setLoading(false);
-    };    
+    };
     init();
- }, [idTask, session?.user.id, initialValues, setInitialValues, setLoading]); 
- useEffect(() => { // Este useEffect actualiza el estado activities cuando cambia initialValues.activities
+ }, [idTask, session?.user.id, setLoading,  loadProject]); //initialValues, setInitialValues,
+ useEffect(() => { // Este useEffect actualiza el estado activities cuando cambia initialValues.activities, se usa para add activities
    if (initialValues.activities) {
      setActivities(initialValues.activities);
    }
- }, [initialValues.activities]); 
- useEffect(() => {
-    if (!initialValues.activities) return; // 🔹 Si no hay actividades, simplemente salir
-    setActivities(initialValues.activities);
-  }, [initialValues.activities]);
+ }, [initialValues.activities,setActivities]); 
+
  const handleFileUpload = async (file: File | null) => { 
     if (!file) {
       setError("No se seleccionó ningún archivo");
@@ -162,11 +196,6 @@ const NewProjectPage = () => {
       />
     );
   };    
-  const handleSaveComplete = async (vals:any) => { //console.log('save complete', vals);
-    const userModification = session?.user.email;
-    const userId = session?.user.id;
-    updateNewProject(vals, userModification,userId, 'complete');  
-  };  
   const SaveDraftButton = ({ handleSaveDraft }: { handleSaveDraft: (values: any) => void }) => {
     const { values } = useFormikContext(); // 🔹 Obtiene los valores actuales del formulario 
     return (
@@ -175,22 +204,81 @@ const NewProjectPage = () => {
       />
     );
   };
+  const handleSaveComplete = async (vals:any) => { //console.log('save complete', vals);
+    const userModification = session?.user.email || '';
+    const userId = session?.user.id || '' ;
+    const userName = session?.user.name || '';
+    console.log('en handleSaveComplete idTask',idTask);
+    const values={...vals,state:'complete',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
+    console.log('en handleSaveComplete values',values);
+    // const { activities, ...generalValues } = vals;
+    // console.log('generalValues',generalValues);
+
+    // const { activities: initialActivities, ...initialGeneralValues } = initialValues;
+    // const generalChanged = isEqual(generalValues, initialGeneralValues);
+    // const activitiesChanged = isEqual(activities, initialActivities);
+    // console.log('generalChanged =',generalChanged);
+    // console.log('activitiesChanged =',activitiesChanged);
+    const result = await updateProject(values);
+    console.log('result',result);
+    // updateNewProject(vals, userModification,userId, 'complete',generalChanged, activitiesChanged);  
+    router.push('/');
+  };
   const handleSaveDraft = async (vals:any) => { 
-    console.log('handleSaveDraft...',session?.user.email);
+    // console.log('idTask',idTask,vals)
+    // const { activities, ...generalValues } = vals;
     if (vals.projectName.length === 0) {
       window.alert("Para guardar un borrador mínimo debe ingresar el nombre del proyecto");
       return;      
-    } 
-    const userModification = session?.user.email;
-    const userId = session?.user.id;    
-    updateNewProject(vals, userModification,userId, 'draft');  
+    }     
+    const userModification = session?.user.email || '';
+    const userId = session?.user.id || '' ;
+    const userName = session?.user.name || '';
+    const values={...vals,state:'draft',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
+    console.log('en handleSaveDraft values',values);    
+    // const valsLimpios = limpiarValoresInvalidos(vals);
+    // const cleaned = limpiarGrillasConArchivos(limpiarValoresInvalidos(vals));    
+    // const valores={...cleaned, userModification, userId};
+    // console.log('valores',valores);    
+
+    const result = await updateProject(values); 
+    console.log('result',result);
+
+    // const idProject = (vals.idProject) ? vals.idProject : 0;
+    // const { activities, ...generalValues } = vals;
+    // const { activities: initialActivities, ...initialGeneralValues } = initialValues;
+    // const generalChanged = isEqual(generalValues, initialGeneralValues);
+    // const activitiesChanged = isEqual(activities, initialActivities);
+    // console.log('activitiesChanged =',activitiesChanged);
+    // console.log('generalChanged =',generalChanged);
+    // const valsLimpios = limpiarValoresInvalidos(vals);
+    // //updateNewProject(vals, userModification,userId, 'draft',generalChanged, activitiesChanged);  
+    // const response = await updateProject(valsLimpios, 'draft');
+    // console.log('response',response);
+    
+    
+    // const values = limpiarValoresInvalidos(vals);
+    // if (!generalChanged) {
+    //   // updateNewProject(vals, userModification,userId, 'draft');  
+    //   //const valsLimpios = limpiarValoresInvalidos(vals);
+    //   console.log('values',values);
+    //   //  console.log('activities',values.activities);
+    //   // console.log('initialValues.activities',initialValues.activities);
+    //   await updateProjectGeneral(idProject, values);
+    // }
+    // if (!activitiesChanged) {
+    //   await updateProjectActivities(idProject, values.activities);
+    // }     
     router.push('/');
   };  
   const handleRowSelection = (row: any | null) => {
     setSelectedRow(row);
   };  
-  if (loading) {   return <p>Cargando...</p>; }  
-  if (error) { return <p>{error}</p>; }  
+  if (loading || (nroDocumento > 0 && initialValues.projectName.length === 0)) {
+    return <p>Cargando...</p>;//chequea si proyecto existe y al menos tiene name
+  }  
+  if (error) { return <p>{error}</p>; } 
+  // console.log('initialValues en createProject antes de renderizar', initialValues);
   return (
     <>
       <div className="p-4">
@@ -201,9 +289,11 @@ const NewProjectPage = () => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           enableReinitialize
-          onSubmit={(values) => { console.log('onSubmit', values); }}
+          onSubmit={() => {}}
+         // onSubmit={(values) =>{  console.log('onSubmit', values);}}
         >
-          {({ values, errors, touched, setFieldValue, resetForm }) => {//no poner useEffect aqui porque se ejecuta cada vez que cambia el formulario           
+          {({ values, errors, touched, setFieldValue, resetForm }) => {//no poner useEffect aqui porque se ejecuta cada vez que cambia el formulario      
+            // useEffect(() => { console.log('🔍 Formik values actualizados:', values);     }, [values]); 
             const handleCancel = () => {
               const confirmed = window.confirm("¿Está seguro de que desea cancelar y limpiar el formulario?");
               if (confirmed) {     resetForm(); }
@@ -211,8 +301,8 @@ const NewProjectPage = () => {
             const handleEdit = (row: any) => { setEditingRow(row);  setIsEditing(true);  setSelectedRow(row);  };             
             const handleAdd = () => {
               if (!selectedRow) { alert('Debe seleccionar la actividad previa a la que desea agregar.'); return;  }
-              const currentActivity =(selectedRow["NumActividad"])? selectedRow["NumActividad"].toString():'';
-              const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
+              const currentActivity =(selectedRow["numActividad"])? selectedRow["numActividad"].toString():'';
+              const existingIds = new Set(values.activities?.map((row) => String(row["numActividad"]))); 
               const newActivity = getNextActivityId(currentActivity, existingIds);
               setNextActivity(newActivity);
               setIsAdding(true);
@@ -221,14 +311,14 @@ const NewProjectPage = () => {
               setEditingRow(row);
               const actividadId = row["NumActividad"];
               const hasChildren = values.activities.some(item =>
-                item["NumActividad"].toString().startsWith(`${actividadId}.`)
+                item["numActividad"].toString().startsWith(`${actividadId}.`)
               );
               if (hasChildren) {
                 alert(`No puedes eliminar la actividad "${actividadId} ${row.Actividad}" porque tiene actividades dependientes.`);
                 return;
               }
               if (window.confirm(`¿Eliminar la actividad "${actividadId} ${row.Actividad}"?`)) {
-                const newRows = values.activities.filter((item) => item["NumActividad"] !== actividadId);
+                const newRows = values.activities.filter((item) => item["numActividad"] !== actividadId);
                 setFieldValue("activities", newRows);
               }
             };
@@ -238,7 +328,7 @@ const NewProjectPage = () => {
                 setFieldValue('activities', newRows);
               } else if (isEditing) {
                 const updatedRows = values.activities?.map(row =>
-                  row["NumActividad"] === editingRow?.["NumActividad"] ? updatedRow : row
+                  row["numActividad"] === editingRow?.["numActividad"] ? updatedRow : row
                 );
                 setFieldValue('activities', updatedRows);
               }
@@ -258,19 +348,29 @@ const NewProjectPage = () => {
                 <div className="mb-4 flex items-center space-x-4">
                   <Field  name='kmlFile' component={CustomFileInput} showUploadButton={false} 
                     label="Archivo kml o kmz"  accept=".kml,.kmz" className="100%" useStandaloneForm={false} 
-                    onUploadSuccess={(file: File | null) => {setSelectedKmlFile(file); handleFileUpload(file); setFieldValue('kmlFile', file); }} 
+                    onUploadSuccess={(file: File | null) => {setSelectedKmlFile(file); handleFileUpload(file); setFieldValue('kmlFileName', file?.name); 
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setFieldValue('kmlFileContent', reader.result); // Aquí se guarda el contenido real
+                        };
+                        reader.readAsText(file); // Lectura como texto (ideal para .kml)
+                      } else {
+                        setFieldValue('kmlFileContent', '');
+                      }
+                  }} 
                   />                   
-                  {errors.kmlFile && touched.kmlFile && (<CustomLabel label={errors.kmlFile} fontColor={'#EF4444'}/> )}                   
-                  {values.kmlFile && (<span className="ml-0 mt-2 text-blue-600 font-medium truncate max-w-xs">📄 {values.kmlFile.name}</span>)}                  
+                  {errors.kmlFileContent && touched.kmlFileContent && (<CustomLabel label={errors.kmlFileContent} fontColor={'#EF4444'}/> )}                   
+                  {values.kmlFileContent && (<span className="ml-0 mt-2 text-blue-600 font-medium truncate max-w-xs">📄 {values.kmlFileName}</span>)}                  
                   <CustomButton buttonStyle="primary" htmlType="button" label="Abrir mapa" size="small"
-                    onClick={() => { openMapModal(values.kmlFile);  setIsModalOpenKML(true); }} 
-                    icon={<FontAwesomeIcon icon={faMapLocation} size="lg" color="white" />} style={{ marginTop:'10px' }} disabled={!(values.kmlFile)}
+                    onClick={() => { openMapModal(values.kmlFileContent);  setIsModalOpenKML(true); }} 
+                    icon={<FontAwesomeIcon icon={faMapLocation} size="lg" color="white" />} style={{ marginTop:'10px' }} disabled={!(values.kmlFileContent)}
                   />                  
                   <CustomModal isOpen={isModalOpenKML} onClose={() => {setIsModalOpenKML(false);}} title="Mapa" height="160vh"  width="1000px" >
-                    {values.kmlFile && ( <MapComponent geoJSONData={geoJSONDataL} /> )} 
+                    {values.kmlFileContent && ( <MapComponent geoJSONData={geoJSONDataL} /> )} 
                   </CustomModal>
                 </div>                
-                {(idTask === 0 || ( values.activities && values.activities[0].Actividad === "Inicial")) && (
+                {(idTask === 0 || ( values.activities && values.activities[0].actividad === "Inicial")) && (
                   <div className="mb-4 flex items-center space-x-4">
                     <ActivityUploadSection />
                   </div>
@@ -292,11 +392,11 @@ const NewProjectPage = () => {
                 )}                
                 {(isEditing || isAdding) && (
                   <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column",  }}>
-                    <CustomModal isOpen={isEditing || isAdding} onClose={handleCloseModal} height='70vh' width="800px"
-                      title={isAdding ? `Agregar actividad ${nextActivity}` : `Modificar actividad ${editingRow?.["NumActividad"]}`}
+                    <CustomModal isOpen={isEditing || isAdding} onClose={handleCloseModal} height='80vh' width="650px"
+                      title={isAdding ? `Agregar actividad ${nextActivity}` : `Modificar actividad ${editingRow?.["numActividad"]}`}
                     > 
-                      <DynamicForm columns={activitiesColumnsDynamic} onSave={handleSave}  onCancel={handleCancel}  setIsDirty={setIsDirty}   
-                        initialValues={ editingRow || { "NumActividad": nextActivity, Actividad: "", Presupuesto: "",  FechaInicio: "", FechaTermino: "", }} 
+                      <DynamicForm columns={activitiesColumnsDynamic} onSave={handleSave}  onCancel={handleCloseModal}  setIsDirty={setIsDirty}   
+                        initialValues={ editingRow || { "numActividad": nextActivity, actividad: "", presupuesto: "",  fechaInicio: "", fechaTermino: "", }} 
                       />
                     </CustomModal>
                   </div>
@@ -315,7 +415,7 @@ const NewProjectPage = () => {
                       onClick={handleCancel} icon={<FontAwesomeIcon icon={faEraser} size="lg" color="white" />} label='Cancelar' 
                     />
                   )}                  
-                  <SaveDraftButton handleSaveDraft={handleSaveDraft} />
+                  <SaveDraftButton handleSaveDraft={handleSaveDraft} />                 
                   <SaveCompleteButton handleSaveComplete={handleSaveComplete} />                  
                 </div>
               </Form>

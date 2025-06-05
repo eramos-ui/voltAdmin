@@ -1,7 +1,7 @@
  // 📌 Función para calcular el siguiente ID de actividad en la jerarquía padre-hijo-nieto
  export const getNextActivityId = (currentId: string | number, existingIds: Set<string>) => {
     if (!currentId) {
-      console.error("**currentId es inválido:", typeof currentId); 
+      // console.error("**currentId es inválido:", typeof currentId); 
       return "1"; // Retornar un valor por defecto si el ID es null o undefined
     }
   

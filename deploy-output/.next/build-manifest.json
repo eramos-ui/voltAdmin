@@ -1,0 +1,50 @@
+{
+  "polyfillFiles": [
+    "static/chunks/polyfills-42372ed130431b0a.js"
+  ],
+  "devFiles": [],
+  "ampDevFiles": [],
+  "lowPriorityFiles": [
+    "static/ojmy6VcQxyFQif80ORNVu/_buildManifest.js",
+    "static/ojmy6VcQxyFQif80ORNVu/_ssgManifest.js"
+  ],
+  "rootMainFiles": [
+    "static/chunks/webpack-c513c85048eecb05.js",
+    "static/chunks/fd9d1056-d78c19f3e56f77f5.js",
+    "static/chunks/2117-49d5a1c8a26ad020.js",
+    "static/chunks/main-app-17db5704b426cb29.js"
+  ],
+  "pages": {
+    "/_app": [
+      "static/chunks/webpack-c513c85048eecb05.js",
+      "static/chunks/framework-c5c3a6df36490ff6.js",
+      "static/chunks/main-215d7f68f8991e06.js",
+      "static/chunks/pages/_app-3c9ca398d360b709.js"
+    ],
+    "/_error": [
+      "static/chunks/webpack-c513c85048eecb05.js",
+      "static/chunks/framework-c5c3a6df36490ff6.js",
+      "static/chunks/main-215d7f68f8991e06.js",
+      "static/chunks/pages/_error-cf5ca766ac8f493f.js"
+    ],
+    "/cotizar": [
+      "static/chunks/webpack-c513c85048eecb05.js",
+      "static/chunks/framework-c5c3a6df36490ff6.js",
+      "static/chunks/main-215d7f68f8991e06.js",
+      "static/chunks/c16184b3-a2a2eb3ba3bb6fd3.js",
+      "static/chunks/5834-12c8c884460fe47a.js",
+      "static/chunks/1249-7455f96ab72199d2.js",
+      "static/css/17aae619daf6a3a3.css",
+      "static/chunks/pages/cotizar-b6cdaa8ed230ffda.js"
+    ],
+    "/gracias": [
+      "static/chunks/webpack-c513c85048eecb05.js",
+      "static/chunks/framework-c5c3a6df36490ff6.js",
+      "static/chunks/main-215d7f68f8991e06.js",
+      "static/chunks/c16184b3-a2a2eb3ba3bb6fd3.js",
+      "static/chunks/5834-12c8c884460fe47a.js",
+      "static/chunks/pages/gracias-78844cfd9bd74ea9.js"
+    ]
+  },
+  "ampFirstPages": []
+}

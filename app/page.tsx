@@ -1,8 +1,8 @@
+//Página de inicio de la aplicación
 "use client";  
 import { useSession } from 'next-auth/react';   
 import { FaProjectDiagram, FaIndustry, FaDollarSign, FaCalendarAlt, FaFileAlt, FaGavel, FaCalculator, FaCheckCircle, FaCogs, FaChartLine, 
           FaUsers, FaAward, FaGraduationCap, FaLifeRing, FaUserCog } from "react-icons/fa";
-// import {  UserData } from '@/types/interfaces';    
 export default function HomePage() { 
   const { data: session, status }                   = useSession();
   const userName=session?.user.name;

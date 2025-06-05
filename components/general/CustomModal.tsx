@@ -16,6 +16,7 @@ export interface CustomModalProps {
 
 const CustomModal: React.FC<CustomModalProps> = ({ isOpen, width ='500px', height='1000px',  children, 
      title, onClose, position='center',htmlContent='', backgroundColorForm="#fff" }) => {
+      // console.log('en CustomModal width,height',width,height);
   if (!isOpen) return null;
     // 📌 Posicionamiento flexible según la opción seleccionada
     const getPositionStyles = (): React.CSSProperties => {

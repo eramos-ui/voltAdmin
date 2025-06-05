@@ -43,14 +43,9 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
   const [ isDirtyAguas, setIsDirtyAguas ]                            = useState(false);
   const [ selectedInstalacion, setSelectedInstalacion ]              = useState<number>(0);
   const [ selectedRowAgua, setSelectedRowAgua ]                      = useState<any | null>(null);
-  // useEffect(() =>{
-  //   console.log('useEffect  empalmeColumnsDynamic',  empalmeColumnsDynamic);
-  // },[ empalmeColumnsDynamic])
-  // useEffect(() =>{
-
-    //console.log('useEffect  values.empalmesGrid',  values.empalmesGrid[0].rutCliente instanceof File);
-  //   console.log('useEffect  values',  values);
-  // },[ values])
+  // console.log('ProjectDetailsForm empalmeColumns',empalmeColumns);
+  // console.log('ProjectDetailsForm values.empalmesGrid',values.empalmesGrid);
+  // console.log('ProjectDetailsForm empalmeColumnsDynamic',empalmeColumnsDynamic);
   const handleCancel = (isDirty: boolean, setEditing: (val: boolean) => void) => {
     if (isDirty) {
       if (window.confirm("Tienes cambios sin guardar. ¿Deseas salir?")) {
@@ -60,8 +55,8 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
       setEditing(false);
     }
   };
-
   useEffect(()=>{
+    // console.log('🔑 useEffect techoGrid');
     const ajustaFilasAguasInstalacion=()=>{
       const currentTechoGrid = Array.isArray(values.techoGrid) ? values.techoGrid : [];
       const rowInstalacion=Array.isArray( values.instalacionesGrid.filter(rw => rw.nroInstalacion === selectedInstalacion))
@@ -81,11 +76,9 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
       }
     }
     if (selectedInstalacion >0 ){ ajustaFilasAguasInstalacion();   }
-  },[values.instalacionesGrid, selectedInstalacion, setFieldValue, values.techoGrid])
-  // useEffect(()=>{
-  //    ajustaFilasAguasInstalacion();
-  // },[values.instalacionesGrid])
+  },[values.instalacionesGrid, selectedInstalacion,setFieldValue,values.techoGrid]); //, setFieldValue, values.techoGrid (*) ocasiona loop
   useEffect(() => {
+    //  console.log('🔑 useEffect instalacionesGrid',values.nroInstalaciones);
     if (values.nroInstalaciones && values.nroInstalaciones > 0) {
       const currentInstalacionesGrid = Array.isArray(values.instalacionesGrid) ? values.instalacionesGrid : [];
       const currentLength = values.instalacionesGrid?.length || 0; // Evita que sea undefined
@@ -99,26 +92,49 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
         setFieldValue("instalacionesGrid", values.instalacionesGrid.slice(0, newLength));
       }
     }
-  }, [values.nroInstalaciones, setFieldValue, values.instalacionesGrid]);
-  useEffect(() => {    
-    if (values.nroEmpalmes && values.nroEmpalmes > 0) {
-      const currentEmpalmesGrid = Array.isArray(values.empalmesGrid) ? values.empalmesGrid : [];
-      // console.log('useEffect nroEmpalmes',values.nroEmpalmes,currentEmpalmesGrid,  currentEmpalmesGrid[0].rutCliente instanceof File);
-      const currentLength = values.empalmesGrid?.length || 0; // Evita que sea undefined
-      const newLength = values.nroEmpalmes;
-      if (newLength >= currentLength) {// 📌 Si `nroAguas` aumenta, agregamos nuevas filas
-        const nuevasFilas:empalmesGridType[] = Array.from({ length: newLength - currentLength }, (_, index) => ({
-          nroEmpalme: currentLength + index + 1, // Mantiene numeración correcta
-          proveedor: "", capacidad: 0, distancia: 0, nroCliente: "",capacidadInyeccion:0, rutCliente: null,boleta:null,poder:null,f2:null, 
-          distribuidora:"", diagrama: null, otrasImagenes:null, fechaF3:null,foto:null,f2oF4:"",
+  }, [values.nroInstalaciones,setFieldValue,values.instalacionesGrid]); //, setFieldValue, values.instalacionesGrid
+  // useEffect(() => {    
+  //   if (values.nroEmpalmes && values.nroEmpalmes > 0) {
+  //     const currentEmpalmesGrid = Array.isArray(values.empalmesGrid) ? values.empalmesGrid : [];
+  //     // console.log('useEffect nroEmpalmes',values.nroEmpalmes,currentEmpalmesGrid,  currentEmpalmesGrid[0].rutCliente instanceof File);
+  //     const currentLength = values.empalmesGrid?.length || 0; // Evita que sea undefined
+  //     const newLength = values.nroEmpalmes;
+  //     if (newLength >= currentLength) {// 📌 Si `nroAguas` aumenta, agregamos nuevas filas
+  //       const nuevasFilas:empalmesGridType[] = Array.from({ length: newLength - currentLength }, (_, index) => ({
+  //         nroEmpalme: currentLength + index + 1, // Mantiene numeración correcta
+  //         proveedor: "", capacidad: 0, distancia: 0, nroCliente: "",capacidadInyeccion:0, rutCliente: null,boleta:null,poder:null,f2:null, 
+  //         distribuidora:"", diagrama: null, otrasImagenes:null, fechaF3:null,foto:null,f2oF4:"",
+  //       }));
+  //       setFieldValue("empalmesGrid", [...currentEmpalmesGrid, ...nuevasFilas]);
+  //     }else if (newLength < currentLength) { // 📌 Si `nroAguas` disminuye, eliminamos las filas extras
+  //       console.log('🔑 newLength < currentLength',newLength, currentLength, values.empalmesGrid);
+  //       setFieldValue("empalmesGrid", values.empalmesGrid.slice(0, newLength));
+  //     }
+  //   }
+  // }, [values.nroEmpalmes, setFieldValue, values.empalmesGrid]);
+  const currentLength = Array.isArray(values.empalmesGrid) ? values.empalmesGrid.length : 0;
+  useEffect(() => {
+    const newLength = values.nroEmpalmes;  
+    // console.log('🔑 useEffect Empalmes- newLength',newLength, currentLength, values.empalmesGrid);
+    if (newLength && newLength > 0) {
+      if (newLength > currentLength) {
+        const nuevasFilas: empalmesGridType[] = Array.from({ length: newLength - currentLength }, (_, index) => ({
+          nroEmpalme: currentLength + index + 1,
+          proveedor: "", capacidad: 0, distancia: 0, nroCliente: "", capacidadInyeccion: 0,
+          rutCliente: null, boleta: null, poder: null, f2: null, distribuidora: "",
+          diagrama: null, otrasImagenes: null, fechaF3: null, foto: null, f2oF4: "",
         }));
-        setFieldValue("empalmesGrid", [...currentEmpalmesGrid, ...nuevasFilas]);
-      }else if (newLength < currentLength) { // 📌 Si `nroAguas` disminuye, eliminamos las filas extras
-        console.log('🔑 newLength < currentLength',newLength, currentLength, values.empalmesGrid);
+        // console.log('🔑 useEffect Empalmes- caso 1', (values.empalmesGrid || []), nuevasFilas);
+        setFieldValue("empalmesGrid", [...(values.empalmesGrid || []), ...nuevasFilas]);
+      } else if (newLength < currentLength) {
+        // console.log('🔑 useEffect Empalmes- caso 2', values.empalmesGrid.slice(0, newLength));
         setFieldValue("empalmesGrid", values.empalmesGrid.slice(0, newLength));
-      }
+      } //else if (newLength === currentLength) {//cuando no hay cambios en el nro de empalmes, pero si en el contenido de las filas
+       // console.log('🔑 useEffect Empalmes- caso 3', values.empalmesGrid);
+        // setFieldValue("empalmesGrid", values.empalmesGrid)
+      //}
     }
-  }, [values.nroEmpalmes, setFieldValue, values.empalmesGrid]);
+  }, [values.nroEmpalmes, values.empalmesGrid, setFieldValue, currentLength]);
   const handleEditAgua = (row: GridRowType) => {//clic sobre el botón acciones 'edit'
     const rowIndex = values.techoGrid.findIndex((r) => r.nroInstalacion === row.nroInstalacion && r.nroAgua === row.nroAgua);
     if (rowIndex !== -1) {
@@ -137,7 +153,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
   }
   const handleEmpalmeEdit = (row: empalmesGridType ) =>{
     const rowIndex = values.empalmesGrid.findIndex((r) => r.nroEmpalme === row.nroEmpalme);
-    console.log('handleEmpalmeEdit',rowIndex,row);
+    // console.log('handleEmpalmeEdit',rowIndex,row);
     if (rowIndex !== -1) {
       setEditingEmpalme(row);
       setEditingEmpalmeIndex(rowIndex); 
@@ -145,10 +161,9 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
     }
   }
   const handleSaveAgua = (updatedAgua: any) => {
-    console.log('handleSaveAgua',updatedAgua);
+    // console.log('handleSaveAgua',updatedAgua);
     if (!editingAguas || editingAguaIndex <0 ) return;      
     const updatedAguas = [...values.techoGrid];
-
     updatedAguas[editingAguaIndex] = { 
       ...updatedAguas[editingAguaIndex], 
       ...updatedAgua, // ✅ Actualiza los datos de la fila
@@ -160,17 +175,18 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
   };
   const handleSaveEmpalme =( updatedEmpalme: any) =>{
     if (!editingEmpalme || editingEmpalmeIndex <0 ) return;      
-      const updatedEmpalmes = [...values.empalmesGrid];
-      updatedEmpalmes[editingEmpalmeIndex] = { 
-        ...updatedEmpalmes[editingEmpalmeIndex], 
-        ...updatedEmpalme, // ✅ Actualiza los datos de la fila
-        rutCliente: updatedEmpalme.rutCliente || updatedEmpalmes[editingEmpalmeIndex].rutCliente || "No subido",
-        boleta: updatedEmpalme.boleta || updatedEmpalmes[editingEmpalmeIndex].boleta || "No subido",
-        poder: updatedEmpalme.poder || updatedEmpalmes[editingEmpalmeIndex].poder || "No subido",
-        diagrama: updatedEmpalme.diagrama || updatedEmpalmes[editingEmpalmeIndex].diagrama || "No subido",
-        otrasImagenes:updatedEmpalme.otrasImagenes || updatedEmpalmes[editingEmpalmeIndex].otrasImagenes || "No subido",
-        f2:updatedEmpalme.f2 || updatedEmpalmes[editingEmpalmeIndex].f2 || "No subido",
-      };    
+    const updatedEmpalmes = [...values.empalmesGrid];
+    updatedEmpalmes[editingEmpalmeIndex] = { 
+      ...updatedEmpalmes[editingEmpalmeIndex], 
+      ...updatedEmpalme, // ✅ Actualiza los datos de la fila
+      rutCliente: updatedEmpalme.rutCliente || updatedEmpalmes[editingEmpalmeIndex].rutCliente ,
+      boleta: updatedEmpalme.boleta || updatedEmpalmes[editingEmpalmeIndex].boleta ,
+      poder: updatedEmpalme.poder || updatedEmpalmes[editingEmpalmeIndex].poder ,
+      diagrama: updatedEmpalme.diagrama || updatedEmpalmes[editingEmpalmeIndex].diagrama ,
+      otrasImagenes:updatedEmpalme.otrasImagenes || updatedEmpalmes[editingEmpalmeIndex].otrasImagenes ,
+      f2:updatedEmpalme.f2 || updatedEmpalmes[editingEmpalmeIndex].f2 ,
+    };    
+    // console.log('en ProjectDetailsForm handleSaveEmpalme',updatedEmpalmes);
     setFieldValue("empalmesGrid", updatedEmpalmes);
     setEditingEmpalme(null);
     setIsEditingEmpalme(false);
@@ -224,7 +240,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
    };
    const handleFileUploadInstalacion= (file: File | null, rowIndex?: number, field?: string) => {
     if (!file || rowIndex === undefined || field === undefined) return; //
-    console.log(`📂 en instalación Archivo subido (${field}):`, file.name, `para fila ${rowIndex}`); 
+    // console.log(`📂 en instalación Archivo subido (${field}):`, file.name, `para fila ${rowIndex}`); 
     const updatedInstalaciones = [...values.instalacionesGrid];     
     updatedInstalaciones[rowIndex] = { // 📌 Actualiza SOLO el archivo correspondiente en la fila específica
       ...updatedInstalaciones[rowIndex], 
@@ -244,7 +260,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
   };  
   const handleFileUploadTecho  = (file: File | null, rowIndex?: number, field?: string) => {
     if (!file || rowIndex === undefined || field === undefined) return; //
-    console.log(`📂 en techo Archivo subido (${field}):`, file.name, `para fila ${rowIndex}`); 
+    // console.log(`📂 en techo Archivo subido (${field}):`, file.name, `para fila ${rowIndex}`); 
     const updatedTechos = [...values.techoGrid];    
     updatedTechos[rowIndex] = { // 📌 Actualiza SOLO el archivo correspondiente en la fila específica
       ...updatedTechos[rowIndex], 
@@ -252,7 +268,6 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
     };
     setFieldValue("techoGrid", updatedTechos);
   }; 
-  // console.log('JSX ProjectDetailsForm fechaF3',values.empalmesGrid);
   return (
     <>    {/* {console.log('JSX ProjectDetailsForm',values.techoGrid,selectedInstalacion)} */}
        <div className="mb-1 flex items-start space-x-2">
@@ -271,21 +286,11 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
         </div>
         { (values.empalmesGrid && values.nroEmpalmes>0 )  && (
               <div className="mb-2 flex items-start space-x-2">
-                  <CustomGrid<empalmesGridType> 
-                   title="Detalles de Empalmes" 
-                   columns={empalmeColumns as ColumnConfigType<empalmesGridType>[]} 
-                   actions={[ "edit"]} 
-                   rowsToShow={2} 
-                   fontSize="13px"
-                   data={values.empalmesGrid}//ACTUIALIZADO*******************
-                   borderVertical={true} 
-                   onEdit={(row) => {
-                      console.log("onEdit", row);
-                      handleEmpalmeEdit(row);
-                   }}
-                   onDelete={(row) =>
-                      setRowsEmpalme(rowsEmpalme.filter((r) => r.nroEmpalme !== row.nroEmpalme))
-                   }
+                  <CustomGrid<empalmesGridType> title="Detalles de Empalmes" borderVertical={true} 
+                   columns={empalmeColumns as ColumnConfigType<empalmesGridType>[]} actions={[ "edit"]} 
+                   rowsToShow={2} fontSize="13px" data={values.empalmesGrid}//ACTUIALIZADO*******************                   
+                   onEdit={(row) => {handleEmpalmeEdit(row);}}// console.log("onEdit", row);
+                   onDelete={(row) => setRowsEmpalme(rowsEmpalme.filter((r) => r.nroEmpalme !== row.nroEmpalme)) }
                    actionsTooltips= {["","Editar empalme"]}  rowHeight='30px' selectable={true}
                    onRowSelect={(row) => handleRowSelection("empalme", row)}
                   />
@@ -294,8 +299,8 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
                       title={`Editar empalme ${editingEmpalme.nroEmpalme}`}>
                       <DynamicForm columns={empalmeColumnsDynamic} onSave={handleSaveEmpalme} onCancel={handleCancelEmpalme} rowIndex={editingEmpalmeIndex} 
                          handleFileUpload={handleFileUploadEmpalme} initialValues={ editingEmpalme || { nroEmpalme: rowsEmpalme.length + 1, proveedor: "", capacidad: 0, 
-                          distancia: 0, nroCliente: "", capacidadInyeccion:0, rutCliente: null, boleta:null, poder:null, otrasImagenes:null,foto:null,f2:null,fechaF3:null }} 
-                          setIsDirty={setIsDirtyEmpalme}
+                         distancia: 0, nroCliente: "", capacidadInyeccion:0, rutCliente: null, boleta: null, poder: null, otrasImagenes: null,foto: null,f2: null,fechaF3: null }} 
+                         setIsDirty={setIsDirtyEmpalme}
                       />
                     </CustomModal>
                     )}
@@ -373,7 +378,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
                     borderVertical={true} onRowSelect={(row)=> handleRowSelection('techo',row)} //isEditable={isEditable}
                   />
                     { isEditingAguas  && (
-                    <CustomModal isOpen={isEditingAguas} height="50vh" width="1000px"  onClose={() => handleCancel(isDirtyAguas, setIsEditingAguas)}  
+                    <CustomModal isOpen={isEditingAguas} height="60vh" width="1000px"  onClose={() => handleCancel(isDirtyAguas, setIsEditingAguas)}  
                        title={`Editar agua ${selectedRowAgua.nroAgua} del edificio ${selectedInstalacion}`}    >
                       <DynamicForm columns={techoColumnsDynamic} onSave={handleSaveAgua} onCancel={handleCancelAguas} rowIndex={editingAguaIndex} 
                           handleFileUpload={handleFileUploadTecho} initialValues={ editingAguas || { nroAgua: rowsAgua.length + 1, orientacion: "", material: "",

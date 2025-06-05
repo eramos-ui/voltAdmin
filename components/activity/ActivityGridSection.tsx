@@ -22,27 +22,29 @@ const ActivityGridSection: React.FC<ActivityGridSectionProps> = ({ columns, hand
   // }, [values.activities]);
   useEffect(()=>{
     if ( !selectedRow ) return;
-    const currentActivity = ( selectedRow["NumActividad"])?selectedRow["NumActividad"].toString():'';
-    const existingIds = new Set(values.activities?.map((row) => String(row["NumActividad"]))); 
+    console.log('en ActivityGridSection selectedRow',selectedRow);
+    const currentActivity = ( selectedRow["numActividad"])?selectedRow["numActividad"].toString():'';
+    const existingIds = new Set(values.activities?.map((row) => String(row["numActividad"]))); 
     setNextActivityToAdd( getNextActivityId(currentActivity,existingIds));
   },[selectedRow, values.activities])
   
   if (values.activities.length === 0) return null; 
 
   const handleRowSelection = (row: any | null) => {
+    console.log('en ActivityGridSection handleRowSelection',row);
     setSelectedRow(row);
   };
   const handleDelete = (row: any) => {
-      const actividadId = values.activities[0]["NumActividad"];
+      const actividadId = values.activities[0]["numActividad"];
       const hasChildren = values.activities?.some(item =>// 📌 Verificar si hay hijos en las rows 
-        item["NumActividad"].toString().startsWith(`${actividadId}.`)
+        item["numActividad"].toString().startsWith(`${actividadId}.`)
     );
     if (hasChildren) {
       alert(`No puedes eliminar la actividad "${actividadId} ${row.Actividad}" porque tiene actividades dependientes.`);
       return;
     }
     if (window.confirm(`¿Eliminar la actividad "${actividadId} ${row.Actividad}"?`)) {
-      const newRows=values.activities.filter((item) => item["NumActividad"] !== actividadId)
+      const newRows=values.activities.filter((item) => item["numActividad"] !== actividadId)
       //setRows(values.activities.filter((item) => item["NumActividad"] !== actividadId));
       setFieldValue('activities',newRows) 
     }

@@ -1,52 +1,84 @@
 "use client";
 
 import { useRouter, useSearchParams  } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, useFormikContext  } from 'formik';
 import * as Yup from "yup";;
-// import {  loadDataActivityWithFilesAndEmails, sendingEmails } from '@/utils/apiHelpers';
-import { loadDataActivityWithFilesAndEmails, sendingEmails } from '@/utils/ApiEmail';
+import { loadDataActivityWithFilesAndEmails } from '@/app/services/loadPages/loadDataActivityWithFilesAndEmails';
 import { ActivityEmailFilesType,  OptionsSelect } from '@/types/interfaces';
 import { LoadingIndicator } from '../../components/general/LoadingIndicator';
 import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faSave, faCancel } from '@fortawesome/free-solid-svg-icons';
 import { compareTwoObj } from '@/utils/compareTwoObj';
 import { separarCamelPascalCase } from '@/utils/separarCamelPascalCase';
 import { EmailTemplateSelection, PreviewEmail, ProveedorSelection } from './components';
 import { replacePlaceholders } from '@/utils/replacePlaceholders';
 import { SendEmailButton } from './components/SendEmailButton';
+import { sendingEmails } from '../services/projectEmails/sendEmailAndRegister';
 
 const validationSchema = Yup.object({
     proveedoresSelected: Yup.array().min(1, "Debe seleccionar al menos un proveedor"),
     selectedTemplate: Yup.object().nullable().required("Debe seleccionar una plantilla"),
 });
-
+// console.log('en ElijeProveedoresPage');
 const ElijeProveedoresPage = () => {
-    const router                                                  = useRouter();
-    const searchParams                                            = useSearchParams();
-    const { data: session, status }                               = useSession();
-    const [ loading, setLoading ]                                 = useState(true);
-    const [ sendingEmail, setSendingEmail ]                       = useState(false);
-    const [ proveedoresOptions, setProveedoresOptions ]           = useState<OptionsSelect[]>();
-    const [ filesOptions, setFilesOptions ]                       = useState<OptionsSelect[]>();
-    const [ emailOptions, setEmailOptions ]                       = useState<OptionsSelect[]>();
-    const [ editableBody, setEditableBody ]                       = useState("");
-    const idTask                                                  = Number(searchParams?.get("idTask"));
-    const [ proveedorEdit, setProveedorEdit ]                     = useState<number>(0);
-    const [ placeholders, setPlaceholders ]                       = useState<Record<string, string>>({ });
-    const [ initialValues, setInitialValues ]                     = useState <ActivityEmailFilesType>({
+    const router                                                    = useRouter();
+    const searchParams                                              = useSearchParams();
+    const { data: session, status }                                 = useSession();
+    const [ loading, setLoading             ]                       = useState(true);
+    
+    const [ sendingEmail, setSendingEmail   ]                       = useState(false);
+    const [ proveedoresOptions, setProveedoresOptions ]             = useState<OptionsSelect[]>();
+    // const [ proveedorSelectedOptions, setProveedorSelectedOptions ] = useState<OptionsSelect[]>();
+    const [ filesOptions, setFilesOptions   ]                       = useState<OptionsSelect[]>();
+    const [ emailOptions, setEmailOptions   ]                       = useState<OptionsSelect[]>();
+    const [ editableBody, setEditableBody   ]                       = useState("");
+    const [ editableAsunto, setEditableAsunto   ]                   = useState("");
+    const idTask                                                    = Number(searchParams?.get("idTask"));
+    const [ proveedorEdit, setProveedorEdit ]                       = useState<string>('');//fuera de formik
+    const [ placeholders, setPlaceholders   ]                       = useState<Record<string, string>>({ });//fuera de formik
+    const [ asuntoPlaceholders, setAsuntoPlaceholders   ]           = useState<Record<string, string>>({ });//fuera de formik
+    const [ initialValues, setInitialValues ]                       = useState <ActivityEmailFilesType>({
         numActividad:'', actividad:'', fechaInicio: '' ,fechaTermino:'', duracion: 0 ,presupuesto:0,idTask:0, idTransaction:0,
-        idProjectActivity:0, idProject: 0, projectName: '', responsable:'', formaEjecucion:'', periodoControl:'', ejecutor:'',
-        ubicacionPanel:'',  nroInstalaciones:1, tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, jsFiles:[],emailTemplate:[],
-        selectedTemplate:null,proveedores:[], anexosSelected:[], proveedoresSelected:[],selectedTemplateId:0,
+        idProjectActivity:0, idProject: 0, projectName: '', userResponsable:'', formaEjecucion:'', periodoControl:'', userEjecutor:'',
+        ubicacionPanel:'',  nroInstalaciones:1, tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, tipoDocumento:'ACTIVIDAD',
+        jsFiles:[],emailTemplate:[], selectedTemplate:null,proveedores:[], anexosSelected:[], proveedoresSelected:[],selectedTemplateId:0,
+        idProcessInstance:0, idActivity:0, FechaEntregaTrabajo:'', PlazoRespuestaCotizacion:'',attributes:[],
+        //proveedorEditing:'', placeholder:{}, asuntoPlaceholder:{}, 
+        editableBody:'', editableAsunto:''
      }
     );
+    //const [ formikValues, setFormikValues ]                         = useState<typeof initialValues>(initialValues); //para tener los values fuera de Formik
+    //const formikValuesRef = useRef<typeof initialValues>(initialValues);//aquí están los datos fuera de Formik
+  //  console.log('en ElijeProveedoresPage',idTask);
+  const SyncFields = () => {
+    const { values, setFieldValue } = useFormikContext<any>();  
     useEffect(() => {
+      const proveedores=values.proveedores;
+      if (values.proveedoresSelected && values.proveedoresSelected.length>0){
+        const proveedoresSelected=values.proveedoresSelected.map( (proveedor:any) =>  
+          { 
+            const provFound=proveedores?.find((p:any) => p._id.toString() === proveedor );
+            if (provFound){
+              return {  value:proveedor.toString(), label:(provFound.name)?provFound.name:provFound.label }
+            }
+          } 
+        ).filter((p:any) => !p );
+        if (proveedoresSelected && proveedoresSelected.length>0){            
+          // setProveedorSelectedOptions(values.proveedoresSelected as OptionsSelect[]);
+          setFieldValue("proveedoresSelected", proveedoresSelected);
+        }
+      }        
+    }, [values.proveedoresSelected,values.selectedTemplate,values.proveedores,setFieldValue]); 
+    return null; // No renderiza nada
+  };    
+  useEffect(() => {
       const fetchData= async (idTask:number) => {
         try{
-          if (session?.user.id)  await loadDataActivityWithFilesAndEmails(idTask,session.user.id, setInitialValues);
+          const userEmail=session?.user.email?session?.user.email:'';
+          if (userEmail)  await loadDataActivityWithFilesAndEmails(idTask, userEmail, setInitialValues);
         }catch (err){
           console.log('error', err);
         }
@@ -55,65 +87,82 @@ const ElijeProveedoresPage = () => {
       if (idTask && idTask>0){//revisa si al abrir existe idTask. Esto indica completar proyecto
         fetchData(idTask);
       }
-     }, [idTask, session?.user.id]);
-     useEffect(() => {
+  }, [idTask, session?.user.email]);
+  useEffect(() => {
         if (initialValues.idProjectActivity && initialValues.idProjectActivity>0 ){
             setLoading(false);
         }
-     },[initialValues.idProjectActivity]);
+  },[initialValues.idProjectActivity]);
      useEffect(()=>{
       if (initialValues.proveedores && initialValues.proveedores.length>0 )
-        { setProveedoresOptions(initialValues.proveedores.map( (proveedor: any) =>  { return { label:proveedor.label, value:proveedor.id }} ));  }
+       setProveedoresOptions(initialValues.proveedores.map( (proveedor: any) =>  { return { label:proveedor.name, value:proveedor._id.toString() }} ));
      },[initialValues.proveedores]);
      useEffect(()=>{
-        if (initialValues.jsFiles && initialValues.jsFiles.length>0 )
-        {
-          setFilesOptions(initialValues.jsFiles.map( (f: any) =>  { return { label:f.descripcion, value:f.id }} ));
-        }
+      if (initialValues.jsFiles && initialValues.jsFiles.length>0 )//por que hay archivos repetidos le concatena al id el nombre del archivo
+         setFilesOptions(initialValues.jsFiles.map( (f: any) =>  { return { label:f.filename, value:f._id }} )); 
+        //setFilesOptions(initialValues.jsFiles.map( (f: any) =>  { return { label:f.descripcion, value:f.descripcion+'-'+f._id }} )); 
      },[initialValues.jsFiles]);
      useEffect(()=>{
+      // console.log('useEffect initialValues.emailTemplate',initialValues.emailTemplate);
       if (initialValues.emailTemplate && initialValues.emailTemplate.length>0 )
-      {
-        setEmailOptions(initialValues.emailTemplate.map( (f: any) =>  { return { label:f.templateName, value:f.idEmailTemplate }} ));
-      }
+       setEmailOptions(initialValues.emailTemplate.map( (f: any) =>  { return { label:f.templateName, value:f.idEmailTemplate }} ));      
      },[initialValues.emailTemplate ]);
      const handleExit = () => {
        let confirmed=true;
        confirmed = window.confirm(String.fromCodePoint(0x26A0) +"¿Está seguro de cerrar el formulario y perder lo modificado?" );
        if (confirmed)  router.back();
       };
-     
-     // Calculamos valores y renderizamos el loading fuera del return
-     if (loading) {
+     if (loading) {// Calculamos valores y renderizamos el loading fuera del return
        return <LoadingIndicator message={'cargando'} />;
      }
      
      if (sendingEmail) {
        return <LoadingIndicator message={'enviando correos'} />;
      }
-     
-     const handlePlaceholderChange=( values:any,val:any) =>{ // 📌 Función para actualizar los valores de los placeholders
-      const id=Number(val);
-      if (values.proveedores && id !== proveedorEdit){
-        const newProveedores= values.proveedores.map( (proveedor:any) => proveedor.id === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
-        const sinCambios=compareTwoObj(values.proveedores,newProveedores);//si no hubo cambios
+    const handlePlaceholderChange=( proveedorId:any,proveedores:any) =>{// 📌 Función para actualizar los valores de los placeholders dada la selección de un proveedor a editar
+      // console.log('handlePlaceholderChange',proveedorId);
+      const id=proveedorId;
+       if (proveedores && id !== proveedorEdit.toString()){//proveedores tiene la actual versión de los proveedores (placeholders)
+        const newProveedores= proveedores.map( (proveedor:any) => proveedor.id === id ? {...proveedor, placeholders }:proveedor );  
+        // console.log('newProveedores',newProveedores);
+        const sinCambios=compareTwoObj(proveedores,newProveedores);//si no hubo cambios
+        // console.log('sinCambios',sinCambios);
         if (!sinCambios){
           let confirmed=true;
           confirmed = window.confirm(String.fromCodePoint(0x26A0) +" Al cambiar de proveedor, perderá lo realizado. Para guardar presione aquí <cancelar> y luego, <guardar cambios> " );
           if (!confirmed) return;
         }  
-      }
-      const found=values.proveedores?.filter((obj:any) => obj.id === id)[0];      
-      if (found){
-        setProveedorEdit(id);
+       }
+       const found=proveedores?.filter((obj:any) => obj._id.toString() === id)[0];      
+        // console.log('handlePlaceholderChange found',found);
+       if (found){
+        setProveedorEdit(id);      
         const newPlaceholders=found.placeholders;
         setPlaceholders(newPlaceholders);
+        const newAsuntoPlaceholders=found.asuntoPlaceholders;
+        setAsuntoPlaceholders(newAsuntoPlaceholders);
+        if (id.length > 0 && found.asuntoPlaceholders && initialValues.emailTemplate && initialValues.emailTemplate.length > 0) {
+          const newAsuntoEditable = replacePlaceholders(initialValues.emailTemplate[0].subjectTemplate, found.asuntoPlaceholders);
+          if (asuntoPlaceholders !== newAsuntoPlaceholders) {
+            setAsuntoPlaceholders(newAsuntoPlaceholders);
+          }
+        }         
+        if (id.length > 0 && found.placeholders && initialValues.emailTemplate && initialValues.emailTemplate.length > 0) {
+
+          const newEditableBody = replacePlaceholders(initialValues.emailTemplate[0].bodyTemplate, found.placeholders);
+          if (editableBody !== newEditableBody) {
+            setEditableBody(newEditableBody);
+          }
+        }         
       }
      }
-    // 📌 Función para actualizar los valores del email
+     // 📌 Función para actualizar los valores del email, por ahora sólo se puede cambiar Observacion y las fechas de entrega del trabajo y de respuesta de cotización
      const handleTemplateChange = (values:any,key: string, value: string) => {//placeholders es Json con los metadatos, aquí los actualiza en el preview email
+      //  console.log('handleTemplateChange',values,key,value);
+      //  console.log('handleTemplateChange placeholders',placeholders);
         setPlaceholders((prev) => {
           const newPlaceholders = { ...prev, [key]: value };
+          // console.log('handleTemplateChange newPlaceholders',newPlaceholders);
           if (values.selectedTemplate) {// 📌 Actualiza el editableBody cada vez que cambian los placeholders
             setEditableBody(replacePlaceholders(values.selectedTemplate.bodyTemplate, newPlaceholders));
           }
@@ -123,53 +172,59 @@ const ElijeProveedoresPage = () => {
      const handleSendEmail =  async (vals: ActivityEmailFilesType) => {// 📌 Función para "enviar" el email      
       if (!vals.selectedTemplate) return alert("Selecciona una plantilla antes de enviar.");
       if (!vals.proveedoresSelected || vals.proveedoresSelected.length === 0 || !vals.proveedores || vals.proveedores.length === 0) return alert("Seleccione proveedores a enviar correo.");
+      console.log('handleSendEmail vals',vals);    
       setSendingEmail(true);
-      const userId=(session?.user.id)?session?.user.id:0;
-      await sendingEmails( vals, userId, idTask)
-       setSendingEmail(false);
-       router.push('/');
-      };
-      const handleSubmit = (values: any) => {//no se ejecuta
+      const finListaProveedores='completada';//el otro es 'pendiente'
+      const userEmail=(session?.user.email)?session?.user.email:'';
+      await sendingEmails( vals, userEmail, idTask, finListaProveedores);
+      setSendingEmail(false);
+      router.push('/');
+    };
+    const handleSubmit = (values: any) => {//no se ejecuta
         console.log("Formulario enviado con valores:", values);
-      };
-      
-  return(
-    <>  {/* { console.log('JSX AdminActivity initialValues',loading,proveedoresOptions) } */}
-     <div className="p-4">
+    };
+    const ShowPreviewEmail =() =>{
+      const { values, setFieldValue } = useFormikContext<any>();
+      // console.log('en ShowPreviewEmail proveedorEdit',proveedorEdit);
+      if (proveedorEdit.length ===0) return null;
+      return  <PreviewEmail editableBody={editableBody} values={values} placeholders={placeholders}  asuntoPlaceholders={asuntoPlaceholders} /> 
+      // return <PreviewEmail editableBody={values.editableBody} values={values} placeholders={values.placeholder}  asuntoPlaceholders={values.asuntoPlaceholder} /> 
+    }
+    return( // { console.log('JSX AdminActivity proveedorEdit',proveedorEdit, proveedorEdit.length) }  
+    <>  
+       <div className="p-4">
        <p className="text-3xl font-bold text-center" > Define proveedores de la actividad {initialValues.numActividad}</p>
        <p  className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`}</p>
        <Formik initialValues={initialValues} validationSchema={validationSchema} enableReinitialize  onSubmit={handleSubmit} >
-         {({ values, errors, touched, setFieldValue }) => {//, handleSubmit ejecución manual de handleSubmit
-          // Definimos las funciones dentro del renderizado de Formik
-          const handleSaveEditValue=() =>{
+         {({ values, errors, touched, setFieldValue }) => {//, handleSubmit ejecución manual de handleSubmit          
+          // useEffect(() => {  console.log('useEffect values',values); }, [values]);
+          const handleSaveEditValue=() =>{//para guardar el template editado 
+            // console.log('handleSaveEditValue',values.proveedores,proveedorEdit);
             if (values.proveedores){
-              const newProveedores= values.proveedores.map( proveedor => proveedor.id === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
-              const sinCambios=compareTwoObj(values.proveedores,newProveedores);//si no hubo cambios
-              if (!sinCambios){    setFieldValue("proveedores", newProveedores);  setProveedorEdit(0);
+              const newProveedores= values.proveedores.map( (proveedor:any) => proveedor._id.toString() === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
+              // console.log('handleSaveEditValue newProveedores',newProveedores);
+              const sinCambios=compareTwoObj(values.proveedores,newProveedores);//si hubo cambios
+              // console.log('andleSaveEditValue sinCambios',sinCambios)
+               if (!sinCambios){  
+                setFieldValue("proveedores", newProveedores); setProveedorEdit('');
                 setTimeout(() => { window.confirm(String.fromCodePoint(0x2705)+"Modificaciones guardadas"); window.focus();}, 0);
-              }           
+               
+               }           
             }
+            setProveedorEdit('');
           }          
           const handleExitEditValue=() =>{ 
-            if (values.proveedores){
-              const newProveedores= values.proveedores.map( proveedor => proveedor.id === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
-              const sinCambios=compareTwoObj(values.proveedores,newProveedores);//si no hubo cambios
+            const valuesFormik=values;
+            if (valuesFormik.proveedores){
+              const newProveedores= valuesFormik.proveedores.map( (proveedor:any) => proveedor._id.toString() === valuesFormik.proveedorEditing ? {...proveedor, placeholders }:proveedor );  
+              const sinCambios=compareTwoObj(valuesFormik.proveedores,newProveedores);//si no hubo cambios
               let confirmed=true;  
               if (!sinCambios){ confirmed = window.confirm(String.fromCodePoint(0x26A0) +"¿Está seguro de cerrar modificaciones y perderlas?" );
                 if (confirmed) return;
               }           
             }
-            setProveedorEdit(0);
-          }          
-          // Actualizar editableBody cuando cambia el proveedorEdit o placeholders
-          // Este código se mueve fuera del useEffect para evitar el error
-          if (proveedorEdit > 0 && placeholders && values.emailTemplate && values.emailTemplate.length > 0) {
-            // Solo actualizamos si no tenemos ya valor o si cambió alguna dependencia
-            const newEditableBody = replacePlaceholders(values.emailTemplate[0].bodyTemplate, placeholders);
-            if (editableBody !== newEditableBody) {
-              setEditableBody(newEditableBody);
-            }
-          }          
+            setProveedorEdit('');
+          }
          return (
           <>
             <Form id="emailForm" >
@@ -204,8 +259,9 @@ const ElijeProveedoresPage = () => {
                       onChange={(e:any) => setFieldValue("presupuesto", e.target.value)} textAlign='right' style={{marginTop:'2px'}}
                   />
                 </div>
-                { proveedoresOptions && proveedoresOptions.length>0 && filesOptions &&
-                  <ProveedorSelection proveedoresOptions={proveedoresOptions} filesOptions={filesOptions} />
+                { proveedoresOptions && proveedoresOptions.length>0 && //filesOptions &&
+                  <ProveedorSelection proveedoresOptions={proveedoresOptions} filesOptions={filesOptions || []}
+                  />
                 }
             </div>
             <div className="p-6 max-w-5xl mx-auto bg-white rounded-lg shadow">
@@ -220,60 +276,90 @@ const ElijeProveedoresPage = () => {
                         <div className="grid grid-cols-2 gap-1 mb-4">
                         {
                         <>
-                          { (values.proveedores && values.proveedoresSelected && values.proveedores.length>0 && values.proveedoresSelected.length>0 ) &&
+                         {(values.proveedores && values.proveedores.length>0 && values.proveedoresSelected && values.proveedoresSelected.length>0) &&
                             <div className="grid-cols-3 gap-1 mb-4 ml-1" >
                               <label className="block text-sm font-medium">Elija proveedor a revisar</label>
-                              <CustomSelect label='' width='180px' theme="light" value={String(proveedorEdit) } onChange={(e) =>  handlePlaceholderChange(values, e)}
-                                  options={values.proveedores.filter((obj:any) => values.proveedoresSelected.includes(obj.id)).map((pr:any) => { return {value:pr.id,label:pr.label }})}
+                              <CustomSelect label='' width='180px' theme="light" 
+                                onChange={(e:any) =>{ handlePlaceholderChange(e, values.proveedores)}}
+                                options={values.proveedoresSelected.map((p:any) => { 
+                                  const provFound=values?.proveedores?.find((pr:any) => pr._id.toString() === p );
+                                  if (!provFound) { return {value:p,label:p} } 
+                                  return {value:provFound._id.toString(),label:provFound.name }})
+                                }
                               />
-                            </div>
+                            </div>                  
                           }
                         </>
                         }
                         </div>
-                        {  proveedorEdit>0  &&
+                        {  proveedorEdit && proveedorEdit.length>0  &&
                         <div className="grid grid-cols-2 gap-3 mb-4">
-                        {Object.keys(placeholders).map((key) =>
-                          key !== "CotizacionURL" &&  key !== "Actividad" &&   key !== "NombreContratante" &&(key === "Observacion"  //// 🔹 Observacion ocupa una fila completa
-                            ? <div key={key} className="col-span-2">
-                                <CustomInput label='Observación que inserta en el mensaje' width="100%" name={key} value={placeholders[key]} theme="light"
-                                  onChange={(e) => handleTemplateChange(values, key, e.target.value)} maxLength={300} rows={2} multiline={true} // 🔹 Activa el modo multilínea
-                                />
-                              </div>
-                            :  <div key={key}>
-                                <label className="block text-sm font-medium">{separarCamelPascalCase(key)}</label>
-                                <CustomInput label='' width="200px" theme="light" name={key} value={placeholders[key]} onChange={(e) => handleTemplateChange(values, key, e.target.value)} />
-                              </div>
+                        {Object.keys(placeholders).map((key) =>{ //console.log('key',key,placeholders[key])                          
+                          return(// 🔹 sobre la key que se puede cambiar los valores-sólo se puede cambiar Observacion y las fechas de entrega del trabajo y de respuesta de cotización
+                            key !== "CotizacionURL" &&  key !== "Actividad" &&   key !== "NombreContratante" &&( key === "Observacion" // 🔹 Observacion ocupa una fila completa
+                              ? <div key={key} className="col-span-2">
+                                  <CustomInput label='Observación que inserta en el mensaje' width="100%" name={key} value={placeholders[key]} theme="light"                             
+                                    onChange={(e:any) => { handleTemplateChange(values, key, e.target.value)}} //todos fuera de Formik
+                                    maxLength={300} rows={2} multiline={true} // 🔹 Activa el modo multilínea
+                                  />
+                                </div>
+                              : (key === "FechaEntregaTrabajo" || key === "PlazoRespuestaCotizacion") ?
+                                <div key={key}>                                
+                                  <label className="block text-sm font-medium">{separarCamelPascalCase(key)}</label>
+                                  <Field name={key} as={CustomDate}  label="" placeholder=""
+                                     theme="light" width="100%" format="dd-MM-yyyy" //esta en initialValues
+                                  />      
+                                </div>
+                              : (key === "Contacto") ?
+                                <div key={key} >                                
+                                  <label className="block text-sm font-medium">{key}</label>
+                                  <div className="flex items-start justify-left align-middle">
+                                    <CustomLabel label={placeholders[key]} theme="light"  size='h3'  />
+                                  </div>
+                                </div>
+                              :
+                                <div key={key}>                                
+                                  <label className="block text-sm font-medium">{separarCamelPascalCase(key)}</label>
+                                  <CustomInput label='' width="200px" theme="light" name={key} value={placeholders[key]}
+                                   onChange={(e) =>{ console.log('key',key); handleTemplateChange(values, key, e.target.value)}} />
+                                </div>
+                            )  
                           )
+                        }
                         )}
                         </div>
                         }
                       </>
                   </div>
                 )}
-                { proveedorEdit>0 &&
-                  <div className="mt-1 mb-2 flex justify-end ">
-                  <CustomButton buttonStyle="secondary" size="small" htmlType="button" label="cancelar" tooltipContent='elimina y cierra cambios editados proveedor'
-                      tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExitEditValue }
+                { proveedorEdit && proveedorEdit.length>0 &&
+                 <div className="mt-1 mb-2 flex justify-end ">
+                  <CustomButton buttonStyle="primary" size="small" htmlType="button" label="cancelar" tooltipContent='elimina y cierra cambios editados proveedor'
+                      tooltipPosition='left' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faCancel} size="lg" color="white" />} onClick={ handleExitEditValue }
                   />
-                  <CustomButton buttonStyle="secondary" size="small" htmlType="button" label="aplicar cambios" tooltipContent='guardar los cambios editados'
-                      tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={handleSaveEditValue }
+                  <CustomButton buttonStyle="primary" size="small" htmlType="button" label="aplicar cambios" tooltipContent='guardar los cambios editados'
+                      tooltipPosition='left' style={{ marginLeft:5 }} icon={<FontAwesomeIcon icon={faSave} size="lg" color="white" />} onClick={handleSaveEditValue }                      
                   />
-                  </div>
+                 </div>
                 }
               </>
               }
             </div>
+            <SyncFields />
             </Form> 
-            {(values.selectedTemplate && values.proveedoresSelected && proveedorEdit>0) && <PreviewEmail editableBody={editableBody} values={values} placeholders={placeholders} /> }
-            {proveedorEdit === 0 && <SendEmailButton handleSendEmail={handleSendEmail}  />}   {/* 📌 Botón de Enviar Email */}
+            <>
+              <ShowPreviewEmail/>
+              {(values.proveedoresSelected && values.proveedoresSelected.length >0 && proveedorEdit.length === 0) &&    //📌 Botón de Enviar Email
+                <SendEmailButton handleSendEmail={handleSendEmail}  />
+              } 
+            </>
           </>
           )
          }}
        </Formik>
        <div className="mt-3 flex items-start ">
         <CustomButton buttonStyle="primary" size="small" htmlType="button" label="Volver al página anterior" tooltipContent='Volver a seleccionar otra actividad'
-            tooltipPosition='right' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit }
+            tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit }
         />
        </div>
      </div> {/* Fin del renderizado condicional */}

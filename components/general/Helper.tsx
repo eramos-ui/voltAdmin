@@ -18,8 +18,8 @@ if (!help) { console.log('ayuda no definida',nroHelpers,nroHelpers);return;}
 // console.log('helpData',nroHelpers,helpData,help);
 
 return (
-  <CustomModal isOpen={openHelp} onClose={handleCloseModal} height='90vh'  title={help.title} width="55%"
-    htmlContent={help?.htmlContent}  position='right'
+  <CustomModal isOpen={openHelp} onClose={handleCloseModal} height='95vh'  title={help.title} width="55%"
+    htmlContent={help?.htmlContent} position='right'
   >
     <CustomLabel label='' />
   </CustomModal>

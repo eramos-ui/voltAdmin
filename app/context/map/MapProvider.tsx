@@ -7,7 +7,7 @@ import { mapReducer } from './mapReducer';
 
 import { PlacesContext } from '..';
 
-import { directionsApi } from "@/app/services/apis";
+import { directionsApi } from "@/app/services/mapbox"; 
 import { DirectionsResponse } from '../../../types/directions';
 
 export interface MapState { 

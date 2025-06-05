@@ -9,7 +9,7 @@ export interface CustomButtonProps {
   onClick?: () => void;
   theme?: "light" | "dark";
   buttonStyle?: "primary" | "secondary";
-  size?: "large" | "small";
+  size?: "large" | "small" | "medium";
   disabled?: boolean;
   htmlType?: "button" | "submit" | "reset";
   isSubmitting?: boolean; // Nueva propiedad para manejar el estado de envío
@@ -41,6 +41,7 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
   // };
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     // Si el botón es de tipo submit, dejar que el formulario maneje el evento
+    // console.log('handleClick',htmlType);
     if (htmlType === "submit") return;
     if (!isSubmitting && onClick) {
       onClick();

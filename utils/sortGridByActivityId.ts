@@ -3,8 +3,8 @@ export const sortGridByActivityId = (data: any[]) => {
       const parseActivityId = (id: string) =>
         id.split(".").map((num) => parseInt(num, 10));
   
-      const idA = parseActivityId(String(a["NumActividad"]));
-      const idB = parseActivityId(String(b["NumActividad"]));
+      const idA = parseActivityId(String(a["numActividad"]));
+      const idB = parseActivityId(String(b["numActividad"]));
   
       for (let i = 0; i < Math.max(idA.length, idB.length); i++) {
         const numA = idA[i] || 0;

@@ -31,23 +31,26 @@ function getDbConfig(): sql.config {
   }
 
   // Fallback local
+    // console.log('En getDbConfig process.env.DB_USER',process.env.DB_USER,process.env.DB_PASSWORD,process.env.DB_SERVER,process.env.DB_NAME);
   return {
     user: process.env.DB_USER || 'sa',
     password: process.env.DB_PASSWORD || 'as',
     server: process.env.DB_SERVER || 'localhost',
-    database: process.env.NEXT_PUBLIC_FWK_BD || 'fotvAdmin',
+    database: process.env.DB_NAME || 'fotvAdmin',
     options: {
       trustServerCertificate: true,
       encrypt: true,
     },
     port: Number(process.env.DB_PORT || 1433),
-    connectionTimeout: 30000,
-    requestTimeout: 60000,
+    connectionTimeout: 180000,
+    requestTimeout: 180000,
   };
 }
 
 export async function connectToDB(): Promise<sql.ConnectionPool> {
+  
   if (sqlConnection.isConnected && sqlConnection.pool) {
+    // console.log('✅ En connectToDB ya existe una conexión',sqlConnection.pool);
     return sqlConnection.pool;
   }
 
@@ -56,7 +59,7 @@ export async function connectToDB(): Promise<sql.ConnectionPool> {
     const pool = await sql.connect(config);
     sqlConnection.isConnected = 1;
     sqlConnection.pool = pool;
-    console.log('✅ En getDbConfig Conexión a SQL Server establecida');
+    // console.log('✅ En getDbConfig Conexión a SQL Server establecida');
     return pool;
   } catch (error) {
     console.error('❌ Error conectando a SQL Server:', error);

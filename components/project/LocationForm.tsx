@@ -12,55 +12,33 @@ interface LocationFormProps {
   errors: any;
   touched: any;
 }
-
 export const LocationForm: React.FC<LocationFormProps> = ({ regiones, comunas, errors, touched }) => {
-const { values, setFieldValue } = useFormikContext<ProjectFormValuesType>(); // ✅ Especifica el tipo // Hook de Formik para manejar valores
-const [ regionSelected, setRegionSelected ] =useState<number>(0);
-const [ comunaelected, setComunaSelected ] =useState<number>(0);
-const [ comunasPorRegion, setComunasPorRegion ] = useState<OptionsSelect[]>(); 
-useEffect(() => {
-  if (values){
-    // console.log('LocationForm',values.comuna,values.region);
-    setRegionSelected(values.region);
-    setComunaSelected(values.comuna);
-  }
-},[values]);
-// const handleRegionChange = (value: string | number | null, setFieldValue: (field: string, value: any) => void) => {
-//     console.log('handleRegionChange');
-//     if (typeof value === "string") {
-//       setRegionSelected(value); // Actualiza el estado
-//     } else {
-//       console.error("Invalid region value:", value); // Manejo de errores
-//     }
-//   };
-useEffect(() => {
-  if (regionSelected) {
-    const regionData = comunas?.filter((comuna) => comuna.idRegion === regionSelected);
-    const nuevasComunas = regionData
-      ? regionData.map((comuna) => ({ value: comuna.idComuna, label: comuna.label }))
-      : [];
-    setComunasPorRegion(nuevasComunas);
-  }
-}, [regionSelected, comunas]); // Ejecuta cuando cambia `regionSelected` o `comunas`
-
-return (
+  const { values, setFieldValue } = useFormikContext<ProjectFormValuesType>(); // ✅ Especifica el tipo // Hook de Formik para manejar valores
+  const [ regionSelected, setRegionSelected ] =useState<number>(0);
+  const [ comunaSelected, setComunaSelected ] =useState<number>(0);
+  const [ comunasPorRegion, setComunasPorRegion ] = useState<OptionsSelect[]>(); 
+  // console.log('En LocationForm regiones', regiones);
+  // useEffect(() => {
+  //   console.log('LocationForm useEffect comunasPorRegion', comunasPorRegion);
+  // }, [comunasPorRegion]);
+  const fetchComunas = async (idRegion: number): Promise<OptionsSelect[]> => {
+    const res = await fetch(`/api/catalogs/comunas?idRegion=${idRegion}`);
+    if (!res.ok) throw new Error('Error al cargar comunas');
+    return await res.json();
+   };
+   useEffect(() => {
+      if (regionSelected) {
+        fetchComunas(regionSelected).then(setComunasPorRegion);
+      }
+   }, [regionSelected]);
+  return (
     <div className="mb-1 flex items-start space-x-2">
-       <div className="w-3/8">
+       <div className="w-2/6">
         <Field name="region">
           {({ field, form }: any) => {
-            // useEffect(() => {
-            //     if (field.value){
-            //         const regionId = field.value.toString();
-            //         const regionData = comunas?.filter( comuna => comuna.idRegion.toString() === regionId);
-            //         const nuevasComunas= regionData
-            //         ? regionData.map((comuna) => ({ value: comuna.idComuna.toString(), label: comuna.label }))
-            //         : [];  
-            //         setComunasPorRegion(nuevasComunas);
-            //     }
-            //     }, [field.value]); // Ejecuta cuando hay cambios en los valores
             return (
             <CustomSelect
-            name='region'
+                name='region'
                 label="Región"
                 options={regiones}
                 placeholder="Seleccione una región"
@@ -73,8 +51,7 @@ return (
                 error={touched.region && errors.region ? errors.region : undefined}
                 {...field}
                 onChange={(value:number) => {
-                  console.log('LocationForm onChange',value);
-                  const regionValue:number = Array.isArray(value) ? Number(value[0]) : 0; // 🔹 Tomamos el primer valor si es un array
+                  const regionValue:number = value;
                   form.setFieldValue("region", regionValue);
                   setRegionSelected(regionValue); // ✅ Asegura que siempre sea un string
                   form.setFieldValue("comuna", 0); // 🔹 Reinicia comuna cuando cambia región
@@ -85,19 +62,19 @@ return (
         </Field>
         {/* {errors.region && touched.region && <p className="text-red-500 text-sm">{errors.region}</p>} */}
       </div>
-      <div className="w-2/8">
-      {comunasPorRegion && (
+      <div className="w-1/6">
+      {/* {comunasPorRegion && ( */}
         <Field
           as={CustomSelect}
           label="Comuna"
           name='comuna'
           options={comunasPorRegion || []}
           placeholder="Seleccione la comuna"
-          disabled={!regionSelected}
+          disabled={!regionSelected}//para que ocupe el espacio de la comuna aunque no haya comuna
           width="100%"
-          required          
+          required
         />
-      )}
+      {/* )} */}
       </div>
       <div className="w-3/6">
         <Field

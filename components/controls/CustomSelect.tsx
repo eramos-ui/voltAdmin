@@ -18,7 +18,7 @@ export interface CustomSelectProps {
   /**
     * selected value without formik
   */  
-  value?: string | string[]; // Puede ser string o array de strings si es múltipl
+  value?: string | string[]; // Puede ser string o array de strings si es múltiple es un array de los
   style?: React.CSSProperties;
   width?: string ; 
   onChange?: (value: string | string[]) => void; // Acepta string o array de strings
@@ -74,7 +74,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 }) => {
   // Usamos el hook personalizado que siempre se ejecuta
   const [field, meta] = useSafeField(name);
-  
+  // console.log('CustomSelect field',field,name);
   // Siempre inicializamos useFormikContext
   const formik = useFormikContext<FormikContextType<FormikValues>>() || { 
     handleChange: () => {}, 
@@ -95,9 +95,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   );
   
   // Actualizar el estado interno cuando cambia el valor externo
-  useEffect(() => {
-    setSelectedInside(selectedValue);
-  }, [selectedValue]);
+  // useEffect(() => {
+  //   setSelectedInside(selectedValue);
+  // }, [selectedValue]);
   
   // Manejador para selección múltiple (checkboxes)
   const handleCheckboxChange = (checkedValue: string | number) => {
@@ -123,7 +123,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       onChange(updatedValues);
     }
   };
-  
+  // useEffect(()=>{
+  //   console.log('CustomSelect selectedValue',selectedValue);
+  // },[selectedValue]);
   // Manejador de cambio para selección única
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newValue = event.target.value;

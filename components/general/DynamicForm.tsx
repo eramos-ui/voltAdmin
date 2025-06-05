@@ -44,7 +44,7 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
     rowIndex?:number;
     handleFileUpload?: (file: File | null, rowIndex?: number, field?: string) => void;
   }) => {
-   //console.log('DynamicForm columns',columns);
+  // console.log('DynamicForm columns',columns);
   // console.log('DynamicForm initialValues',initialValues);
   useEffect(() => {
     setIsDirty(false); // 📌 Inicializa como no modificado al cargar
@@ -107,12 +107,12 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                           const isDisabled = col.dependsOn
                               ? values[col.dependsOn.field] == null || values[col.dependsOn.field] !== col.dependsOn.value
                               : false;
-                          //console.log('col,isDisabled',col,isDisabled);    
+                          // if (col.field === 'fechaF3') console.log('col,isDisabled',col.field,isDisabled);    
                           return (
                               <div key={col.field} className="dynamic-form-field">
                                   {col.inputType === "file" ? (
                                       <CustomFileInput id={col.field} name={col.field} label={col.headerName} width={col.width} accept=".pdf, .jpg"
-                                          putFilenameInMessage={true}  value={values[col.field]}  disabled={isDisabled} required={col.required}
+                                          putFilenameInMessage={true}  value={values[col.field]} disabled={isDisabled} required={col.required}
                                         onUploadSuccess={(file: File | null) => {
                                             console.log('🔑 Archivo subido en DynamicForm-JSX:', file);
                                             if (file) {
@@ -123,7 +123,7 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                                         />
                                   ) : col.inputType === "date" ? (
                                       <CustomDate label={col.headerName} name={col.field} theme="light" width="80px" value={values[col.field]}
-                                       disabled={false} //disabled={isDisabled} 
+                                      disabled={isDisabled} //disabled={false} //disabled={isDisabled} 
                                       />
                                   ) : col.inputType === "select" && col.options ? (
                                       <CustomSelect  id={col.field} name={col.field} label={col.headerName} options={col.options} value={values[col.field]}

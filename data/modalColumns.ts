@@ -59,7 +59,7 @@ import {ColumnDynamicForm} from "@/components/general/DynamicForm";
         widthFormEdit:'220px',labelFormEdit:"Formulario F2 ó F4 (pdf/jpg)",
       renderCell: (row) => row.f2 instanceof File ? row.f2.name : typeof row.f2 === 'string' ? row.f2 : 'No subido', },
     { key: "fechaF3", label: "Fecha F3", captionPosition: "top", editable: true, type: "string", inputType:"date", options: undefined, width: '80px',rowFormEdit:5, 
-      dependsOn: { field: "f2oF4", value: "f2" }, labelFormEdit:"Fecha para solicitar F3", }, 
+      dependsOn: { field: "f2oF4", value: "F2" }, labelFormEdit:"Fecha para solicitar F3", }, 
     ];
 
   export const empalmeColumnsDynamic: ColumnDynamicForm[] = empalmeColumns.map(col => ({
@@ -130,8 +130,8 @@ export const instalacionesColumnsDynamic: ColumnDynamicForm[] = instalacionesCol
 }));
 
 export const toDoColumns: ColumnConfigType<GridRowType>[] = [
-  { key: "infoToDo", label: "Descripción de la tarea", captionPosition: "top", editable: false,width:'840px', type: "string", options: undefined },
-  { key: "idTask", label: "idTask", captionPosition: "top", editable: false, visible: false,  type: "number", width:'70px', options: undefined },
+  { key: "infoToDo", label: "Descripción de la tarea", captionPosition: "top", editable: false,width:'900px', type: "string", options: undefined },
+  { key: "idTask", label: "idTask", captionPosition: "top", editable: false, visible: false,  type: "number", width:'75px', options: undefined },
   { key: "ubicacionPanel", label: "Ubicacion panel", captionPosition: "top", editable: false, visible: false,  type: "string", width:'70px', options: undefined },
   { key: "usuarioCreador", label: "Usuario creador", captionPosition: "top", editable: false, visible: false,  type: "string", width:'70px', options: undefined },
   { key: "processName", label: "Proceso", captionPosition: "top", editable: false, type: "string", visible: false, options: undefined },
@@ -149,25 +149,25 @@ export const toDoColumns: ColumnConfigType<GridRowType>[] = [
 ];
 
 export const activityColumns: ColumnConfigType<GridRowType>[] = [
-  { key: "NumActividad", label: "Num.Actividad", captionPosition: "top", editable: false,width:'100px', type: "string",textAlign:'left', options: undefined },
-  { key: "Actividad", label: "Actividad", captionPosition: "top", editable: true, visible: true,  type: "string",textAlign:'left', width:'200px', options: undefined,
+  { key: "numActividad", label: "Num.Actividad", captionPosition: "top", editable: false,width:'100px', type: "string",textAlign:'left', options: undefined },
+  { key: "actividad", label: "Actividad", captionPosition: "top", editable: true, visible: true,  type: "string",textAlign:'left', width:'200px', options: undefined,
     widthFormEdit: '300px',rowFormEdit:1,labelFormEdit:'Descripción de la actividad',required: true,
    },
-  { key: "FechaInicio", label: "Fecha inicio", captionPosition: "top", editable: true, visible: true,  type: "string",textAlign:'left', inputType: "date", width:'100px', options: undefined,
+  { key: "fechaInicio", label: "Fecha inicio", captionPosition: "top", editable: true, visible: true,  type: "string",textAlign:'left', inputType: "date", width:'100px', options: undefined,
     widthFormEdit: '190px',rowFormEdit:2, labelFormEdit:'Fecha de inicio de la actividad',required: true,
    },
-  { key: "FechaTermino", label: "Fecha término", captionPosition: "top", editable: true, visible: true,  type: "string", inputType: "date", width:'100px', options: undefined,
+  { key: "fechaTermino", label: "Fecha término", captionPosition: "top", editable: true, visible: true,  type: "string", inputType: "date", width:'100px', options: undefined,
     widthFormEdit: '190px',rowFormEdit:2, labelFormEdit:'Fecha de término de la actividad',required: true, 
    },
-  { key: "Duracion", label: "Duración (días)", captionPosition: "top", editable: false, visible: true,  type: "number", width:'100px', options: undefined },
-  { key: "Presupuesto", label: "Presupuesto", captionPosition: "top", editable: true, visible: true,  type: "number", width:'100px', options: undefined ,
+  { key: "duracion", label: "Duración (días)", captionPosition: "top", editable: false, visible: true,  type: "number", width:'100px', options: undefined },
+  { key: "presupuesto", label: "Presupuesto", captionPosition: "top", editable: true, visible: true,  type: "number", width:'100px', options: undefined ,
     widthFormEdit: '190px',rowFormEdit:3, labelFormEdit:'Presupuesto',required: true,
   },
 
 ];
 export const activitiesColumnsDynamic:ColumnDynamicForm[] = activityColumns.map(col => ({
   field: String(col.key),
-  editable: (col.key !== 'NumActividad' && col.key !== 'Duracion') ,
+  editable: (col.key !== 'numActividad' && col.key !== 'duracion') ,
   width: (col.widthFormEdit)? col.widthFormEdit : col.width ,
   headerName:  (col.labelFormEdit)?col.labelFormEdit:col.label,
   inputType: col.inputType,

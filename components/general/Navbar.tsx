@@ -1,30 +1,29 @@
 "use client"; 
+
 import { useEffect, useState } from 'react'; 
 import { signOut  } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 import UserAvatar from './UserAvatar';
 import UserDropdown from './UserDropdown';
-import { UserData } from '@/types/interfaces';
+import { UserData } from '../../types/interfaces';
 import { useSidebarToggle } from '../../context/SidebarToggleContext';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faBars } from '@fortawesome/free-solid-svg-icons';
-import { useLabels } from '@/hooks/ohers/useLabels';
 import LogoCompany from './LogoCompany';
 import { CustomAlert } from '../controls';
-import { compareTwoObj } from '@/utils/compareTwoObj';
-import { generateFileHash } from '@/utils/generateFileHash';
-import { fetchAvatarAsBlob } from '@/utils/fecthAvatarAsBlob';
+import { compareTwoObj } from '../../utils/compareTwoObj';
+import { generateFileHash } from '../../utils/generateFileHash';
+import { fetchAvatarAsBlob } from '../../utils/fecthAvatarAsBlob';
 
 type NavbarProps = {
   toggleSidebar: () => void;
-  isSidebarVisible: boolean;
   user: UserData | null;
-  setUser: (user: UserData) => void;
+  setUser: (user: UserData | null) => void;
 };
 
-const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, setUser }) => {
+const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, user, setUser }) => {
   const { isToggleButtonDisabled }            = useSidebarToggle();
   const [ isDropdownOpen, setIsDropdownOpen ] = useState(false);
   const [ newName, setNewName ]               = useState(user?.name || "");
@@ -33,11 +32,8 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
   const [ avatar, setAvatar ]                 = useState<string | null>();
   const [ newTheme, setNewTheme ]             = useState<'light' | 'dark'>(user?.theme || 'light');
   const router                                = useRouter();
-  // const [ newLanguage, setNewLanguage ]       = useState('fr'); 
-  const { labels, error }                     = useLabels();
   const [ alertMessage, setAlertMessage ]     = useState<string | null>(null);
   const [ alertType, setAlertType ]           = useState<'success' | 'error' | 'info'>('info'); 
-
   useEffect(() => {
     if (user) {
       setNewName(user.name);
@@ -53,7 +49,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
     router.push('/login');
   }
   const handleSetNewAvatar = (file: File | undefined) => {
-    //console.log('establece avatar', file);
     if (file) {
       setNewAvatar(file); // Establece el archivo como nuevo avatar
     } else {
@@ -75,26 +70,19 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
       if (user?.avatar) {
         const currentAvatarBlob = await fetchAvatarAsBlob(`/api/getAvatar?avatar=${user?.avatar}`);
         const currentAvatarHash = await generateFileHash(currentAvatarBlob);
-        // console.log('currentAvatarHash',currentAvatarHash);
-        // console.log('currentAvatarBlob',currentAvatarBlob); 
         isNewAvatar= !(currentAvatarHash === newAvatarHash )           
       }
       } else{
         isNewAvatar=false;
-      //console.log('newAvatarHash',newAvatarHash); 
     }
     formData.append('parameters', JSON.stringify({...user, name: newName, email: newEmail, theme: newTheme, isNewAvatar: (isNewAvatar)?"1":"0" }));
-    //for (let [key, value] of formData.entries()) {  console.log(`${key}:`, value);   }    //verfica el paso de los parametros
-    
     if (compareTwoObj(user,{ ...user, name: newName, email: newEmail, theme: newTheme, isNewAvatar }) && !isNewAvatar) return;  
-    //('isNewAvatar',isNewAvatar);
     if (isNewAvatar){//con Avatar implica usar formData
       try{
         const response = await fetch('/api/saveUserFormData', {
           method: 'POST',
           body: formData,
         });
-        //console.log('response',response);
        } catch(error){
         console.error('JSON inválido:',error);
        }
@@ -118,8 +106,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
             setTimeout(() => {// Actualizar el estado de `user` en Navbar
               if (user) {
                 setUser({
-                  ...user,
-                  name: newName,
+                  ...user, name: newName,
                   avatar: typeof newAvatar === 'string' ? newAvatar : user.avatar,
                 });
               }
@@ -140,19 +127,14 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
     window.location.href = window.location.href;//recarga la página
     return;
   };
-  if (error) {
-    return <div>{error}</div>;
-  }
   return (
-    <> 
-    {/* {console.log('en render user',user)} */}
-     { labels ? (
+    <> {/* {console.log('en render user',user)} */}
         <nav 
           className="bg-gray-800 text-white p-4 flex justify-between items-center dark:bg-gray-900"
         >
           <div className="flex items-center space-x-4">
             <LogoCompany />
-            <div className="text-lg">{labels.navbar.appName}</div>
+            <div className="text-lg">Plataforma de Servicios EvoluSol</div>
           </div>
           <div className="relative flex items-center space-x-3" >
             {user && (
@@ -161,30 +143,18 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
                 {alertMessage && (
                   <div className="mr-4"> {/* Añadimos un margin-right para separar de los botones */}
                       <CustomAlert
-                        duration={2000}
-                        message={alertMessage}
-                        type={alertType}
-                        onClose={() => setAlertMessage(null)}
+                        duration={2000} message={alertMessage} type={alertType} onClose={() => setAlertMessage(null)}
                       />
                     </div>
                   )}
                   <div className='mr-1'>
-                    <UserAvatar avatarFileName={user.avatar} />
+                    <UserAvatar avatarFileName={user?.avatar || null} />
                   </div>
                   <UserDropdown
-                    user={user}
-                    newName={newName}
-                    setNewName={setNewName}
-                    newEmail={newEmail}
-                    setNewEmail={setNewEmail}
-                    newTheme={newTheme}
-                    setNewTheme={setNewTheme}
-                    handleSave={handleSave}
-                    handleDropdownToggle={handleDropdownToggle}
-                    isDropdownOpen={isDropdownOpen}
-                    //newAvatar={ newAvatar }
-                    setNewAvatar={handleSetNewAvatar}
-                    disabled={isToggleButtonDisabled}
+                    user={user} newName={newName} setNewName={setNewName} newEmail={newEmail}
+                    setNewEmail={setNewEmail}  newTheme={newTheme}    setNewTheme={setNewTheme}
+                    handleSave={handleSave} handleDropdownToggle={handleDropdownToggle}
+                    isDropdownOpen={isDropdownOpen} setNewAvatar={handleSetNewAvatar} disabled={isToggleButtonDisabled}
                   />
                   <button 
                     className="bg-gray-600 text-white ml-1 px-2 py-1 rounded text-sm hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -192,25 +162,21 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, isSidebarVisible, user, 
                     disabled={isToggleButtonDisabled}
                   >
                     <FontAwesomeIcon icon={faSignOutAlt} className="mr-1" />
-                    {labels.navbar.botonSalida}
+                   Salida
                   </button>
                   <button
                     id="toggle-sidebar-button"
                     className="bg-gray-600 text-white ml-1 px-2 py-1 rounded text-sm hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    onClick={toggleSidebar}          
-                    disabled={isToggleButtonDisabled }
+                    onClick={toggleSidebar}  disabled={isToggleButtonDisabled }
                   >
                   <FontAwesomeIcon icon={faBars} className="mr-1" />
-                   {labels.navbar.menu}
-                </button>
+                  Menú
+                  </button>
                 </div>                
               </>
             )}
           </div>
         </nav>
-       ): (
-        <div>Loading labels...</div>
-      )}
     </>
   );
 };

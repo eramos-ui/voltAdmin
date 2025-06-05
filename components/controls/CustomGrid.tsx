@@ -65,7 +65,8 @@ export const CustomGrid = <T,>({
   onRowSelect,
   isEditable,
 }: CustomGridProps<T>) => {
-  //if (title==='Actividades actuales') console.log('en CustomGrid columns',title,columns);
+  // if (title==='Actividades actuales') console.log('en CustomGrid columns',title,columns);
+  // if (title==='Actividades actuales') console.log('en CustomGrid data.length',data.length);
   const [columnWidths, setColumnWidths]           = useState<Record<string, string>>(
     Object.fromEntries(columns.map(col => [String(col.key), col.width || "150px"]))
   );
@@ -89,7 +90,7 @@ export const CustomGrid = <T,>({
     }
   };
   const handleRowSelection = (row: T) => {
-    //console.log('en handleRowSelection',title,row,selectable);
+    // console.log('en CustomGrid handleRowSelection',title,row,selectable);
     setSelectedGridRow(row);
     if (onRowSelect) {
       onRowSelect(row); // 📌 Notificar al componente padre
@@ -159,14 +160,17 @@ export const CustomGrid = <T,>({
         />
         <div>
           <div>
-            { (paginatedData) ? paginatedData.map((row, rowIndex) => (/* Filas */
+            { (paginatedData) ? paginatedData.map((row, rowIndex) => {/* Filas */
+            // if (rowIndex < 3) console.log('row',row,rowIndex)
+            return(
               <GridRow key={rowIndex} row={row} actions={filteredActions} onEdit={onEdit} onDelete={onDelete} rowHeight={rowHeight} fontSize={ fontSize}
                 padding={padding} borderColor={borderColor} borderWidth={borderWidth} borderVertical={borderVertical}  actionsTooltips={actionsTooltips}
                 actionsPositionTooltips={actionsPositionTooltips} columnWidths={columnWidths} // 📌 Pasamos el estado global de anchos
                 updateColumnWidth={updateColumnWidth} selectable={selectable} onSelect={() => handleRowSelection(row)} isSelected={selectedGridRow === row}
                 columns={columns.map((col) => ({...col, editable: getEditableState(col, row),}))} // 📌 Determina la edición dinámicamente       
                 />
-            )): <></>}
+            )
+            }): <></>}
           </div>
         </div>
       </div>

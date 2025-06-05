@@ -37,12 +37,14 @@ const ActivitySection = () => {
       alert(`Debe seleccionar la actividad previa a la que desea agregar.`);
       return;
     }
+    //console.log('selectedRow',selectedRow);
     const currentActivity = ( selectedRow["NumActividad"])?selectedRow["NumActividad"].toString():'';
+    // console.log('existingIds',currentActivity);
     const existingIds = new Set(rows?.map((row) => String(row["NumActividad"]))); // Obtener todos los IDs existentes en la grilla
-    const newActivity = getNextActivityId(currentActivity,existingIds);
-    console.log("Agregar nueva actividad", selectedRow,newActivity);
-    setNextActivity(newActivity);
-    setIsAdding(true);
+     const newActivity = getNextActivityId(currentActivity,existingIds);
+    // console.log("Agregar nueva actividad", selectedRow,newActivity);
+     setNextActivity(newActivity);
+     setIsAdding(true);
   };
   const handleSave = (updatedRow: GridRowType) => {
     if (isAdding) {

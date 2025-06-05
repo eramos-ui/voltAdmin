@@ -7,7 +7,7 @@ interface SendEmailButtonProps {
 // export const SendEmailButton = ({ handleSendEmail }: SendEmailButtonProps) => {
 export const SendEmailButton = ({  handleSendEmail }: SendEmailButtonProps) => {
   const { values } = useFormikContext<any>();
-
+  // console.log('values',values);
   const count = Array.isArray(values.proveedoresSelected) ? values.proveedoresSelected.length : 0;
 
   if (!values.selectedTemplate || count === 0) return null;

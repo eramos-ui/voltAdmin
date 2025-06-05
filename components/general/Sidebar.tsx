@@ -4,16 +4,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { iconMap } from '../../app/iconMap';
-import { MenuConfig, UserData } from '@/types/interfaces';
-import { SubMenuItem } from '../../types/interfaces';
+import { UserData } from '@/types/interfaces';
+import { SubMenuItem, MenuItem } from '../../types/interfaces';
 
 
 type SidebarProps = {
   isVisible: boolean;
   closeSidebar: () => void;
   user: UserData;
-  menuData: MenuConfig | null;
+  // menuData: MenuConfig | null;
+  menuData: MenuItem[] | null;
 };
+const systemName=process.env.NEXT_PUBLIC_SYSTEM_NAME;
 
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuData }) => {
   
@@ -23,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
   const toggleSubMenu                 = (index: number) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
-  //console.log('Siderbar menuData',menuData );
+    // console.log('Siderbar menuData',menuData );
   // const navigateTo = useCallback( ( url: string ) => {
   //   //toggleSubMenu();//esto ocultará el menú al tocar el mismo menú
   //   //console.log('navigateTo en menu', url)
@@ -45,27 +47,45 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
     closeSidebar();
     const path=subitem.path;
     const subMenuId=subitem.id;
-    const processType=subitem.processType;
-    const processActivity=String(subitem.idActivity);
-    const urlProcess=`/toDoList/${processActivity}`;
-    if (processType && processType ===1 && (!processActivity || processActivity.length<=0 ) ){
-      alert(`Menú mal configurado para ${subitem}` ) 
+    const processType:String=subitem.processType;
+    const processActivity=String(subitem.idActivity); //para las 'from toDo
+    const urlProcess=`/toDoList/${processActivity}`;//para las 'from toDo
+    // console.log('handleNavigation subitem mongo',subitem);return;
+    // console.log('handleNavigation subitem',subitem); 
+  // || processType ==='init activity'  && (!processActivity || processActivity.length<=0 )
+    if (processType && processType!=='from toDo' && processType !=='init activity' && processType !=='app'  ){
+      alert(`Menú mal configurado para ${processType}` ) 
       return; 
     }
-    if( processType === 1) {
-      //console.log('subitem,path,processType,processActivity',subitem,path,processType,urlProcess);
-      router.push(urlProcess);
-    } else {
-      if (subitem.form) {// Si el campo "form" no es null, redirige el formulario construido desde JSON
+    if( processType === 'from toDo' ) {//workflow   || processType ==='init activity'
+      // console.log('subitem,path,processType,processActivity',subitem);
+      const queryParams = new URLSearchParams({
+        idProcess: String(subitem.idProcess),
+        idActivity: String(subitem.idActivity),
+        email: user.email,
+        perfil: user.perfil || '',
+        roles: JSON.stringify(user.roleswkf),
+        path: String(subitem.path),//requerido para redirigir a la tarea desde el toDoList
+        
+        });
+      // console.log('queryParams',queryParams.toString());
+      // router.push(urlProcess,);
+      router.push(`${urlProcess}?${queryParams.toString()}`);
+ 
+    } else if( processType === 'app' ) {
+      // console.log('subitem,path,processType,processActivity',subitem,path,processType,urlProcess);
+      if (subitem.formId) {// Si el campo "form" no es null, redirige el formulario construido desde JSON
           router.push(`/${subMenuId}`);
-          } else {// Si el campo "form" es null, redirige a la dirección especificada en "path"
-            router.push(path);
        }
+    } else if( processType === 'init activity' ) {
+      router.push(path || '/');//menuId es 4 o 5  para techo o piso
     }
   };
   
   if (!isVisible || !menuData ) return null;
-  const { menuItems } = menuData;
+  //const { menuItems } = menuData;
+  const  menuItems  = menuData.filter(item => item.isValid).filter(item => item.system === systemName);
+  // console.log('JSX SideBar-user',user );
   const sidebarClass = 'order-last';
   return (
     <>
@@ -73,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
       <div ref={sidebarRef} className={`w-96 h-full bg-gray-800 text-white rounded-lg shadow-lg p-2 ${sidebarClass}`}>
         <ul>
           {menuItems.map((item, index) => {
-            //console.log('en JSX ext',item,index);
+            // console.log('en JSX ext',item,index);
           return (
             <li key={item.id} className="border-b border-gray-700">
               <div
@@ -84,19 +104,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
                   <FontAwesomeIcon icon={iconMap[item.icon]} />
                   <span>{item.title}</span>
                 </div>
-                {item.subMenu && item.subMenu.length > 0 && (
+                {item.submenus && item.submenus.length > 0 && (
                   <span>{activeIndex === index ? '-' : '+'}</span>
                 )}
               </div>
-              { (item.subMenu && item.subMenu.length > 0 && activeIndex === item.id) && (
+              { (item.submenus && item.submenus.length > 0 && activeIndex === item.id) && (
                 <ul className="pl-8" >
-                  {item.subMenu.map((subItem, subIndex) => {
-                    //console.log('en JSX int',subItem,subIndex);
+                  {item.submenus.map((subItem, subIndex) => {  // console.log('en JSX',subItem,subIndex);
                     return (
-                    <li key={subItem.id} className="p-2 hover:bg-gray-700">
+                    <li key={subItem.menuId+'-'+subItem.id} className="p-2 hover:bg-gray-700">
                       <div className="flex items-center space-x-2 cursor-pointer" onClick={() => handleNavigation(subItem)}>
                         <FontAwesomeIcon icon={iconMap[subItem.icon]} />
-                        <span>{subItem.title}</span>
+                        <span>
+                          {subItem.title}
+                        </span>
                       </div>
                     </li>
                     )

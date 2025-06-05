@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useLabels } from '@/hooks/ohers/useLabels';
+// import { useLabels } from '../hooks/others/useLabels';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignInAlt } from '@fortawesome/free-solid-svg-icons';
+import  labelsES  from '../../data/labelsES.json';
 
 const LoginPage = () => {//eramos@cibeles.cl    poiuyt
   
@@ -12,10 +13,11 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
     const [ password, setPassword ] = useState('');
     const router                    = useRouter();
 
-    const { labels, error }         = useLabels();
-    if (error) {
-      return <div>{error}</div>;
-    }
+    //const { labels, error }         = useLabels();
+    const labels=labelsES;
+    // if (error) {
+    //   return <div>{error}</div>;
+    // }
     const handleRegister = () => {
       router.push('/register'); // Redirigir a la página de registro
     };
@@ -23,12 +25,13 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
       router.push('/forgot-password'); // Redirige a una página para restablecer la contraseña
     };
     const handleLogin = async () => {
-      // console.log('login page handleLogin',email,password);
+      console.log('LoginPage handleLogin',email);
       const result = await signIn('credentials', {
         redirect: false, // Evita la redirección automática
         email,
         password,
-      });
+      }); 
+       console.log('LoginPage handleLogin result',result);
       if (result?.error) {
         console.error('Error loging in:', result.error);
       } else {        
@@ -39,8 +42,7 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
       await signIn(provider, { callbackUrl: '/' });
     };
   return (
-    <div>
-       { labels ? (
+    <div>       
         <div className="login-page flex justify-center items-center min-h-screen bg-gray-100">
           <div className="login-container max-w-md w-full bg-white p-8 rounded shadow">
             <h2 className="text-2xl font-bold mb-6 text-center">{labels.login.title}</h2>
@@ -111,10 +113,7 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
               </p>          
             </div>
           </div>
-        </div>
-        ): (
-          <div>Loading labels...</div>
-        )}
+        </div>        
     </div>
   );
 };

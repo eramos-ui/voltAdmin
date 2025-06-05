@@ -1,22 +1,23 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
+// import { exec } from 'child_process';
 
-const execAsync = promisify(exec);
+// import { promisify } from 'util';
 
-async function startTunnel() {
-  try {
-    console.log('Starting Cloudflare tunnel...');
-    const { stdout, stderr } = await execAsync('C:\\ngrok\\cloudflared.exe tunnel --url tcp://localhost:1433');
+// const execAsync = promisify(exec);
+
+// async function startTunnel() {
+//   try {
+//     console.log('Starting Cloudflare tunnel...');
+//     const { stdout, stderr } = await execAsync('C:\\ngrok\\cloudflared.exe tunnel --url tcp://localhost:1433');
     
-    console.log('Tunnel created successfully!');
-    console.log('Output:', stdout);
+//     console.log('Tunnel created successfully!');
+//     console.log('Output:', stdout);
     
-    if (stderr) {
-      console.error('Errors:', stderr);
-    }
-  } catch (error) {
-    console.error('Error creating tunnel:', error);
-  }
-}
+//     if (stderr) {
+//       console.error('Errors:', stderr);
+//     }
+//   } catch (error) {
+//     console.error('Error creating tunnel:', error);
+//   }
+// }
 
-startTunnel(); 
+// startTunnel(); 

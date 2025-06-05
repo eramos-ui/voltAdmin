@@ -11,8 +11,10 @@ interface Props {
   label: string;
   captionPosition?: 'left' | 'top';
   name: string;
-  value?: string | Date | null; 
   placeholder?: string;
+  value?: string | Date | null; 
+  textAlign?: 'left' | 'center' | 'right';  
+  maxLength?: number;  
   id?: string; 
   theme: string;
   className?: string;
@@ -20,6 +22,7 @@ interface Props {
   width:string; 
   disabled?:boolean;
   required?: boolean;
+  visible?:boolean;
 }
 type Locales = 'es' | 'en' | 'fr';
 const localeMapping = {
@@ -50,15 +53,17 @@ const parseFlexibleDate = (value: string): Date | null => {
 };
 
 //export const CustomDate: React.FC<Props> = ({ label, format = 'dd/MM/yyyy', theme, className, ...props }) => {
-  export const CustomDate: React.FC<Props> = ({ label, format = 'dd-MM-yyyy', theme, className,disabled=false,captionPosition='top', required=false, value, ...props }) => {
+  export const CustomDate: React.FC<Props> = ({ label, format = 'dd-MM-yyyy', theme, 
+    className,disabled=false,captionPosition='top', required=false, value, visible=true, ...props }) => {
   const [ field, meta ] = useField( props );
   const { setFieldValue } = useFormikContext();
   const [ selectedDate, setSelectedDate ] = useState<Date | null>(
     //field.value ? parseDate(field.value, format, new Date()) : null
     field.value ? parseFlexibleDate(field.value) : null
   );
-  // console.log('CustomDate value',value,disabled);
+  //  console.log('CustomDate value',value,disabled);
   //registerLocale('es', es);
+  if (!visible) return <></>;
   const handleChange = (date: Date | null) => {
     //if (date) {console.log('en CustomDate',date,formatDate(date, format))} else { console.log('CustomDate');};
     setSelectedDate(date);
@@ -103,7 +108,7 @@ const parseFlexibleDate = (value: string): Date | null => {
         showMonthDropdown
         showYearDropdown 
         dropdownMode="select"  
-        disabled
+        disabled={disabled}
       />
       {meta.touched && meta.error ? (
         <div 

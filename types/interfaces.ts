@@ -1,29 +1,82 @@
 export interface UserData {
+  _id: string;
+  name: string;
+  userModification: string;
+  email: string;
+  avatar?: string | null;
+  theme?: 'light' | 'dark';
+  password?: string;    
+  aditionaldata?: [{contacto:string, email:string}]
+  phone?:string;
+  rut?:string;
+  isValidate?:boolean;
+  system?:string;
+  roleswkf?:string[];
+  createAt?:string;
+  updateAt?:string;  
+  state?:string;
+  perfil?:string;
+  
+}
+// export interface UserData {
+//     id: number;
+//     name: string;
+//     email: string;
+//     avatar: string | null;
+//     theme: 'light' | 'dark';  
+//   }
+export interface SubMenuItem {
+  id: number;
+  menuId: number;
+  name: string;
+  title: string;
+  path?: string;
+  formId?: number;
+  icon: string;
+  isValid: boolean;
+  orden: number;
+  perfiles: string[];
+  system: string;
+  idProcess: number;
+  idActivity: number;
+  processType: String;  //['from toDo' ,'init activity' ,'end activity','app','app-3','query' ]
+  isAutomatic: boolean;
+  nameActivity: string;
+  isUserSpecific: boolean;
+  origen?: 'task' | 'perfil'; 
+  count?: number; 
+}
+  // export type SubMenuItem = {
+  //   id: number;
+  //   title: string;
+  //   path: string;
+  //   icon: string;
+  //   form: string | null;
+  //   processType: number | null;//1 si es wkf, 0 no
+  //   idActivity:number | null; //idProcess*100+idActivity
+  // };
+  export interface MenuItem {
     id: number;
+    system: string;
     name: string;
-    email: string;
-    avatar: string | null;
-    theme: 'light' | 'dark';
-    // language: 'fr' | 'en' | 'es';    
+    title: string;
+    path?: string;
+    icon: string;
+    menutype: string;
+    isValid: boolean;
+    orden: number;
+    submenus: SubMenuItem[];
+    processType: number;
   }
-  export type SubMenuItem = {
-    id: number;
-    title: string;
-    path: string;
-    icon: string;
-    form: string | null;
-    processType: number | null;//1 si es wkf, 0 no
-    idActivity:number | null; //idProcess*100+idActivity
-  };
-  export type MenuItem = {
-    id: number;
-    title: string;
-    path: string;
-    icon: string;
-    form: string | null;
-    processType: number | null;
-    subMenu?: SubMenuItem[];
-  };
+  // export type MenuItem = {
+  //   id: number;
+  //   title: string;
+  //   path: string;
+  //   icon: string;
+  //   form: string | null;
+  //   processType: number | null;
+  //   subMenu?: SubMenuItem[];
+  // };
   export type MenuConfig = {
     //position: 'left' | 'right';
     menuItems: MenuItem[];
@@ -221,7 +274,7 @@ export interface UserData {
     captionPosition:'top' | 'left';
   }     
   export interface ActivitiesType {
-    "NumActividad":string,Actividad:string | null, FechaInicio?: string | null,"FechaTermino"?:string | null, "Duracion"?: number | string ,Presupuesto?:number | string | null
+    "numActividad":string,actividad:string | null, fechaInicio?: string | null,"fechaTermino"?:string | null, "duracion"?: number | string ,presupuesto?:number | string | null
    }
   export type empalmesGridType = {//este type debe estar en apiHelpers
     nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string; distribuidora:string;
@@ -240,8 +293,8 @@ export interface UserData {
      idProject: number;
      projectName: string;
      ubicacionPanel:string;
-     region:number | null;
-     comuna:number | null;
+     idRegion:number | null;
+     idComuna:number | null;
      direccion: string | null;
      nroEmpalmes:number | null;
      //  empalmesGrid:{ nroEmpalme: number; proveedor: string; capacidad: number; distancia: number; nroCliente: string; distribuidora:string;
@@ -254,8 +307,9 @@ export interface UserData {
      //  techoGrid?: { nroInstalacion: number; nroAgua: number; orientacion: string | null; material: string | null;
      //        otrosElementos: string, area: number; pendiente: number; imagenTecho: File | null }[];	
      techoGrid?:techoGridType[];
-     kmlFile: File | null;	
-     excelFile:  File | null;	
+     kmlFileName: string | null;
+     kmlFileContent: string | null;	
+     excelFileId: string | null;	
      //activities:{ "NumActividad": string;Actividad: string;FechaInicio: string;FechaTermino: string;Presupuesto: number;Duracion: number;  }[]	;
      activities:ActivitiesType[],  
      userModification:  string ;		
@@ -292,44 +346,57 @@ export interface UserData {
   export interface ActivityType //extends ProjectType
   { 
       idProjectActivity:number; idProject:number, numActividad:string; actividad:string; fechaInicio: string; fechaTermino:string; duracion: number; 
-      presupuesto:number ,responsable:string; formaEjecucion: string; periodoControl: string; ejecutor:string; 
+      presupuesto:number ,userResponsable:string; formaEjecucion: string; periodoControl: string; userEjecutor:string; 
       idTask:number; idTransaction:number; projectName: string; ubicacionPanel: string;tipoTerreno: string; nivelPiedras: string;  
-      nivelFreatico: number; nroInstalaciones:number;
+      nivelFreatico: number; nroInstalaciones:number;idProcessInstance:number;idActivity:number;
   }
   export interface ActivityEmailFilesType extends ActivityType {
       jsFiles:FilesType[]; emailTemplate:EmailTemplateType[];selectedTemplate:EmailTemplateType | null;selectedTemplateId:number;
-      proveedores:ProveedorType[] | null; anexosSelected:number[]; proveedoresSelected: number[];
+      proveedores:ProveedorType[] | null; anexosSelected:number[]; proveedoresSelected: string[];
+      FechaEntregaTrabajo:string; PlazoRespuestaCotizacion:string;tipoDocumento:string; attributes:any[];proveedorEditing?:string;
+      // placeholder?:Record<string, string>; asuntoPlaceholder?:Record<string, string>; 
+      editableBody?:string; editableAsunto?:string;
   }
   export interface EmailTemplateType {
-    idEmailTemplate: number;
+    idEmailTemplate: string;
     templateName: string;
     subjectTemplate: string;
     bodyTemplate: string;
-    metadataJSON: {};
+    metadataJSON?: {}; 
   }
   export interface FilesType {//asociada a projectFiles
-    id: number;
+    _id?: string;
     descripcion: string;
     fileClass: string;
     filePath: string;
     fileType:string;
     filename:string;
-    nroAgua:number;
-    nroInstalacion:number;
-    subidoPor:string;
+    nroAgua?:number;
+    nroInstalacion?:number;
+    email:string;
+    fileSize?:number;
+
   }
   export interface ProveedorType {
-    id: number;
+    _id: string;
     label:string;
-    contacto: string;
+    contacto: string; 
     email:string;
     placeholders:{};
+    name?:string;
+    nombreProveedor?:string;
+    asuntoPlaceholders:{};
+    // asunto:string;
+    // cuerpoEmail?:string;
+    // aditionalData:{contacto:string, email:string};
+    // url?:string;
+    // token?:string;
   }
   export interface ProjectActivityType {
     idProject: number;
     idProjectActivity:number;
     idProveedor:number;
-    proveedor: string;
+    nombreProveedor: string;
     contacto:string;
     idActivity: number;
     actividad:string;

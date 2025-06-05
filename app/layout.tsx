@@ -1,3 +1,5 @@
+//la app se inicia aquí y utiliza AppContent (en components/general/AppContent.tsx) para renderizar el contenido de la página
+
 "use client";  
 
 // Importar polyfills para evitar errores con módulos de Node.js
@@ -10,20 +12,19 @@ import Modal from 'react-modal';
 import { ThemeProvider } from '../context/ThemeContext';
 import { SidebarToggleProvider } from '../context/SidebarToggleContext';
 
-import './styles/globals.css';
+import '../styles/globals.css';
 import AppContent from '../components/general/AppContent';
 import { MapProvider,  PlacesProvider } from '@/app/context'; //context de map mapboxgl debe ir dentro de app
 
 import { usePathname } from 'next/navigation';
-//import CotizarLayout from "./cotizar/layout"; 
+//import CotizarLayout from "./cotizar/layout";  
 
 import mapboxgl from 'mapbox-gl';
 mapboxgl.accessToken= process.env.NEXT_PUBLIC_ACCESS_token;//ojo que usar cliente para renderizar, Sólo funciona en el cliente
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname                                    = usePathname();
-  const isCotizarPage = pathname?.startsWith("/cotizar");
-  //console.log('layout general',pathname,isCotizarPage);
+  const isCotizarPage =pathname?.startsWith("/cotizar");
   useEffect(() => {//Este código configura el elemento raíz del modal para evitar problemas de accesibilidad y compatibilidad con react-modal
     // El modal.setAppElement('body') Establece body como el elemento raíz para los modales.
     //Evita problemas de accesibilidad (aria-hidden) en otros elementos de la página.
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
        <body>
         <ThemeProvider>
-          {!isCotizarPage && ( 
+          { isCotizarPage ? children : (// si es cotizar, no se renderiza el layout
             <PlacesProvider>
               <MapProvider>
                 <SidebarToggleProvider>

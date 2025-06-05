@@ -79,7 +79,7 @@ export const saveFormData = async (//updateUsuario por ejemplo
       console.error("Error al consumir la API:", error);
       throw error;
     }
-  };
+  }; 
 
 
 
@@ -214,7 +214,7 @@ export const saveFormData = async (//updateUsuario por ejemplo
     idTask: number,
     userId: number,
     setInitialValues: (x: ProjectType) => void,
-    initialValues: ProjectType
+    initialValues: ProjectType 
   ) => {
     try {
       const response = await fetch(`/api/getProjectFromTask?idTask=${idTask}&userId=${userId}`);
@@ -281,20 +281,13 @@ export const saveFormData = async (//updateUsuario por ejemplo
           memoriaCalculo: await transformToFile(data.files[String(row.nroInstalacion)]?.find((f: any) => f.fileClass.includes("memoriaCalculo"))),
         }))
       );
-      // console.log("🔑 Archivo recibido en transformToFile instalacionesGrid :", instalacionesGrid );
+      console.log("🔑 Archivo recibido en transformToFile instalacionesGrid :", instalacionesGrid );
       const techoGrid = await Promise.all(
         data.project.techoGrid.map(async (row: techoGridType) => ({
           ...row,
           imagenTecho: await transformToFile(data.files[`${row.nroInstalacion}_${row.nroAgua}`]?.find((f: any) => f.fileClass.includes("imagenTecho"))),
         }))
       );
-      // console.log("🔑 intitialValues en apiHelpers:", {
-      //   ...data.project,
-      //   ...projectFiles,
-      //   empalmesGrid,
-      //   instalacionesGrid,
-      //   techoGrid,
-      // });
       setInitialValues({
         ...data.project,
         ...projectFiles,
@@ -409,75 +402,75 @@ export const saveFormData = async (//updateUsuario por ejemplo
   
 
 //Utilizado en activity/adminActivity/page.tsx, app/definirEjecutor/page.tsx 
-  export const loadDataActivity= async (idTask: number,userId:number,setInitialValues:(x:ActivityType) => void)=>{
-    //console.log('loadDataActivity',idTask,userId);
+  // export const loadDataActivity= async (idTask: number,userId:number,setInitialValues:(x:ActivityType) => void)=>{
+  //   //console.log('loadDataActivity',idTask,userId);
   
-    try {
-      //console.log('lee projectData',`/api/getLoadProject?idTask=${idTask}`);
-      const response = await fetch(`/api/getActivityFromTask?idTask=${idTask} &userId=${userId}`);
-      // const res = await fetch(`/api/getToDoListTaskUser?userId=${userId} &idProcessidActivity=${idActivity}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch form data: ${response.statusText}`);
-      }
-      const data = await response.json();  //viene {project, files:[{}] }            
-      //const projectFileData=data;
-      //console.log("✅ Datos cargados desde la API:", data);
-      setInitialValues( {numActividad:data.numActividad,actividad:data.actividad,fechaInicio:data.fechaInicio, fechaTermino:data.fechaTermino, 
-        duracion:data.duracion,presupuesto:data.presupuesto, responsable:data.responsable, formaEjecucion:data.formaEjecucion,periodoControl:data.periodoControl, 
-        ejecutor:data.ejecutor, idProjectActivity:data.idProjectActivity,idTask:data.idTask, idTransaction:data.idTransaction, 
-        idProject:data.idProject, projectName: data.projectName,
-        ubicacionPanel:data.ubicacionPanel,nroInstalaciones:data.nroInstalaciones,
-        tipoTerreno:data.tipoTerreno, nivelPiedras:data.nivelPiedra, nivelFreatico:data.nivelFreatico, 
+  //   try {
+  //     //console.log('lee projectData',`/api/getLoadProject?idTask=${idTask}`);
+  //     const response = await fetch(`/api/getActivityFromTask?idTask=${idTask} &userId=${userId}`);
+  //     // const res = await fetch(`/api/getToDoListTaskUser?userId=${userId} &idProcessidActivity=${idActivity}`);
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch form data: ${response.statusText}`);
+  //     }
+  //     const data = await response.json();  //viene {project, files:[{}] }            
+  //     //const projectFileData=data;
+  //     //console.log("✅ Datos cargados desde la API:", data);
+  //     setInitialValues( {numActividad:data.numActividad,actividad:data.actividad,fechaInicio:data.fechaInicio, fechaTermino:data.fechaTermino, 
+  //       duracion:data.duracion,presupuesto:data.presupuesto, responsable:data.responsable, formaEjecucion:data.formaEjecucion,periodoControl:data.periodoControl, 
+  //       ejecutor:data.ejecutor, idProjectActivity:data.idProjectActivity,idTask:data.idTask, idTransaction:data.idTransaction, 
+  //       idProject:data.idProject, projectName: data.projectName,
+  //       ubicacionPanel:data.ubicacionPanel,nroInstalaciones:data.nroInstalaciones,
+  //       tipoTerreno:data.tipoTerreno, nivelPiedras:data.nivelPiedra, nivelFreatico:data.nivelFreatico, 
         
-      })
+  //     })
       
-      return ;
-    } catch (err) {
-      console.log('error');
-    } 
+  //     return ;
+  //   } catch (err) {
+  //     console.log('error');
+  //   } 
   
   
-  }
+  // }
 
 
 //storedProcedure es un string con la firma del sp: getComunas(@region)
-export const fetchRecordSetFromSP = async (storedProcedure: string, parametersValue?: string | null) => {
+// export const fetchRecordSetFromSP = async (storedProcedure: string, parametersValue?: string | null) => {
   
-  let response:any;
-  try {
-    const [spName, arg] = storedProcedure.split('(');
-    //console.log('spName',spName,arg);
-    if (parametersValue){
-      const parameterNames = arg.replace(')', '').split(',').map((param) => param.trim().replace('@', ''));
-      const parameters = parameterNames.reduce((acc, paramName) => {// Crear un objeto con los valores de los parámetros usando sus nombres reales
-        acc[`@${paramName}`] = parametersValue;
-        return acc;
-      }, {} as Record<string, any>);
-       response = await fetch('/api/execSP', {
-       method: "POST",
-       headers: {"Content-Type": "application/json",},
-       body: JSON.stringify({ storedProcedure:spName, parameters }),
-     });
-    } else {
-       response = await fetch('/api/execSP', {
-        method: "POST",
-        headers: {"Content-Type": "application/json",},
-        body: JSON.stringify({ storedProcedure:spName }),
-      });
+//   let response:any;
+//   try {
+//     const [spName, arg] = storedProcedure.split('(');
+//     //console.log('spName',spName,arg);
+//     if (parametersValue){
+//       const parameterNames = arg.replace(')', '').split(',').map((param) => param.trim().replace('@', ''));
+//       const parameters = parameterNames.reduce((acc, paramName) => {// Crear un objeto con los valores de los parámetros usando sus nombres reales
+//         acc[`@${paramName}`] = parametersValue;
+//         return acc;
+//       }, {} as Record<string, any>);
+//        response = await fetch('/api/execSP', {
+//        method: "POST",
+//        headers: {"Content-Type": "application/json",},
+//        body: JSON.stringify({ storedProcedure:spName, parameters }),
+//      });
+//     } else {
+//        response = await fetch('/api/execSP', {
+//         method: "POST",
+//         headers: {"Content-Type": "application/json",},
+//         body: JSON.stringify({ storedProcedure:spName }),
+//       });
 
-    } 
-     if (!response.ok) {
-      console.error('Error al obtener resultSet');
-      // throw 'error';
-      throw new Error(`Error al obtener opciones: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return data; 
-  } catch (error) {
-    console.error("Error al consumir la API:", error);
-    throw error;
-  }
-};
+//     } 
+//      if (!response.ok) {
+//       console.error('Error al obtener resultSet');
+//       // throw 'error';
+//       throw new Error(`Error al obtener opciones: ${response.statusText}`);
+//     }
+//     const data = await response.json();
+//     return data; 
+//   } catch (error) {
+//     console.error("Error al consumir la API:", error);
+//     throw error;
+//   }
+// };
 export const loadDataProjectActivityFromToken= async(token:string, setDataProjectActivity:(x:ProjectActivityType) => void)=>{
   //console.log('en loadDataProjectActivityFromToken', token);
   try{
@@ -489,7 +482,7 @@ export const loadDataProjectActivityFromToken= async(token:string, setDataProjec
     const mensaje = typeof data.mensaje === 'string'? JSON.parse(data.mensaje):data.mensaje;
 
     setDataProjectActivity( {idProject:data.idProject,idProjectActivity:data.idProjectActivity,idProveedor:data.idProveedor,
-      proveedor:data.proveedor,contacto:data.contacto,idActivity:data.idActivity,actividad:data.actividad,mensaje,token:data.token,fechaEnvio:data.fechaEnvio,
+      nombreProveedor:data.proveedor,contacto:data.contacto,idActivity:data.idActivity,actividad:data.actividad,mensaje,token:data.token,fechaEnvio:data.fechaEnvio,
       anexos:data.anexos
      })
     return data;  
