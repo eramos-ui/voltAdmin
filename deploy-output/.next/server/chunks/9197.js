@@ -1,1 +1,0 @@
-"use strict";exports.id=9197,exports.ids=[9197],exports.modules={99197:e=>{e.exports=JSON.parse('{"name":"John Doe","email":"john.doe@example.com","avatar":"/images/avatar.png","theme":"dark"}')}};
