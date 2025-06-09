@@ -30,7 +30,7 @@ const localeMapping = {
   en:enUS,
   fr,
 };
-const localeEnv = process.env.NEXT_PUBLIC_LOCALE as Locales || 'en';
+const localeEnv = process.env.NEXT_PUBLIC_LOCALE as Locales || 'es';
 const locale = localeMapping[localeEnv];
 
 /**
