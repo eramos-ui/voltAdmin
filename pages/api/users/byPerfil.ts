@@ -1,7 +1,7 @@
 // api/users/byPerfil.ts
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { connectToDB } from '@/lib/server/db';
+import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    await connectToDB();
+    await connectDB();
 
     // Obtener el último documento por usuario con ese perfil
     const usuarios = await User.aggregate([
