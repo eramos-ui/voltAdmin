@@ -7,7 +7,7 @@ import { Process } from '@/models/Process';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, idActivity, idProcess, roles } = req.query;
-  console.log('en by-activity email,idActivity,roles,idProcess',email,idActivity,roles,idProcess);
+  // console.log('en by-activity email,idActivity,roles,idProcess',email,idActivity,roles,idProcess);
   if (!email || !idActivity || !roles || typeof email !== 'string') {
     return res.status(400).json({ error: 'Parámetros requeridos: email, idActivity, roles' });
   }
@@ -60,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       };
     });
-
+    console.log('🔄 Lee tareasConInfo',tareasConInfo.length);
     res.status(200).json(tareasConInfo);
 
   } catch (error) {

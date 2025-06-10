@@ -1,8 +1,13 @@
 // /app/services/users/getUsersByPerfil.ts
+
+const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000';
 export const getUsersByPerfilForOptions = async (perfil: string) => {
-    const res = await fetch(`/api/users/byPerfil?perfil=${encodeURIComponent(perfil)}`);
+    const res = await fetch(`${baseUrl}/api/users/byPerfil?perfil=${encodeURIComponent(perfil)}`);
     // console.log('getUsersByPerfilForOptions',perfil,res);
-    if (!res.ok) throw new Error('Error al obtener usuarios por perfil');
+    if (!res.ok) {
+      console.log('error en getUsersByPerfilForOptions res',res);
+      return [];
+    }
     // Transformar a OptionsSelect
     const usuarios=await res.json();
       // console.log('usuarios',usuarios);
