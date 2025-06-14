@@ -1,3 +1,4 @@
+//este es un componente del Layout de la aplicación
 //Aquí se obtiene el menú del usuario y se renderiza el contenido de la página
 "use client";
 import { useRouter, usePathname } from 'next/navigation';
@@ -7,6 +8,7 @@ import { useSidebarToggle } from '../../context/SidebarToggleContext';
 import Navbar from './Navbar';
 import { UserData, MenuItem } from '../../types/interfaces';
 import Sidebar from './Sidebar';
+import { Footer } from './Footer';  
 import { LoadingIndicator } from './LoadingIndicator'; 
 import { fetchUserMenu } from '@/lib/users/fetchUserMenu';
 
@@ -107,6 +109,7 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
          <Sidebar isVisible={isSidebarVisible} closeSidebar={() => setIsSidebarVisible(false)} user={user!} menuData={menuData} />
          <main className={`flex-1 transition-all duration-300 ${isSidebarVisible ? 'blur-md' : ''}`}> {children} </main>
         </div>
+        <Footer />
       </>
   ) };
 
