@@ -14,8 +14,7 @@ import { formEjecucionActividadOptions } from '@/data/selectType';
 import { LoadingIndicator } from '@/components/general/LoadingIndicator';
 import { updateActivity } from '@/app/services/projectActivity/updateActivity';
 import { usePreviousFullUrl } from '@/hooks/usePreviousFullUrl';
-// import { loadResponsables } from '@/utils/loadResponsables';
-// import { getUsersByPerfil } from '@/app/services/users/getUsersByPerfilForOptions';
+
 import { getUsersByPerfilForOptions } from '@/app/services/users/getUsersByPerfilForOptions';
 import { calculateDuration } from '@/utils/calculateDuration';
 const validationSchema = Yup.object({
@@ -32,7 +31,6 @@ const AdminActivityPage = () => {
     const [ userEmail, setUserEmail ]                             = useState<string>('');
     const [ loading, setLoading ]                                 = useState(true);
     const [ responsablesOptions, setResponsablesOptions ]         = useState<OptionsSelect[]>();
-    // const menuId                                                  = Number(searchParams?.get("menuId"));
     const idTask                                                  = Number(searchParams?.get("idTask"));
     const [ initialValues, setInitialValues ]                     = useState <ActivityType>({ 
         numActividad:'', actividad:'', fechaInicio: '' ,fechaTermino:'', duracion: 0 ,presupuesto:0,idTask:0, idTransaction:0,
@@ -41,21 +39,11 @@ const AdminActivityPage = () => {
         tipoTerreno:"", nivelPiedras:"", nivelFreatico:0,idProcessInstance:0,idActivity:0
      } 
     );
-   // Usa tu tipo en vez de any
-
     //  console.log('AdminActivityPage idTask-previousUrl',idTask,previousUrl);
-// useEffect(()=>{
-//   console.log('useEffect initialValues',initialValues);
-// },[initialValues])
-//  useEffect(()=>{
-//     console.log('useEffect responsablesOptions',responsablesOptions);
-//  },[responsablesOptions])
     useEffect(()=>{
-        // const cargaResponsables=async () => setResponsablesOptions( await loadResponsables());
         const cargaResponsables=async () => setResponsablesOptions(  await getUsersByPerfilForOptions('Responsable de actividad'));
         cargaResponsables();          
     },[])
-
     useEffect(() => {
       const fetchData= async (idTask:number) => {
         try{
@@ -88,12 +76,9 @@ const AdminActivityPage = () => {
      useEffect(() => { 
         if (initialValues.idProject && initialValues.idProject>0 ){
             setLoading(false);
-            // console.log('use Effect initialValues',initialValues);
         }
-
      },[initialValues.idProject]);
      const volver = () => {
-      // console.log('volver previousUrl',previousUrl);
       if (previousUrl) {
         router.push(previousUrl);
       } else {
@@ -101,9 +86,7 @@ const AdminActivityPage = () => {
       }
      };
      const handleExit = () => {
-        // const confirmed = window.confirm(
-        // "¿Está seguro de que desea abandonar el proyecto? (perderá lo que haya hecho)"
-        // );
+        // const confirmed = window.confirm( // "¿Está seguro de que desea abandonar el proyecto? (perderá lo que haya hecho)" // );
         //if (confirmed) { 
             router.back()   
         //}
@@ -112,16 +95,13 @@ const AdminActivityPage = () => {
         return <LoadingIndicator  message='cargando'  />;        
      }
   return(
-    <>
-    {/* { console.log('JSX AdminActivity initialValues',loading,initialValues.fechaInicio, initialValues.fechaTermino) } */}
+    <>    {/* { console.log('JSX AdminActivity initialValues',loading,initialValues.fechaInicio, initialValues.fechaTermino) } */}
      { !loading &&
      <div className="p-4">
        <p className="text-3xl font-bold text-center" > Define responsable y forma de ejecución de la actividad {initialValues.numActividad}</p>
        <p  className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`}</p>
        <Formik
-         initialValues={initialValues}
-         validationSchema={validationSchema}
-         enableReinitialize
+         initialValues={initialValues} validationSchema={validationSchema}  enableReinitialize
          onSubmit={async (values, { setSubmitting, setStatus }) => {
           try {
             await updateActivity({ ...values, usuarioModificacion: userEmail, finListaProveedores: 'completada', });
@@ -134,9 +114,18 @@ const AdminActivityPage = () => {
           }
          }}
        >
-         {({ values, errors, touched, setFieldValue, resetForm }) => { 
+         {({ values, errors, touched, setFieldValue, resetForm, isSubmitting, status}) => {
+              if (isSubmitting) {
+                return <LoadingIndicator message="Guardando información" />;
+              }
           return ( 
           <Form>
+            {status?.success && (
+            <div className="text-green-600 mb-4">{status.success}</div>
+            )}
+            {status?.error && (
+              <div className="text-red-600 mb-4">{status.error}</div>
+            )}
             <div className="mb-1 flex items-start space-x-2">
                 <div className="w-3/5">
                     <Field name="actividad" type="text" as={CustomInput} label="Descripción de la actividad" placeholder="Ingresa la descripción de la actividad"
@@ -147,14 +136,12 @@ const AdminActivityPage = () => {
             </div>   
            <div className="mb-1 flex items-start space-x-2">
              <div className="w-1/5">
-                <Field name="fechaInicio" as={CustomDate}  label="Fecha de inicio" placeholder="Ingresa la fecha de inicio"
-                //error={touched.fechaInicio && errors.fechaInicio ? errors.fechaInicio : undefined} 
+                <Field name="fechaInicio" as={CustomDate}  label="Fecha de inicio" placeholder="Ingresa la fecha de inicio"  //error={touched.fechaInicio && errors.fechaInicio ? errors.fechaInicio : undefined} 
                 required theme="light" width="100%" format="dd-MM-yyyy" //onChange={(e:any) => setFieldValue("fechaInicio", e.target.value)}
                 />
             </div>
             <div className="w-1/5">
-                <Field name="fechaTermino" as={CustomDate} label="Fecha de término" placeholder="Ingresa la fecha de término"
-                //error={touched.fechaTermino && errors.fechaTermino ? errors.fechaTermino : undefined} 
+                <Field name="fechaTermino" as={CustomDate} label="Fecha de término" placeholder="Ingresa la fecha de término"                //error={touched.fechaTermino && errors.fechaTermino ? errors.fechaTermino : undefined} 
                 required theme="light" width="100%" format="dd-MM-yyyyy" onChange={(e:any) => setFieldValue("fechaInicio", e.target.value)}
                 />
             </div>
@@ -179,21 +166,13 @@ const AdminActivityPage = () => {
                 />
                </div> 
                <div className="w-1/5" >
-               <Field as={CustomSelect}
-                    label="Responsable asignado"
-                    name='responsable'
-                    options={responsablesOptions || []}
-                    placeholder="Asigne al responsable"
-                    width="100%" required          
+               <Field as={CustomSelect}  width="100%" required   
+                    label="Responsable asignado" name='responsable' options={responsablesOptions || []} placeholder="Asigne al responsable"
                     />
                </div>   
                <div className="w-1/5" >
-               <Field as={CustomSelect}
-                    label="Forma de ejecución actividad"
-                    name='formaEjecucion'
-                    options={formEjecucionActividadOptions || []}
-                    placeholder="Defina forma de ejecución"
-                    width="100%" required          
+               <Field as={CustomSelect} width="100%" required  
+                    label="Forma de ejecución actividad" name='formaEjecucion' options={formEjecucionActividadOptions || []} placeholder="Defina forma de ejecución"
                     />
                </div>   
            </div>

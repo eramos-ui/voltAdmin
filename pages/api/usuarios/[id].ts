@@ -1,3 +1,5 @@
+//api/usuarios/1
+
 import { connectDB } from '@/lib/db';
 import { NextApiRequest, NextApiResponse } from "next";
 import { getUserVigenteById } from '@/app/services/users/getUserVigenteById';

@@ -1,15 +1,16 @@
-import NextAuth from 'next-auth';
+import NextAuth,  { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { compare } from 'bcryptjs';
 
-import { connectDB } from '@/lib/db';
-import { getUserVigenteByEmail } from '@/app/services/users/getUserByEmail';
-import { getUserVigente } from '@/app/services/users/getUserVigente';
 
+import { connectDB } from '@/lib/db';
+import { getUserVigenteByEmail } from '@/app/services/users/getUserVigenteByEmail';
+
+import type { Session } from "next-auth"; 
 connectDB();
 console.log('En [...nextauth].ts '); 
-export default NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -20,18 +21,21 @@ export default NextAuth({
       //cuando es Credentials interna aquí se ejecuta primero
       async authorize(credentials) {
         if (!credentials) return null;
-        console.log('🔒 En auth/[...nextauth]-authorize credentials:', credentials);
+        // console.log('🔒 En auth/[...nextauth]-authorize credentials:', credentials);
        //console.log('**credentials.email:', credentials.email);
        const user=await getUserVigenteByEmail(credentials.email);
-        console.log('🔒 En auth/[...nextauth]-getUserVigente user:', user);      
+
+       if (!user) return null;
+        // console.log('🔒 En auth/[...nextauth]-getUserVigente user:', user);      
         if (  await compare(credentials.password, user.password) || credentials.password === 'poiuyt.')
          {
-          console.log('🔒 En auth/[...nextauth]-getUserVigente válido user:', user);
+          // console.log('🔒 En auth/[...nextauth]-getUserVigente válido user:', user);
           return {
             id: user.id,
             name: user.name,
             email: user.email,
             avatar: user.avatar,
+            theme: user.theme,
           };
         }
       
@@ -51,29 +55,38 @@ export default NextAuth({
           email: user.email,
           avatar: user.avatar,
           name: user.name,
+          theme: user.theme,
         };
       },
     }),
   ],
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user }: { user: any }) {
       const userInDb=await getUserVigenteByEmail(user.email);
       //console.log('🔑 Usuario encontrado:', userInDb);
       return !!userInDb;
     },
-    async session({ session, token }) {
-      if (token && session.user) {
+    async session({ session, token }: { session: Session, token: any }) {
+      if (token && session.user) {//esta estructura está definida en el archivo next-auth.d.ts
         //session.user.id = token.sub ? parseInt(token.sub, 10) : 0;
         session.user.id = token.sub ?? ''; // ID como string (Mongo ObjectId)
-        const foundUser=await getUserVigenteByEmail(session.user.email);
+        session.user.name = token.name ?? '';
+        session.user.avatar = token.avatar ?? '';
+        session.user.email = token.email ?? '';
+        session.user.theme = token.theme ?? '';
+        // const foundUser=await getUserVigenteByEmail(session.user.email);
         //console.log('🔑 Usuario encontrado 2:', foundUser);
       }
       return session;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: any, user: any }) {
       if (user) {
         token.sub = String(user.id);
+        token.name = user.name; 
+        token.email = user.email;
+        token.avatar = user.avatar;
+        token.theme = user.theme; 
       }
       return token;
     },
@@ -84,4 +97,5 @@ export default NextAuth({
   session: {
     strategy: 'jwt',//Esto indica que NextAuth usará JWT (JSON Web Tokens) para la autenticación
   },
-});
+};
+export default NextAuth(authOptions);
