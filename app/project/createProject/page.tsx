@@ -45,7 +45,7 @@ const NewProjectPage = () => {
   const idTask                                                  = Number(searchParams?.get("idTask"));
   const nroDocumento                                            = Number(searchParams?.get("nroDocumento"));
   const [ regiones, setRegiones ]                               = useState<OptionsSelect[]>();
-  const [ comunasPorRegion, setComunasPorRegion ]               = useState<Comunas[]>(); 
+  // const [ comuna, setComuna ]                                  = useState<number>(); 
   const [ loading, setLoading ]                                 = useState(true);
   const [ error, setError ]                                     = useState<string | null>(null);
   const [ geoJSONDataL, setGeoJSONDataL ]                       = useState<FeatureCollection<Geometry> | null>(null);//la L es por local para no confundir con setGeoJSONData del context
@@ -69,12 +69,12 @@ const NewProjectPage = () => {
      activities:[{"numActividad":"1.0", actividad:"Inicial",fechaInicio:"","fechaTermino":"",duracion:0,"presupuesto": 0},],
      userModification:"", dateModification: "",state: "draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
  } );
-//  console.log('initialValues en createProject', menuId,idTask,session?.user.id);
+ console.log('initialValues en regiones', regiones);
  const fetchRegiones = async (): Promise<OptionsSelect[]> => {
   const res = await fetch('/api/catalogs/regiones');
   if (!res.ok) throw new Error('Error al cargar regiones');
   return await res.json();
- }; 
+ };
 
  useEffect(() => {
   fetchRegiones().then(setRegiones);
@@ -212,13 +212,6 @@ useEffect(() => {
     const values={...vals,state:'complete',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
     console.log('en handleSaveComplete values',values);
     // const { activities, ...generalValues } = vals;
-    // console.log('generalValues',generalValues);
-
-    // const { activities: initialActivities, ...initialGeneralValues } = initialValues;
-    // const generalChanged = isEqual(generalValues, initialGeneralValues);
-    // const activitiesChanged = isEqual(activities, initialActivities);
-    // console.log('generalChanged =',generalChanged);
-    // console.log('activitiesChanged =',activitiesChanged);
     const result = await updateProject(values);
     console.log('result',result);
     // updateNewProject(vals, userModification,userId, 'complete',generalChanged, activitiesChanged);  
@@ -235,40 +228,10 @@ useEffect(() => {
     const userId = session?.user.id || '' ;
     const userName = session?.user.name || '';
     const values={...vals,state:'draft',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
-    console.log('en handleSaveDraft values',values);    
-    // const valsLimpios = limpiarValoresInvalidos(vals);
-    // const cleaned = limpiarGrillasConArchivos(limpiarValoresInvalidos(vals));    
-    // const valores={...cleaned, userModification, userId};
-    // console.log('valores',valores);    
+    console.log('en handleSaveDraft values',values);      
 
     const result = await updateProject(values); 
-    console.log('result',result);
-
-    // const idProject = (vals.idProject) ? vals.idProject : 0;
-    // const { activities, ...generalValues } = vals;
-    // const { activities: initialActivities, ...initialGeneralValues } = initialValues;
-    // const generalChanged = isEqual(generalValues, initialGeneralValues);
-    // const activitiesChanged = isEqual(activities, initialActivities);
-    // console.log('activitiesChanged =',activitiesChanged);
-    // console.log('generalChanged =',generalChanged);
-    // const valsLimpios = limpiarValoresInvalidos(vals);
-    // //updateNewProject(vals, userModification,userId, 'draft',generalChanged, activitiesChanged);  
-    // const response = await updateProject(valsLimpios, 'draft');
-    // console.log('response',response);
-    
-    
-    // const values = limpiarValoresInvalidos(vals);
-    // if (!generalChanged) {
-    //   // updateNewProject(vals, userModification,userId, 'draft');  
-    //   //const valsLimpios = limpiarValoresInvalidos(vals);
-    //   console.log('values',values);
-    //   //  console.log('activities',values.activities);
-    //   // console.log('initialValues.activities',initialValues.activities);
-    //   await updateProjectGeneral(idProject, values);
-    // }
-    // if (!activitiesChanged) {
-    //   await updateProjectActivities(idProject, values.activities);
-    // }     
+    console.log('result',result);    
     router.push('/');
   };  
   const handleRowSelection = (row: any | null) => {
@@ -343,7 +306,7 @@ useEffect(() => {
                   optionsOrientationType={optionsOrientationType} optionsCeilingElementType={optionsCeilingElementType} techoOptions={techoOptions}
                 />                
                 {regiones && (
-                  <LocationForm regiones={regiones} comunas={comunasPorRegion} errors={errors}  touched={touched} />
+                  <LocationForm regiones={regiones}  errors={errors}  touched={touched} />
                 )}                 
                 <div className="mb-4 flex items-center space-x-4">
                   <Field  name='kmlFile' component={CustomFileInput} showUploadButton={false} 
