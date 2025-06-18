@@ -7,7 +7,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!idRegion || isNaN(Number(idRegion))) {
     return res.status(400).json({ error: 'Parámetro idRegion es requerido y debe ser numérico' });
   }
-
   try {
     const opciones = await getComunasOptions(Number(idRegion));
     res.status(200).json(opciones);
