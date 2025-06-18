@@ -29,7 +29,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, t
    useEffect(() => {
       if (regionSelected) {
         fetchComunas(regionSelected).then(setComunasPorRegion);
-        console.log('En LocationForm comunasPorRegion', comunasPorRegion);
+        // console.log('En LocationForm comunasPorRegion', comunasPorRegion);
       }
    }, [regionSelected]);
   return (

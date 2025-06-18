@@ -28,6 +28,7 @@ import { sortGridByActivityId } from "@/utils/sortGridByActivityId";
 import { formatProjectForFormik } from "@/utils/projectUtils/formatProjectForFormik";
 import { getProjectById } from "@/app/services/projects/getProjectById";
 import { updateProject } from "@/app/services/projects/updateProject";
+import { useMenu } from '@/app/context/MenuContext';
 
 const validationSchema = Yup.object({
     projectName: Yup.string().required("El nombre del proyecto es obligatorio"),
@@ -69,6 +70,7 @@ const NewProjectPage = () => {
      activities:[{"numActividad":"1.0", actividad:"Inicial",fechaInicio:"","fechaTermino":"",duracion:0,"presupuesto": 0},],
      userModification:"", dateModification: "",state: "draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
  } );
+ const { refreshMenu } = useMenu();
 //  console.log('initialValues en regiones', regiones);
  const fetchRegiones = async (): Promise<OptionsSelect[]> => {
   const res = await fetch('/api/catalogs/regiones');
@@ -213,6 +215,7 @@ useEffect(() => {
     console.log('result',result);
     // updateNewProject(vals, userModification,userId, 'complete',generalChanged, activitiesChanged);  
     router.push('/');
+    refreshMenu();//pára refrescar el menú dinámico
   };
   const handleSaveDraft = async (vals:any) => { 
     // console.log('idTask',idTask,vals)
@@ -229,6 +232,7 @@ useEffect(() => {
     const result = await updateProject(values); 
     console.log('result',result);    
     router.push('/');
+    refreshMenu();//pára refrescar el menú dinámico
   };  
   const handleRowSelection = (row: any | null) => {
     setSelectedRow(row);

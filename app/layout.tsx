@@ -17,6 +17,7 @@ import AppContent from '../components/general/AppContent';
 import { MapProvider,  PlacesProvider } from '@/app/context'; //context de map mapboxgl debe ir dentro de app
 
 import { usePathname } from 'next/navigation';
+import { MenuProvider } from '@/app/context/MenuContext';
 //import CotizarLayout from "./cotizar/layout";  
 
 import mapboxgl from 'mapbox-gl';
@@ -41,7 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <MapProvider>
                 <SidebarToggleProvider>
                   <SessionProvider>
-                    <AppContent>{children}</AppContent>
+                    <MenuProvider> 
+                      <AppContent>{children}</AppContent>
+                    </MenuProvider>
                   </SessionProvider>
                 </SidebarToggleProvider>
               </MapProvider>

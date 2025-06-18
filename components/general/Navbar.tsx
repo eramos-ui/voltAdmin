@@ -9,6 +9,7 @@ import UserAvatar from './UserAvatar';
 import UserDropdown from './UserDropdown';
 import { UserData } from '../../types/interfaces';
 import { useSidebarToggle } from '../../context/SidebarToggleContext';
+import { useMenu } from '@/app/context/MenuContext';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faBars } from '@fortawesome/free-solid-svg-icons';
@@ -20,11 +21,12 @@ import { fetchAvatarAsBlob } from '../../utils/fecthAvatarAsBlob';
 
 type NavbarProps = {
   toggleSidebar: () => void;
-  user: UserData | null;
-  setUser: (user: UserData | null) => void;
+  //user: UserData | null;
+  // setUser: (user: UserData | null) => void;
 };
 
-const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, user, setUser }) => {
+const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {//, user, setUser
+  const { user, setUser } = useMenu();
   const { isToggleButtonDisabled }            = useSidebarToggle();
   const [ isDropdownOpen, setIsDropdownOpen ] = useState(false);
   const [ newName, setNewName ]               = useState(user?.name || "");
