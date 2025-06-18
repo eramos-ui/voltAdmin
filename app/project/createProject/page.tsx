@@ -69,13 +69,12 @@ const NewProjectPage = () => {
      activities:[{"numActividad":"1.0", actividad:"Inicial",fechaInicio:"","fechaTermino":"",duracion:0,"presupuesto": 0},],
      userModification:"", dateModification: "",state: "draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
  } );
- console.log('initialValues en regiones', regiones);
+//  console.log('initialValues en regiones', regiones);
  const fetchRegiones = async (): Promise<OptionsSelect[]> => {
   const res = await fetch('/api/catalogs/regiones');
   if (!res.ok) throw new Error('Error al cargar regiones');
   return await res.json();
  };
-
  useEffect(() => {
   fetchRegiones().then(setRegiones);
  }, []);
@@ -109,7 +108,6 @@ const NewProjectPage = () => {
  useEffect(() => {
   if (nroDocumento > 0) {loadProject() } else { setLoading(false); }
 }, [nroDocumento,loadProject]);
-
 useEffect(() => {
    if (selectedRow) {
      const currentActivity = (selectedRow["numActividad"])? selectedRow["numActividad"].toString():'';
@@ -150,7 +148,6 @@ useEffect(() => {
      setActivities(initialValues.activities);
    }
  }, [initialValues.activities,setActivities]); 
-
  const handleFileUpload = async (file: File | null) => { 
     if (!file) {
       setError("No se seleccionó ningún archivo");
@@ -228,8 +225,7 @@ useEffect(() => {
     const userId = session?.user.id || '' ;
     const userName = session?.user.name || '';
     const values={...vals,state:'draft',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
-    console.log('en handleSaveDraft values',values);      
-
+    console.log('en handleSaveDraft values',values); 
     const result = await updateProject(values); 
     console.log('result',result);    
     router.push('/');
@@ -240,9 +236,8 @@ useEffect(() => {
   if (loading || (nroDocumento > 0 && initialValues.projectName.length === 0)) {
     return <p>Cargando...</p>;//chequea si proyecto existe y al menos tiene name
   }  
-  if (error) { return <p>{error}</p>; } 
-  // console.log('initialValues en createProject antes de renderizar', initialValues);
-  return (
+  if (error) { return <p>{error}</p>; }  
+  return ( // console.log('initialValues en createProject antes de renderizar', initialValues);
     <>
       <div className="p-4">
         <h1 className="text-3xl font-bold text-center">{(idTask && idTask>0) ? 'Completar ' : 'Crear un nuevo '}  
@@ -253,7 +248,6 @@ useEffect(() => {
           validationSchema={validationSchema}
           enableReinitialize
           onSubmit={() => {}}
-         // onSubmit={(values) =>{  console.log('onSubmit', values);}}
         >
           {({ values, errors, touched, setFieldValue, resetForm }) => {//no poner useEffect aqui porque se ejecuta cada vez que cambia el formulario      
             // useEffect(() => { console.log('🔍 Formik values actualizados:', values);     }, [values]); 

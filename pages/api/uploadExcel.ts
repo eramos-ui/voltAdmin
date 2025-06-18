@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import multer from "multer";
 import { runMiddleware } from "@/utils/middleware";
 import * as XLSX from "xlsx";
-import fs from "fs";
+// import fs from "fs";
 
 
 import { ExcelColumn } from "@/types/interfaces";
@@ -10,7 +10,9 @@ import { calculateDuration } from "@/utils/calculateDuration";
 import { camelizeKeys } from "@/utils/camelizeKeys";
 
 // Configuración de Multer para manejar archivos
-const upload = multer({ dest: "uploads/" });
+// const upload = multer({ dest: "uploads/" });
+// ✅ Multer usando almacenamiento en memoria (no escribe en disco)
+const upload = multer({ storage: multer.memoryStorage() });//Vercel es serverless
 // Función para convertir nombres de columnas a PascalCase y eliminar comillas correctamente
 const toPascalCase = (str: string): string => {
   return str
@@ -33,8 +35,7 @@ const getColumnHeaders = (worksheet: XLSX.WorkSheet): ExcelColumn[] => {
       const cell = worksheet[cellAddress];
       
       if (cell && cell.v) {
-        const columnName = toPascalCase(String(cell.v));//los títulos del excel deben ser PascalCase        
-        
+        const columnName = toPascalCase(String(cell.v));//los títulos del excel deben ser PascalCase       
         // 📌 Definir tipo y formato según el nombre de la columna
         let columnMetadata: {name:string, inputType:string, type:string} = { name: columnName, inputType: "text", type: "string" };
         
@@ -42,8 +43,7 @@ const getColumnHeaders = (worksheet: XLSX.WorkSheet): ExcelColumn[] => {
           columnMetadata = { name: columnName, inputType: "date", type: "string" };
         } else if (columnName === "Presupuesto") {
           columnMetadata = { name: columnName, inputType: "number", type: "number" };
-        }
-        
+        }        
         columnHeaders.push(columnMetadata);
       }
     }
@@ -130,26 +130,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
-
   try {
     // Ejecutar middleware de subida de archivos
     await runMiddleware(req, res, upload.single("file"));
-
     const file = (req as any).file;
-
     if (!file) {
       return res.status(400).json({ message: "No se subió ningún archivo." });
     }
 
     console.log("Archivo recibido en API uploadExcel:", file.originalname);
-
     // Leer el archivo Excel con SheetJS
-    const workbook = XLSX.readFile(file.path);
+    // const workbook = XLSX.readFile(file.path);
+  // ✅ Leer directamente desde el buffer en memoria
+    const workbook = XLSX.read(file.buffer, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const columnHeaders = getColumnHeaders(worksheet);
-
-    
+    const columnHeaders = getColumnHeaders(worksheet);    
     let jsonData = XLSX.utils.sheet_to_json(worksheet);
     
     // console.log("Contenido procesado del Excel jsonData[0] en API uploadExcel:", jsonData[0]);
@@ -201,12 +197,21 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       message: "Error en el servidor al procesar el archivo.",
       error: (error as Error).message || "Error desconocido",
     });
-  } finally {
-    // Eliminar archivo temporal después del procesamiento
-    if ((req as any).file?.path) {
-      fs.unlinkSync((req as any).file.path);
-    }
-  }
+  } 
+  // finally {
+  //   // Eliminar archivo temporal después del procesamiento
+  //   try {
+  //     const filePath = (req as any).file?.path;
+  //     if (filePath && fs.existsSync(filePath)) {
+  //       fs.unlinkSync(filePath);
+  //     }
+  //   // if ((req as any).file?.path) {
+  //   //   fs.unlinkSync((req as any).file.path);
+  //   // }
+  //   } catch (e) {
+  //       console.warn("No se pudo eliminar el archivo temporal:", e);
+  //   }
+  // }
 };
 
 // Deshabilitar el body parser predeterminado de Next.js

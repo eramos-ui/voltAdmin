@@ -17,7 +17,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, t
   const [ regionSelected, setRegionSelected ] =useState<number>(0);
   // const [ comunaSelected, setComunaSelected ] =useState<number>(0);
   const [ comunasPorRegion, setComunasPorRegion ] = useState<OptionsSelect[]>(); 
-  console.log('En LocationForm regiones', regiones);
+  // console.log('En LocationForm regiones', regiones);
   // useEffect(() => {
   //   console.log('LocationForm useEffect comunasPorRegion', comunasPorRegion);
   // }, [comunasPorRegion]);
