@@ -11,7 +11,7 @@ import Sidebar from './Sidebar';
 import { Footer } from './Footer';  
 import { LoadingIndicator } from './LoadingIndicator'; 
 // import { fetchUserMenu } from '@/lib/users/fetchUserMenu';
-import { useMenu } from '@/app/context/MenuContext';
+import { useMenu } from '@/context/MenuContext';
 
 const AppContent = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status }                   = useSession();

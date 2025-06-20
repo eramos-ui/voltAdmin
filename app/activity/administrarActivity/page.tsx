@@ -14,6 +14,7 @@ import { formEjecucionActividadOptions } from '@/data/selectType';
 import { LoadingIndicator } from '@/components/general/LoadingIndicator';
 import { updateActivity } from '@/app/services/projectActivity/updateActivity';
 import { usePreviousFullUrl } from '@/hooks/usePreviousFullUrl';
+import { useMenu } from '@/context/MenuContext';
 
 import { getUsersByPerfilForOptions } from '@/app/services/users/getUsersByPerfilForOptions';
 import { calculateDuration } from '@/utils/calculateDuration';
@@ -39,6 +40,7 @@ const AdminActivityPage = () => {
         tipoTerreno:"", nivelPiedras:"", nivelFreatico:0,idProcessInstance:0,idActivity:0
      } 
     );
+    const { refreshMenu } = useMenu();
     //  console.log('AdminActivityPage idTask-previousUrl',idTask,previousUrl);
     useEffect(()=>{
         const cargaResponsables=async () => setResponsablesOptions(  await getUsersByPerfilForOptions('Responsable de actividad'));
@@ -61,7 +63,7 @@ const AdminActivityPage = () => {
       }     
      }, [idTask,session?.user.id, session?.user.email]); 
      const SyncDuracion = () => {//Para sacar el useEffect fuera de Formik
-      const { values, setFieldValue } = useFormikContext<any>();    
+      const { values, setFieldValue } = useFormikContext<any>();   
       useEffect(() => {
         if (values.fechaInicio && values.fechaTermino) {
           const duracionDias = calculateDuration(values.fechaInicio, values.fechaTermino);
@@ -84,6 +86,7 @@ const AdminActivityPage = () => {
       } else {
         router.back(); // fallback si no hay previa
       }
+      refreshMenu();//pára refrescar el menú dinámico
      };
      const handleExit = () => {
         // const confirmed = window.confirm( // "¿Está seguro de que desea abandonar el proyecto? (perderá lo que haya hecho)" // );

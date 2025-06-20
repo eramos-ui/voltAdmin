@@ -1,3 +1,9 @@
+/* Renderiza cualquier form en la BD Form del los que tiene formId en la tabla Submenu y path con número /12 x ej.
+Los componente en secuencia son 1) esta página a través de 2) FormTableGrid que utiliza 3) GridContainer la tabla(grilla) y
+EditForm para mostrar, tanto para Editar o agregar los campos de la tabla.
+Este componente consume sp: getSubMenuForm (@subMenuId) y extrae el campo jsonForm de la tabla Form con el type FormConfigDFType tanto de la tabla
+como de la edición de las filas y que se renderizan en EditForm  en editFields.También trae las filas (rows) de la tabla que se muestran en la grilla
+*/
 "use client";
 import { useEffect, useState } from 'react';
 import GoHomeButton from '@/components/general/GoHomeButton';
@@ -16,12 +22,7 @@ import { saveFormData } from '@/utils/apiHelpers';
 import _ from "lodash";
 import GridContainer from '@/components/dynamicForm/GridContainer';
 import { EditForm } from '@/components/dynamicForm/EditForm';
-/* Renderiza cualquier form en la BD Form del los que tiene formId en la tabla Submenu y path con número /12 x ej.
-Los componente en secuencia son 1) esta página a través de 2) FormTableGrid que utiliza 3) GridContainer la tabla(grilla) y
-EditForm para mostrar, tanto para Editar o agregar los campos de la tabla.
-Este componente consume sp: getSubMenuForm (@subMenuId) y extrae el campo jsonForm de la tabla Form con el type FormConfigDFType tanto de la tabla
-como de la edición de las filas y que se renderizan en EditForm  en editFields.También trae las filas (rows) de la tabla que se muestran en la grilla
-*/
+
 const FormPage = ({ params }: { params: { subMenuId: string } }) => {
   const { data: session }                       = useSession();
   const [ formData, setFormData ]               = useState<FormConfigDFType | null>(null);//los campos del formulario dynamic
@@ -38,17 +39,10 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
   // const [ alertDuration, setAlertDuration ] = useState<number | null>(3000);
   // const [ alertType, setAlertType ]         = useState<'success' | 'error' | 'info'>('info');
   const subMenuId = params?.subMenuId ? parseInt(params.subMenuId, 10) : 0;//el id del subMenu con el type FormConfigDFType
-  //console.log('FromPage')
+  console.log('FormPage subMenuId',subMenuId);
   // useEffect(()=>{
   //    console.log('useEffect formData',formData?.editFields);
   // },[formData])
-  // useEffect(() => {
-  //   if (alertMessage && alertDuration) {
-  //     console.log('en useEffect alertMessage',alertMessage);
-  //     const timer = setTimeout(() => setAlertMessage(""), alertDuration);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [alertMessage, alertDuration]);
   const reLoad=() =>{//al cerrar el modal carga la pagina de nuevo
     window.location.reload();
   }
@@ -86,53 +80,6 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
     setLoading(false); 
   }, [subMenuId]);
   
- 
-  // const showAlert = (message: string, type: 'success' | 'error' | 'info', duration: number | null) => {// Función para configurar la alerta
-  //     console.log("Mostrando alerta:", message, type, duration);
-  //     setAlertMessage(message);
-  //     setAlertType(type);
-  //     setAlertDuration(duration);
-  //   };
-
-  // const grabar= async( values:any) =>{
-  //   const requirePassword=formData?.editFields?.find(field => field.type === 'password')?.requirePassword;
-  //   const password = requirePassword ? await bcrypt.hash('password123', 10) : undefined;
-  //   const spFetchSaveGrid=formData?.table.spFetchSaveGrid; 
-  //   // console.log('en FormPage grabar values',values);
-  //   const withRutFields=formData?.editFields?.filter(field => field.type === 'RUT');//field que tienen field type='RUT' para formatearlo estándar
-  //   let updateValues:any=values;
-    
-  //   if (withRutFields && withRutFields.length > 0) {
-  //      //actualizar rut de los values.items
-  //      console.log('en FormPage revisar updatedItems que no se usa');
-  //      const items=values.items;
-  //      const updatedItems=items.map((item:any) => {
-  //       const rut=formatRut(item.rut);
-  //       return {...item,rut:rut};
-  //      });
-  //     }    
-  //   let changedItem = _.differenceWith( updateValues.items,initialValues.items, _.isEqual);//devuelve los items que han cambiado (1 a la vez)
-  //   console.log('en FormPage grabar diferencias changedItems',changedItem);
-  //   if (changedItem.length >1 ) {
-  //     console.log("***Se detectaron cambios en varias filas, se grabará sólo la primera***");      
-  //   }
-  //   try {
-  //     const response = await saveFormData(
-  //       spFetchSaveGrid!,
-  //       { ...changedItem[0], idUserModification: session?.user.id, password },
-  //       formatRut,
-  //     );
-  //     if (response.success) {
-  //       alert("Grabado exitosamente");
-  //       // setTimeout(handleClose, 3000);
-  //     } else {
-  //       console.log('en FormPage grabar response',response.error);
-  //       alert(`${response.error.error}, favor comuníquelo al administrador del sistema.`);        
-  //     }
-  //   } catch (error) {
-  //     alert(`${error}, favor comuníquelo al administrador del sistema.`);
-  //   }
-  // }  
   if (subMenuId === 0) {
     return <div>No valid subMenuId provided</div>;
   }

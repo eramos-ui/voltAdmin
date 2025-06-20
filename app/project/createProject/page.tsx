@@ -28,7 +28,7 @@ import { sortGridByActivityId } from "@/utils/sortGridByActivityId";
 import { formatProjectForFormik } from "@/utils/projectUtils/formatProjectForFormik";
 import { getProjectById } from "@/app/services/projects/getProjectById";
 import { updateProject } from "@/app/services/projects/updateProject";
-import { useMenu } from '@/app/context/MenuContext';
+import { useMenu } from '@/context/MenuContext';
 
 const validationSchema = Yup.object({
     projectName: Yup.string().required("El nombre del proyecto es obligatorio"),

@@ -32,11 +32,9 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
         .catch(console.error);
     }
   };
-
   useEffect(() => {
     refreshMenu(); // cargar cuando se setea el usuario
   }, [user]);
-
   return (
     <MenuContext.Provider value={{ user, menuData, refreshMenu, setUser }}>
       {children}

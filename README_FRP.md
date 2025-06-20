@@ -96,3 +96,8 @@ Para detener todos los servicios:
 - Mantener las ventanas de comando abiertas mientras se use la aplicación
 - El servidor FRP debe iniciarse antes que el cliente
 - La aplicación Next.js debe iniciarse después de que FRP esté funcionando 
+## Para convertir MSSQL a MongoDB
+- Crear la collection en MongoDB
+- Hacer el query que contiene los array de JSON para poblar en MSSM
+- Abrir en la collection el Mongosh
+- hacer el insert sb.xxxx.insertMany () de array de jsones del MSSM

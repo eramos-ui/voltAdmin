@@ -42,7 +42,7 @@ export type CustomGridProps<T> = {
 
 export const CustomGrid = <T,>({
   title,
-  rowHeight = "40px",
+  rowHeight = "30px",
   rowsToShow = 5,
   fontSize = "14px",
   borderColor = "#ccc",

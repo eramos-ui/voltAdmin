@@ -9,7 +9,7 @@ import UserAvatar from './UserAvatar';
 import UserDropdown from './UserDropdown';
 import { UserData } from '../../types/interfaces';
 import { useSidebarToggle } from '../../context/SidebarToggleContext';
-import { useMenu } from '@/app/context/MenuContext';
+import { useMenu } from '@/context/MenuContext';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faBars } from '@fortawesome/free-solid-svg-icons';
