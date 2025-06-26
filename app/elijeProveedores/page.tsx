@@ -94,8 +94,10 @@ const ElijeProveedoresPage = () => {
         }
   },[initialValues.idProjectActivity]);
      useEffect(()=>{
-      if (initialValues.proveedores && initialValues.proveedores.length>0 )
-       setProveedoresOptions(initialValues.proveedores.map( (proveedor: any) =>  { return { label:proveedor.name, value:proveedor._id.toString() }} ));
+      if (initialValues.proveedores && initialValues.proveedores.length>0 ){
+        console.log('en useEffect initialValues.proveedores',initialValues.proveedores);
+        setProveedoresOptions(initialValues.proveedores.map( (proveedor: any) =>  { return { label:proveedor.name, value:proveedor._id.toString() }}));
+      }
      },[initialValues.proveedores]);
      useEffect(()=>{
       if (initialValues.jsFiles && initialValues.jsFiles.length>0 )//por que hay archivos repetidos le concatena al id el nombre del archivo

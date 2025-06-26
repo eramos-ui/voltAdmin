@@ -6,8 +6,8 @@ import './CustomInput.css';
 import { CustomTooltip } from './CustomTooltip';
 import React from 'react';
 import { formatRut } from "@/utils/formatRut";
-import { validateRUT } from "@/utils/validateRut";
-import { CustomToggleSwitch } from './CustomToggleSwitch';
+import { validateRUT } from "@/utils/validateRUT";
+
 
 export interface InputProps  extends Partial<FieldProps> {
     /**
@@ -34,7 +34,7 @@ export interface InputProps  extends Partial<FieldProps> {
     /**
       * error para storybook
     */     
-    error?: string; // Para Storybook
+    error?: string | any; // Para Storybook
     /**
       * text align
     */         
@@ -127,7 +127,8 @@ export const CustomInput = ({
     const [ charCount, setCharCount ]           = useState((field?.value ?? value ?? "").toString().length);
     const [ formattedValue, setFormattedValue ] = useState<string>(value ? value.toString() : "");
     const [ valueInside, setValueInside ]       = useState<any>( value ? value.toString() : "");
-    
+    const [ rutError, setRutError ]             = useState<string | null>(null);
+    // console.log('CustomInput ',label,type);
     const inputClassNames = ` 
     custom-input-field ${theme}
     ${leftIcon ? 'has-left-icon' : ''} 
@@ -140,6 +141,16 @@ export const CustomInput = ({
       setFormattedValue(formattedValue);
     }    
   },[valueInside,formatNumber,setFormattedValue]);
+  useEffect(() => {
+    if (type === 'RUT' && valueInside) {
+      // console.log('CustomInput useEffect type',type,valueInside);
+      const isValid= validateRUT(valueInside);
+      setRutError(isValid ? null : 'RUT no válido');
+    } else {
+      setRutError(null);
+    }
+  }, [valueInside, type]);
+
     // if (type ==='RUT') console.log('**CustomInput field', value, error,form?.touched,form?.errors);
     const inputValue = (field?.value ?? value)? field?.value ?? value:'';
     const name = field?.name || ''; // Usa un valor predeterminado si field es undefined
@@ -177,11 +188,8 @@ export const CustomInput = ({
           if (field?.onChange) field.onChange({ ...event, target: { ...event.target, value: parseNumber(inputValue) } });
         } else if (type==='RUT'){
           inputValue = formatRut(inputValue);
-          // console.log('CustomInput rut',inputValue);
-          // console.log('validateRUT',validateRUT(inputValue));
           setFormattedValue(inputValue);
-        }  else {
-          // console.log('CustomInput handleChange',inputValue);
+        } else {
           setFormattedValue(inputValue);
           if (field?.onChange) field.onChange(event);
         }
@@ -244,6 +252,7 @@ export const CustomInput = ({
         {rightIcon && <span className="icon right-icon">{rightIcon}</span>}
       </div>
     ); 
+    // console.log('CustomInput rutError',rutError,valueInside);
     return (
       <div 
         className={`custom-input-container ${theme} ${captionPosition}`}
@@ -261,6 +270,7 @@ export const CustomInput = ({
           inputElement
         )}
            {errorMessage && <div className="error-message">{errorMessage}</div>}
+           {rutError && <div className="error-message">{rutError}</div>}
         </div>
       );
 }

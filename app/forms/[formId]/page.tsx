@@ -7,6 +7,7 @@ como de la edición de las filas y que se renderizan en EditForm  en editFields.
 "use client";
 import { useEffect, useState } from 'react';
 import GoHomeButton from '@/components/general/GoHomeButton';
+import { useParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 
 // import { Formik, Form } from 'formik'; 
@@ -23,7 +24,11 @@ import _ from "lodash";
 import GridContainer from '@/components/dynamicForm/GridContainer';
 import { EditForm } from '@/components/dynamicForm/EditForm';
 
-const FormPage = ({ params }: { params: { subMenuId: string } }) => {
+// const FormPage = ({ params }: { params: { subMenuId: string } }) => {
+  const FormPage = ( ) => {
+  const params                                  = useParams();
+  const rawFormId                               = (params as { formId?: string }).formId;
+  const formId                                  = rawFormId ? parseInt(rawFormId, 10) : null;
   const { data: session }                       = useSession();
   const [ formData, setFormData ]               = useState<FormConfigDFType | null>(null);//los campos del formulario dynamic
   const [ loading, setLoading ]                 = useState(true);
@@ -38,8 +43,8 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
   // const [ alertMessage, setAlertMessage ]   = useState<string | null>("");
   // const [ alertDuration, setAlertDuration ] = useState<number | null>(3000);
   // const [ alertType, setAlertType ]         = useState<'success' | 'error' | 'info'>('info');
-  const subMenuId = params?.subMenuId ? parseInt(params.subMenuId, 10) : 0;//el id del subMenu con el type FormConfigDFType
-  console.log('FormPage subMenuId',subMenuId);
+  // const subMenuId = formId ? parseInt(formId, 1006) : 0;//el id del subMenu con el type FormConfigDFType
+  // console.log('FormPage subMenuId',subMenuId);
   // useEffect(()=>{
   //    console.log('useEffect formData',formData?.editFields);
   // },[formData])
@@ -48,24 +53,25 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
   }
   useEffect(() => {
     async function fetchData() {
-      if (subMenuId === 0) {
+      if (formId === 0) {
         setError('No valid subMenuId provided');
         setLoading(false);
         return;
       }  
       let data:FormConfigDFType;
       try {
-        //console.log('lee form y filas',`/api/getFormData?subMenuId=${subMenuId}`);
-        const res = await fetch(`/api/getFormData?subMenuId=${subMenuId}`);//los datos del submenu { buttons, fields,formn} 
+        // console.log('lee form y filas',`/api/forms/${formId}`);
+        const res = await fetch(`/api/forms/${formId}`);//los datos del submenu { buttons, fields,formn} 
+        // console.log('en [formId] res',res);
         if (!res.ok) {
           throw new Error(`Failed to fetch form data: ${res.statusText}`);
         }
         data= await res.json();
-        // console.log('en [submenuId] data',data); 
-        // console.log('en [submenuId] data',data); 
+        // console.log('en [formId] jsonForm',data); 
+     
         setInitialValues({items:data.rows});//debe llevar el nombre para el initialValues
         setFormData( data );//Devuelve el campo jsonForm de la tabla Form
-        setRows(data.rows || []);
+        // setRows(data.rows || []);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -78,9 +84,33 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
     }
     fetchData();  
     setLoading(false); 
-  }, [subMenuId]);
-  
-  if (subMenuId === 0) {
+  }, [formId]);
+  useEffect(() => {
+    const fetchData = async (apiGetRows:string) => {//
+      try{
+        const res = await fetch(`/api/${apiGetRows}`);
+        const data = await res.json();
+        console.log('en useEffect apiGetRows',apiGetRows);
+        console.log('en useEffect rows',data);
+        setRows(data);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    setLoading(true);
+    const apiGetRows=formData?.table.apiGetRows;
+    if (apiGetRows) {
+      fetchData(apiGetRows);
+      setLoading(false);
+    }
+  }, [formData]);
+  if (formId === 0) {
     return <div>No valid subMenuId provided</div>;
   }
   if (!formData || loading ) {
@@ -129,9 +159,13 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
     setIsAdding(true);
   };
   const handleClose=() =>{
+    
     router.push('/');
   }
-  const spFetchSaveGrid=formData.table.spFetchSaveGrid;
+  // const spFetchSaveGrid=formData.table.spFetchSaveGrid;
+  // const apiGetRows=formData.table.apiGetRows;
+  const apiSaveform=formData.table.apiSaveForm;
+  //  console.log('FormPage formData',formData,loading);
 
   return (//Aquí va el despliegue de la grilla no editable con los datos de la tabla que se hace en FormTableGrid vía GridContainer
     <>
@@ -148,7 +182,7 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
       >
         <h1 className="text-3xl font-bold mb-4">{formData.formTitle}</h1> 
           <>       
-              {formData.table.columns && formData.table.actions && formData.table.columnWidths && formData.table.editFormConfig &&               
+              { !loading && formData.table.columns && formData.table.actions && formData.table.columnWidths && formData.table.editFormConfig &&         
               <GridContainer  columns={formData.table.columns} rows={rows} actions={formData.table.actions} 
                     columnWidths={formData.table.columnWidths} onEdit={handleEdit} handleAdd={handleAdd} table={formData.table}
                     onDelete={handleDelete} editFormConfig={formData.table.editFormConfig} // Pasamos el editFormConfig a GridContainer
@@ -158,9 +192,9 @@ const FormPage = ({ params }: { params: { subMenuId: string } }) => {
               }
               {isModalOpen && formData.table.editFormConfig && formData.table.columns && formData.table.editFormConfig && (
                 <EditForm isOpen={isModalOpen} onClose={() => reLoad()   } theme={formData.table.editFormConfig.theme} // onSubmit={handleFormAdd} 
-                  row={editingRowIndex !== null ? rows[editingRowIndex] : {}} columns={formData.table.columns} 
+                  row={editingRowIndex !== null ? rows[editingRowIndex] : {}} columns={formData.table.columns} formId={Number(formId)}
                   formConfig={ formData.table.editFormConfig as FormConfigDFType} // Pasa el editFormConfig al componente de edición
-                  requirePassword={formData.table.requirePassword} spFetchSaveGrid={spFetchSaveGrid} isAdding={isAdding} fields={formData.editFields || []} //rows={rows} //setRows={setAllValues }
+                  requirePassword={formData.table.requirePassword} apiSaveForm={apiSaveform} isAdding={isAdding} fields={formData.editFields || []} //rows={rows} //setRows={setAllValues }
                 />
                 )} 
               <div className="flex space-x-4 mt-4">

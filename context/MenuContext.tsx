@@ -24,10 +24,10 @@ export const useMenu = () => useContext(MenuContext);
 export const MenuProvider = ({ children }: { children: ReactNode }) => {
   const [menuData, setMenuData] = useState<MenuItem[] | null>(null);
   const [user, setUser] = useState<UserData | null>(null);
-
+  // console.log('en MenuProvider user',user);
   const refreshMenu = () => {
-    if (user?.email && user?.perfil && user?.roleswkf) {
-      fetchUserMenu(user.email, user.perfil, user.roleswkf)
+    if (user?.email && user?.role && user?.roleswkf) {
+      fetchUserMenu(user.email, user.role, user.roleswkf)
         .then(setMenuData)
         .catch(console.error);
     }

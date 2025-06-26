@@ -45,6 +45,7 @@ export interface ButtonConfigDFType {
     titleGrid?:string,
     labelGridAdd?: string;    
     spFetchRows?:string; //field con el sp que carga la tabla
+    apiGetRows?:string; //field con el api que carga la tabla desde MongoDB
     objectGrid?:string;//para el tooltips de agregar y eliminar
     columns?: GridColumnDFType[];// Para el grid
     rows?: GridRowDFType[]; // Para el grid
@@ -59,8 +60,11 @@ export interface ButtonConfigDFType {
     formatOptions?: { [key: string]: any }; // Opciones de formato adicionales
     conditionalStyles?: { [key: string]: React.CSSProperties }; // Estilos condicionales
     dependentValue?:any;
+    requiredIf?:{field:string,equal:string};
     spFetchOptions?: string;
+    apiOptions?: string;
     spFetchSaveGrid?:string;
+    apiSaveForm?:string;
     requirePassword?:boolean; 
     padding?:string;
     marginBottom?:string;

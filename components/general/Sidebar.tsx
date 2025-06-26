@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
   const toggleSubMenu                 = (index: number) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
-    // console.log('Siderbar menuData',menuData );
+  // console.log('Siderbar menuData',menuData );
   // const navigateTo = useCallback( ( url: string ) => {
   //   //toggleSubMenu();//esto ocultará el menú al tocar el mismo menú
   //   //console.log('navigateTo en menu', url)
@@ -46,7 +46,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
   const handleNavigation = (subitem:SubMenuItem ) => {
     closeSidebar();
     const path=subitem.path;
-    const subMenuId=subitem.id;
+    // const subMenuId=subitem.formId;
+    const formId=subitem.formId;
+    // const menuId=subitem.menuId;
     const processType:String=subitem.processType;
     const processActivity=String(subitem.idActivity); //para las 'from toDo
     const urlProcess=`/toDoList/${processActivity}`;//para las 'from toDo
@@ -63,19 +65,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
         idProcess: String(subitem.idProcess),
         idActivity: String(subitem.idActivity),
         email: user.email,
-        perfil: user.perfil || '',
+        perfil: user.role || '',
         roles: JSON.stringify(user.roleswkf),
         path: String(subitem.path),//requerido para redirigir a la tarea desde el toDoList
         
         });
-      // console.log('queryParams',queryParams.toString());
       // router.push(urlProcess,);
       router.push(`${urlProcess}?${queryParams.toString()}`);
  
     } else if( processType === 'app' ) {
       // console.log('subitem,path,processType,processActivity',subitem,path,processType,urlProcess);
-      if (subitem.formId) {// Si el campo "form" no es null, redirige el formulario construido desde JSON
-          router.push(`/${subMenuId}`);
+      if (formId) {// Si el campo "form" no es null, redirige el formulario construido desde JSON
+        // console.log('subMenuId',subMenuId);
+        router.push(`/forms/${formId}`);
+        // router.push(`/forms/1016`);
        }
     } else if( processType === 'init activity' ) {
       router.push(path || '/');//menuId es 4 o 5  para techo o piso

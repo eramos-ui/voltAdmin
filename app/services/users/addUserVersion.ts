@@ -3,7 +3,7 @@ import  { getUserVigenteByEmail }  from "./getUserVigenteByEmail";
 import { User } from "@/models/User";
 
 export const addUserVersion = async (userData: any) => {
-    // console.log('en addUserVersion userData',userData);
+   console.log('en addUserVersion userData',userData);
     try {
       const email = userData.email;
       // console.log('en addUserVersion email',email);

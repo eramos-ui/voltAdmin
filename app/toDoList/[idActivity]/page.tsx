@@ -38,7 +38,7 @@ const ToDoListPage = ({ params }: { params: Params }) => {
    ? Number(searchParams.get('idProcess'))
    : 0;
   const email = searchParams?.get('email');
-  const perfil = searchParams?.get('perfil');
+  const perfil = searchParams?.get('role');
   const roles = searchParams?.get('roles');
   const path = searchParams?.get('path');
   //console.log('en ToDoList idActivity', idActivity,idProcess,path,email,perfil);

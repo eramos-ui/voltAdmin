@@ -13,7 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk, faHome } from '@fortawesome/free-solid-svg-icons';
 // import { loadEjecutores } from '@/utils/loadEjecutores';
 import { plazoControlOptions } from '@/data/selectType';
-import { updateActivity } from '../services/projectActivity/updateActivity';
+// import { updateActivity } from '../services/projectActivity/updateActivity';
 import { loadDataActivityDefineEjecutor } from '../services/loadPages/loadDataActivityDefineEjecutor';
 import { getUsersByPerfilForOptions } from '../services/users/getUsersByPerfilForOptions';
 import { usePreviousFullUrl } from '@/hooks/usePreviousFullUrl';

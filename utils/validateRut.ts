@@ -1,10 +1,12 @@
 export const validateRUT = (value: string) => {
-    const rut = value.replace(/\./g, '').replace('-', '');
-    const body = rut.slice(0, -1);
+    const rut = value.replace(/\./g, '').replace('-', '').toUpperCase();
+    const body = rut.slice(0, -1);//sin DV
+    // console.log('validateRUT body',body,rut );
     if (body.length <7 ){
-      return 'RUT inválido. Debe tener mínimo 7 dígitos.';
+      // return 'RUT inválido. Debe tener mínimo 7 dígitos.';
+      return false;
     }
-    const dv = rut.slice(-1).toUpperCase();
+    const dv = rut.slice(-1);
     let sum = 0;
     let multiplier = 2;
     for (let i = body.length - 1; i >= 0; i--) {
@@ -20,8 +22,9 @@ export const validateRUT = (value: string) => {
     } else {
       expectedDv = mod.toString();
     }
-    if (expectedDv !== dv) {
-      return 'RUT inválido';
+    // console.log('validateRUT expectedDv',expectedDv,dv);
+    if (expectedDv === dv) {
+      return true;
     }
-    return '';
+    return false;
   };

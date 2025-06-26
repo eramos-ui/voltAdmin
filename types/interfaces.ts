@@ -10,12 +10,14 @@ export interface UserData {
   phone?:string;
   rut?:string;
   isValidate?:boolean;
+  valid?:string;
   system?:string;
   roleswkf?:string[];
   createAt?:string;
   updateAt?:string;  
   state?:string;
-  perfil?:string;
+  role?:string;
+  roleperfil?:string;
   
 }
 // export interface UserData {

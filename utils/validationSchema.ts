@@ -1,6 +1,9 @@
 import * as Yup from 'yup';
 import { parse, isDate } from 'date-fns';
 import { FormFieldDFType } from '@/types/interfaceDF';
+import { validateRUT } from '@/utils/validateRUT';
+import { formatRut } from './formatRut';
+import { calculaDVRut } from './calculaDvRut';
 
 
 // 🔹 Función para generar validaciones dinámicas con Yup
@@ -10,38 +13,61 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
   fields.forEach((field, index) => {
 
     let fieldSchema : Yup.AnySchema = Yup.mixed();
-    if (field.type === "text" || field.type === "email" || field.type === "RUT" || field.type === "input" || field.type === "textarea") {
-      fieldSchema  = Yup.string();
-    } else if (field.type === "number") {
-      fieldSchema  = Yup.number();
-    } else if (field.type === "date") {
-      fieldSchema  = Yup.date();
-    } else if (field.type === "select") {
-      //console.log('select field',field,field.options,field.spFetchOptions);
+    // Base schema según tipo
+    switch (field.type) {
+      case 'text':
+      case 'email':
+      case 'RUT':
+      case 'input':
+      case 'textarea':
+        fieldSchema = Yup.string();
+        break;
+      case 'number':
+        fieldSchema  = Yup.number();
+        break;
+      case 'date':
+        fieldSchema  = Yup.date();
+        break;
+      case 'select': 
+      // console.log('select field',field,field.options,field.spFetchOptions);
       // 📌 Validar selects con opciones estáticas
-      fieldSchema = Yup.string()
+        fieldSchema = Yup.string()
         .required("Debe seleccionar una opción") // 📌 Asegura que no sea vacío o null
         //.nullable()
         .test("validate-select", "Debe seleccionar una opción válida", (value) => {//.test("nombreDelTest", "mensajeDeError", (value) => {funciónDeValidación}) //true es válido
+          // console.log('validate-select',field.options,field.apiOptions);
           // Si tiene opciones predefinidas, validar que esté en ellas
           if (field.options && field.options.length > 0) {
             return field.options.some(opt => String(opt.value) === String(value));
           }
           // Si es dinámico, no validar hasta que tenga opciones cargadas
-          if (field.spFetchOptions && field.spFetchOptions.length > 0) return true;
+          if (field.apiOptions && field.apiOptions.length > 0) return true;
           return false;
         });
-
-      // 📌 Validar que el valor sea mayor que 0 si la regla está definida
-      if (field.validations?.some(v => v.type === "valueGreaterThanZero")) {
-        fieldSchema = fieldSchema.test(
-          "value-greater-than-zero",
-          "El valor debe ser mayor que 0",
-          (value) => Number(value) > 0
-        );
-      }
+     
+        // 📌 Validar que el valor sea mayor que 0 si la regla está definida
+        if (field.validations?.some(v => v.type === "valueGreaterThanZero")) {
+          fieldSchema = fieldSchema.test(
+            "value-greater-than-zero",
+            "El valor debe ser mayor que 0",
+            (value) => Number(value) > 0
+          );
+        }
+        break;
     }
-    
+    // Validación especial para RUT
+    if (field.type === "RUT") {
+      fieldSchema = Yup.string()
+        .required("El RUT es obligatorio")
+        .test(
+          "rut-format",
+          "Formato incorrecto de RUT",
+          (value) => {
+            if (!value) return false;
+            return validateRUT(value); // 👈 tu función booleana
+          }
+        )
+    }
     field.validations?.forEach((rule) => {    // 🔹 Agregar validaciones según el esquema definido en la BD-json
       switch (rule.type) {
         case "required":
@@ -56,11 +82,11 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
         case "email":
           fieldSchema  = (fieldSchema  as Yup.StringSchema).email(rule.message || "Debe ser un correo válido");
           break;
-        case "pattern":
-          const regex = new RegExp(rule.value as string); // 📌 Convierte el string en RegExp
-          fieldSchema  = (fieldSchema  as Yup.StringSchema).matches(regex, rule.message || "Formato inválido");
-          // if (field.type === "RUT") console.log('RUT field',rule,regex,fieldSchema);
-          break;
+        // case "pattern":
+        //   const regex = new RegExp(rule.value as string); // 📌 Convierte el string en RegExp
+        //   fieldSchema  = (fieldSchema  as Yup.StringSchema).matches(regex, rule.message || "Formato inválido");
+        //   // if (field.type === "RUT") console.log('RUT field',rule,regex,fieldSchema);
+        //   break;
         case "url":
           fieldSchema  = (fieldSchema  as Yup.StringSchema).url(rule.message || "Debe ser una URL válida");
           break;
@@ -73,6 +99,18 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
           
       }
     });
+      // Validación condicional: requiredIf
+    // if (field.requiredIf?.field && field.requiredIf?.equal !== undefined) {
+    if (field.requiredIf && typeof field.requiredIf?.field === 'string' 
+        &&  ["string", "number", "boolean"].includes(typeof field.requiredIf.equal) 
+      ) {
+       const { field: dependsOn, equal } = field.requiredIf;
+       fieldSchema = Yup.string().when(dependsOn, {
+       is: (val: any) => val === equal,
+       then: schema => schema.required(`${field.label} es obligatorio cuando ${dependsOn} es ${equal}`),
+       otherwise: schema => schema.notRequired(),
+      });
+    }
     schema[field.name] = fieldSchema;
   });
   //console.log('schema',schema);
@@ -157,83 +195,3 @@ const buildValidationSchema = (fields: FormFieldDFType[]): { [key: string]: Yup.
   return schemaFields;
 };
 
-// export const getValidationSchemaDynamicForm = (
-//   formData: {  editFields?: FormFieldDFType[] }//frames?: FrameConfig[];
-// ): Yup.ObjectSchema<{ [key: string]: any }> => {
-//   let schemaFields: { [key: string]: Yup.MixedSchema } = {};
-//     if (formData.editFields && formData.editFields.length > 0) {
-//       schemaFields = buildValidationSchema(formData.editFields);
-//     }
-//   return Yup.object().shape(schemaFields);
-// };
-
-
-
-
-// import * as Yup from 'yup';
-// import { FormField, DynamicFormValues } from '../../types/interfaces';
-// import { parse, isDate } from 'date-fns';
-
-// export const getValidationSchema = (frames: { fields: FormField[] }[]): Yup.ObjectSchema<DynamicFormValues> => {
-//   const requiredFields: { [key: string]: Yup.MixedSchema } = {};
-
-//   frames.forEach(frame => {
-//     frame.fields.forEach(input => {
-//       if (!input.validations) return;
-//       let schema: Yup.MixedSchema = Yup.mixed();
-
-//       input.validations.forEach(rule => {
-//         if (rule.type === 'required') {
-//           schema = schema.required('Este campo es requerido');
-//         }
-//         if (rule.type === 'minLength' && typeof rule.value === 'number') {
-//           schema = (Yup.string().min(rule.value, `Mínimo de ${rule.value} caracteres`) as unknown) as Yup.MixedSchema;
-//         }
-//         if (rule.type === 'email') {
-//           schema = (Yup.string().email('El correo no tiene un formato válido') as unknown) as Yup.MixedSchema;
-//         }
-//         if (rule.type === 'minDate' && typeof rule.value === 'string') {
-//           schema = (Yup.date()
-//             .transform((value, originalValue) => {
-//               if (typeof originalValue === 'string') {
-//                 const parsedDate = parse(originalValue, 'dd/MM/yyyy', new Date());
-//                 if (isDate(parsedDate) && !isNaN(parsedDate.getTime())) {
-//                   return parsedDate;
-//                 }
-//               }
-//               return value;
-//             })
-//             .min(new Date(rule.value), rule.message || `La fecha debe ser después de ${rule.value}`) as unknown) as Yup.MixedSchema;
-//         }
-//         if (rule.type === 'maxDate' && typeof rule.value === 'string') {
-//           schema = (Yup.date()
-//             .transform((value, originalValue) => {
-//               if (typeof originalValue === 'string') {
-//                 const parsedDate = parse(originalValue, 'dd/MM/yyyy', new Date());
-//                 if (isDate(parsedDate) && !isNaN(parsedDate.getTime())) {
-//                   return parsedDate;
-//                 }
-//               }
-//               return value;
-//             })
-//             .max(new Date(rule.value), rule.message || `La fecha debe ser antes de ${rule.value}`) as unknown) as Yup.MixedSchema;
-//         }
-//       });
-//       if (input.type === 'date') {
-//         schema = schema.transform((value, originalValue) => {
-//           if (typeof originalValue === 'string') {
-//             const parsedDate = parse(originalValue, 'dd/MM/yyyy', new Date());
-//             if (isDate(parsedDate) && !isNaN(parsedDate.getTime())) {
-//               return parsedDate;
-//             }
-//           }
-//           return value;
-//         });
-//       }
-
-//       requiredFields[input.name] = schema;
-//     });
-//   });
-
-//   return Yup.object().shape(requiredFields) as Yup.ObjectSchema<DynamicFormValues>;
-// };

@@ -67,13 +67,27 @@ const userSchema = new Schema({
         required: true,
         default: true
     },
+    valid:{
+        type:String,
+        required:true,
+        default:'Vigente'
+    },
+    validDate:{
+        type:Date,
+        required:true,
+        default:'vigente'
+    },
     system: {
         type: String,
         required: true
     },
-    perfil: {
+    role: {
         type: String,
         required: true
+    },
+    roleId: {
+        type: Number,
+        required: false
     },
     roleswkf: { 
         type: [roleswkfSchema], 

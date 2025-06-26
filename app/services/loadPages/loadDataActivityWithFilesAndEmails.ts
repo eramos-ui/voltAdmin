@@ -74,8 +74,7 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
         bodyTemplate: email.bodyTemplate, metadataJSON:metadataJS } }) 
     }
   // console.log(' en loadDataActivity emailTemplate',emailTemplate);
-  const dataProveedores:ProveedorType[]=await getUsersFullByPerfil('Proveedores');
-  // console.log('dataProveedores',dataProveedores);
+  const dataProveedores:ProveedorType[]=await getUsersFullByPerfil('Proveedor');
   let metadataJS:any;
   // const fechaInicio=processData.attributes.find((x:any )=> x.idAttribute === 'fechaInicio').value;
   // const fechatermino=processData.attributes.find((x:any )=> x.idAttribute === 'fechaTermino').value;

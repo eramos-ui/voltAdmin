@@ -3,7 +3,7 @@
 const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000';
 export const getUsersByPerfilForOptions = async (perfil: string) => {
     // const res = await fetch(`${baseUrl}/api/users/byPerfil?perfil=${encodeURIComponent(perfil)}`);
-    const res = await fetch(`${baseUrl}/api/users/byPerfil?perfil=${perfil}`);
+    const res = await fetch(`${baseUrl}/api/users/byPerfil?role=${perfil}`);
     // console.log('getUsersByPerfilForOptions',perfil);
     if (!res.ok) {
       console.log('error en getUsersByPerfilForOptions res',res);

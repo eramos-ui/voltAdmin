@@ -5,10 +5,10 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { perfil } = req.query;
+  const { role } = req.query;
 
-  if (!perfil || typeof perfil !== 'string') {
-    return res.status(400).json({ error: 'Parámetro `perfil` requerido' });
+  if (!role || typeof role !== 'string') {
+    return res.status(400).json({ error: 'Parámetro `role` requerido' });
   }
 
   try {
@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Obtener el último documento por usuario con ese perfil
     const usuarios = await User.aggregate([
-      { $match: { perfil, isValid: true } },
+      { $match: { role, valid: 'vigente' } },
       { $sort: { updatedAt: -1 } },
       {
         $group: {
@@ -31,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     //   value: u.user,
     //   label: `${u.name} (${u.user})`
     // }));
+    console.log('en api users/byPerfil usuarios',usuarios);
     return res.status(200).json(usuarios);
   } catch (error) {
     console.error('❌ Error en la consulta de usuarios por perfil:', error);

@@ -5,7 +5,7 @@ import { Task } from '@/models/Task';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, perfil, roles } = req.query;
-
+  // console.log('en API user_menu email',email,perfil,roles);
   if (!email || !perfil || !roles || typeof email !== 'string' || typeof perfil !== 'string') {
     return res.status(400).json({ error: 'Parámetros requeridos: email, perfil, roles' });
   }
@@ -70,10 +70,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     // Armar menú filtrado
     const menuFiltrado = allMenus.map(menu => {
-        const perfilSubmenus = (menu.submenus || []).filter((sub: any) =>
-          sub.perfiles.includes(perfil)
-        );
-     //  console.log('menu.submenus',menu.submenus);
+        const perfilSubmenus = (menu.submenus || []).filter((sub: any) =>{
+          if (sub.isValid) {
+            return sub.perfiles.includes(perfil);
+          }
+          return false;
+        }).filter(Boolean);
       const taskSubmenus = (menu.submenus || [])
         .map((sub: any) => {
           const key = `${sub.idProcess}-${sub.idActivity}`;
@@ -92,10 +94,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               count: group.count,
             };
           }
+          
           return null;
         })
         .filter(Boolean); // Elimina los null
-    // console.log('taskSubmenus',taskSubmenus);
     const submenus = [...perfilSubmenus, ...taskSubmenus];
     //  console.log('submenus',submenus);
     const totalTasks = submenus
