@@ -49,34 +49,52 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
   }, [status, session, pathname, router]);
 
    
-  const fetchUserData = async (userId: string) => {
-     if (!userId) return;
-     try {
-      // console.log('AppContent fetchUserData', `/api/usuarios/${userId}`);
-      const response = await fetch(`/api/usuarios/${userId}`);///api/usuarios/6800ff9cb9b53ba220c73996
-      if (response.ok) {//obtiene los datos del usuario vía el _id
-        const userData = await response.json();  
-        setUserInContext({
-          ...userData,
-          theme: userData.theme,
-          avatar: userData.avatar,
-        });
-        refreshMenu();               // ✅ Aquí fuerza la carga del menú
-      } else {
-        console.error('Failed to fetch user data');
-      }
-     } catch (error) {
-       console.error('Error fetching user data:', error);
-     }
-  }; 
+  // const fetchUserData = async (userId: string) => {
+  //    if (!userId) return;
+  //    try {
+  //     // console.log('AppContent fetchUserData', `/api/usuarios/${userId}`);
+  //     const response = await fetch(`/api/usuarios/${userId}`);///api/usuarios/6800ff9cb9b53ba220c73996
+  //     if (response.ok) {//obtiene los datos del usuario vía el _id
+  //       const userData = await response.json();  
+  //       setUserInContext({
+  //         ...userData,
+  //         theme: userData.theme,
+  //         avatar: userData.avatar,
+  //       });
+  //       refreshMenu();               // ✅ Aquí fuerza la carga del menú
+  //     } else {
+  //       console.error('Failed to fetch user data');
+  //     }
+  //    } catch (error) {
+  //      console.error('Error fetching user data:', error);
+  //    }
+  // }; 
   
-  useEffect (()=>{
-    if (session && session.user.id  ){
-      const userId=session.user.id;
-      // console.log('session',session,userId);
-      fetchUserData(userId);
+  useEffect(() => {
+    const fetchUserData = async (userId: string) => {
+      if (!userId) return;
+      try {
+        const response = await fetch(`/api/usuarios/${userId}`);
+        if (response.ok) {
+          const userData = await response.json();
+          setUserInContext({
+            ...userData,
+            theme: userData.theme,
+            avatar: userData.avatar,
+          });
+          refreshMenu();
+        } else {
+          console.error('Failed to fetch user data');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+  
+    if (session?.user?.id) {
+      fetchUserData(session.user.id);
     }
-  },[session])
+  }, [session, setUserInContext, refreshMenu]);
 
   useEffect(() => {
       // Deshabilitar el botón en todas las páginas excepto el Home

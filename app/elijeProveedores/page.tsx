@@ -85,11 +85,11 @@ const ElijeProveedoresPage = () => {
         }
       }
       setLoading(true);
-      console.log('en useEffect fetchData',idTask, session);
+      // console.log('en useEffect fetchData',idTask, session);
       if (idTask && idTask>0){//revisa si al abrir existe idTask. Esto indica completar proyecto
         fetchData(idTask);
       }
-  }, [idTask, session?.user.email]);
+  }, [idTask, session?.user.email, session?.user.name]);
   useEffect(() => {
         if (initialValues.idProjectActivity && initialValues.idProjectActivity>0 ){
             setLoading(false);

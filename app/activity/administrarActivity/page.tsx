@@ -51,7 +51,8 @@ const AdminActivityPage = () => {
         try{
           if (session?.user.id)  {
             const email=session.user.email;
-            await loadDataActivityWithFilesAndEmails(idTask,email,setInitialValues);
+            const userName=session?.user.name?session?.user.name:'';   
+            await loadDataActivityWithFilesAndEmails(idTask,email,userName,setInitialValues);
           }
         }catch (err){
           console.log('error', err);
@@ -61,7 +62,7 @@ const AdminActivityPage = () => {
         fetchData(idTask);  
         setLoading(true);
       }     
-     }, [idTask,session?.user.id, session?.user.email]); 
+     }, [idTask,session?.user.id, session?.user.email,session?.user.name]); 
      const SyncDuracion = () => {//Para sacar el useEffect fuera de Formik
       const { values, setFieldValue } = useFormikContext<any>();   
       useEffect(() => {

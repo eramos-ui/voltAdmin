@@ -1,13 +1,12 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import { FieldProps } from 'formik';
 import './CustomInput.css';
 import { CustomTooltip } from './CustomTooltip';
 import React from 'react';
 import { formatRut } from "@/utils/formatRut";
 import { validateRUT } from "@/utils/validateRUT";
-
 
 export interface InputProps  extends Partial<FieldProps> {
     /**
@@ -18,7 +17,6 @@ export interface InputProps  extends Partial<FieldProps> {
       * caption position
     */    
     captionPosition?: 'left' | 'top';
-    
     /**
       * placeholder
     */   
@@ -134,22 +132,36 @@ export const CustomInput = ({
     ${leftIcon ? 'has-left-icon' : ''} 
     ${rightIcon ? 'has-right-icon' : ''}
   `.trim();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(()=>{//🔹 Si se usa formatNumber, se formatea el valor inicial
-    if (formatNumber ){ 
-      const formattedValue=formatNumberValue(valueInside)
-      setFormattedValue(formattedValue);
-    }    
-  },[valueInside,formatNumber,setFormattedValue]);
-  useEffect(() => {
-    if (type === 'RUT' && valueInside) {
-      // console.log('CustomInput useEffect type',type,valueInside);
-      const isValid= validateRUT(valueInside);
-      setRutError(isValid ? null : 'RUT no válido');
-    } else {
-      setRutError(null);
-    }
-  }, [valueInside, type]);
+      // 📌 Formatea el número con separadores de miles y opcionalmente decimales
+      const formatNumberValue = useCallback((num: string): string => {
+          if (!num) return "";
+          //const numericValue = num.replace(/[^0-9,]/g, "").replace(",", ".");
+          const numericValue = num.replace(/[^0-9,]/g, "");
+          let [integerPart, decimalPart] = numericValue.split(".");
+          
+          if (formatNumber) {
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+          }
+          const formattedDecimal = decimalPart ? decimalPart.slice(0, 2) : ""; // 🔹 Limita a 2 decimales
+          //console.log('formattedDecimal',formattedDecimal,decimalPart);
+    
+          return useDecimals && formattedDecimal !== "" ? `${integerPart},${formattedDecimal}` : integerPart;
+    },[formatNumber,useDecimals]);
+    useEffect(()=>{//🔹 Si se usa formatNumber, se formatea el valor inicial
+      if (formatNumber) {
+        const formatted = formatNumberValue(valueInside);
+        setFormattedValue(formatted);
+      }
+    }, [valueInside, formatNumber, formatNumberValue]);
+    useEffect(() => {
+      if (type === 'RUT' && valueInside) {
+        // console.log('CustomInput useEffect type',type,valueInside);
+        const isValid= validateRUT(valueInside);
+        setRutError(isValid ? null : 'RUT no válido');
+      } else {
+        setRutError(null);
+      }
+    }, [valueInside, type]);
 
     // if (type ==='RUT') console.log('**CustomInput field', value, error,form?.touched,form?.errors);
     const inputValue = (field?.value ?? value)? field?.value ?? value:'';
@@ -157,21 +169,7 @@ export const CustomInput = ({
     const errorMessage =
      (form?.touched?.[name] && form?.errors?.[name] && typeof form?.errors?.[name] === 'string') || error; // Prioriza Formik si existe
     if (!visible) return <></>;
-    // 📌 Formatea el número con separadores de miles y opcionalmente decimales
-    const formatNumberValue = (num: string): string => {
-      if (!num) return "";
-      //const numericValue = num.replace(/[^0-9,]/g, "").replace(",", ".");
-      const numericValue = num.replace(/[^0-9,]/g, "");
-      let [integerPart, decimalPart] = numericValue.split(".");
-      
-      if (formatNumber) {
-        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-      }
-      const formattedDecimal = decimalPart ? decimalPart.slice(0, 2) : ""; // 🔹 Limita a 2 decimales
-      //console.log('formattedDecimal',formattedDecimal,decimalPart);
 
-      return useDecimals && formattedDecimal !== "" ? `${integerPart},${formattedDecimal}` : integerPart;
-    };
     // 📌 Convierte el valor formateado en un número real sin separadores
     const parseNumber = (formatted: string): string => {
       return formatted.replace(/\./g, "").replace(",", ".");
