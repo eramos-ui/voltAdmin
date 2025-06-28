@@ -7,7 +7,7 @@
       "esnext"
     ],
     "typeRoots": ["./node_modules/@types", "./types"],
-    "forceConsistentCasingInFileNames": true,
+    // "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,

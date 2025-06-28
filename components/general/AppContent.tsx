@@ -3,7 +3,7 @@
 "use client";
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSidebarToggle } from '../../context/SidebarToggleContext';
 import Navbar from './Navbar';
 // import { UserData, MenuItem } from '../../types/interfaces';
@@ -69,8 +69,8 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
   //      console.error('Error fetching user data:', error);
   //    }
   // }; 
-  
-  useEffect(() => {
+  /*
+    useEffect(() => {
     const fetchUserData = async (userId: string) => {
       if (!userId) return;
       try {
@@ -95,6 +95,36 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
       fetchUserData(session.user.id);
     }
   }, [session, setUserInContext, refreshMenu]);
+  */
+ const fetchUserData = useCallback(async (userId: string) => {
+   if (!userId) return;
+   try {
+     const response = await fetch(`/api/usuarios/${userId}`);
+      if (response.ok) {
+        const userData = await response.json();
+        setUserInContext({
+          ...userData,
+          theme: userData.theme,
+          avatar: userData.avatar,
+        });
+        refreshMenu();
+      } else {
+        console.error('Failed to fetch user data');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }, [setUserInContext, refreshMenu]);
+  const hasFetched = useRef(false);//para que se ejecute solo una vez el usaeEffect
+  useEffect(() => {
+    if (
+      session?.user?.id &&
+      !hasFetched.current
+    ) {
+      hasFetched.current = true;
+      fetchUserData(session.user.id);
+    }
+  }, [session, fetchUserData]);
 
   useEffect(() => {
       // Deshabilitar el botón en todas las páginas excepto el Home
