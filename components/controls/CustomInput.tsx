@@ -6,7 +6,7 @@ import './CustomInput.css';
 import { CustomTooltip } from './CustomTooltip';
 import React from 'react';
 import { formatRut } from "@/utils/formatRut";
-import { validateRUT } from "@/utils/validateRUT";
+import { validateRut } from "@/utils/validateRut";
 
 export interface InputProps  extends Partial<FieldProps> {
     /**
@@ -156,7 +156,7 @@ export const CustomInput = ({
     useEffect(() => {
       if (type === 'RUT' && valueInside) {
         // console.log('CustomInput useEffect type',type,valueInside);
-        const isValid= validateRUT(valueInside);
+        const isValid= validateRut(valueInside);
         setRutError(isValid ? null : 'RUT no válido');
       } else {
         setRutError(null);

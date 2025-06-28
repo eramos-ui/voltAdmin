@@ -7,6 +7,7 @@
       "esnext"
     ],
     "typeRoots": ["./node_modules/@types", "./types"],
+    "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -18,8 +19,9 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "experimentalDecorators": true,
+    "experimentalDecorators": true,    
     "emitDecoratorMetadata": true,
+    
     "plugins": [
       {
         "name": "next"

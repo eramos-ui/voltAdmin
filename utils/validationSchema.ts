@@ -1,9 +1,8 @@
 import * as Yup from 'yup';
 import { parse, isDate } from 'date-fns';
 import { FormFieldDFType } from '@/types/interfaceDF';
-import { validateRUT } from '@/utils/validateRUT';
-import { formatRut } from './formatRut';
-import { calculaDVRut } from './calculaDvRut';
+import { validateRut } from '@/utils/validateRut';
+
 
 
 // 🔹 Función para generar validaciones dinámicas con Yup
@@ -64,7 +63,7 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
           "Formato incorrecto de RUT",
           (value) => {
             if (!value) return false;
-            return validateRUT(value); // 👈 tu función booleana
+            return validateRut(value); // 👈 tu función booleana
           }
         )
     }

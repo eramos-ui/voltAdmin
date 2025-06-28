@@ -1,7 +1,7 @@
-export const validateRUT = (value: string) => {
+export const validateRut= (value: string):boolean => {
     const rut = value.replace(/\./g, '').replace('-', '').toUpperCase();
     const body = rut.slice(0, -1);//sin DV
-    // console.log('validateRUT body',body,rut );
+    // console.log('validateRut body',body,rut );
     if (body.length <7 ){
       // return 'RUT inválido. Debe tener mínimo 7 dígitos.';
       return false;
@@ -22,7 +22,7 @@ export const validateRUT = (value: string) => {
     } else {
       expectedDv = mod.toString();
     }
-    // console.log('validateRUT expectedDv',expectedDv,dv);
+    // console.log('validateRut expectedDv',expectedDv,dv);
     if (expectedDv === dv) {
       return true;
     }
