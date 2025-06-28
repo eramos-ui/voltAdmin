@@ -90,8 +90,8 @@ import { EditForm } from '@/components/dynamicForm/EditForm';
       try{
         const res = await fetch(`/api/${apiGetRows}`);
         const data = await res.json();
-        console.log('en useEffect apiGetRows',apiGetRows);
-        console.log('en useEffect rows',data);
+        // console.log('en useEffect apiGetRows',apiGetRows);
+        // console.log('en useEffect rows',data);
         setRows(data);
       } catch (err) {
         if (err instanceof Error) {

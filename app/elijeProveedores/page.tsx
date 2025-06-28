@@ -77,13 +77,15 @@ const ElijeProveedoresPage = () => {
   useEffect(() => {
       const fetchData= async (idTask:number) => {
         try{
-          const userEmail=session?.user.email?session?.user.email:'';
-          if (userEmail)  await loadDataActivityWithFilesAndEmails(idTask, userEmail, setInitialValues);
+          const userEmail=session?.user.email?session?.user.email:'';  
+          const userName=session?.user.name?session?.user.name:'';        
+          if (userEmail)  await loadDataActivityWithFilesAndEmails(idTask, userEmail, userName, setInitialValues);
         }catch (err){
           console.log('error', err);
         }
       }
       setLoading(true);
+      console.log('en useEffect fetchData',idTask, session);
       if (idTask && idTask>0){//revisa si al abrir existe idTask. Esto indica completar proyecto
         fetchData(idTask);
       }

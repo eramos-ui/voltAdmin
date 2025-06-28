@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     //   value: u.user,
     //   label: `${u.name} (${u.user})`
     // }));
-    console.log('en api users/byPerfil usuarios',usuarios);
+    // console.log('en api users/byPerfil usuarios',usuarios);
     return res.status(200).json(usuarios);
   } catch (error) {
     console.error('❌ Error en la consulta de usuarios por perfil:', error);

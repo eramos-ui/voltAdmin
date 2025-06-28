@@ -1,7 +1,7 @@
 import { ActivityEmailFilesType, EmailTemplateType, FilesType, ProveedorType } from "@/types/interfaces";
 import { getUsersFullByPerfil } from "../users/getUsersFullByPerfil";
 
-export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:string,setInitialValues:(x:ActivityEmailFilesType) => void)=>{
+export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:string,userName:string,setInitialValues:(x:ActivityEmailFilesType) => void)=>{
   if (idTask <=0 || email===''){
     return;
   }
@@ -33,18 +33,20 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
 
     const dataEmailTemplates=await responseEmailTemplates.json();//en bodyTemplate de dataEmailTemplates esta lo que se debe mostrar en el email como metadata 
     // console.log(' en loadDataActivity dataEmailTemplates',dataEmailTemplates);
-
-  // const emailTemplatesFull=typeof dataEmailTemplates.bodyTemplate ==='string' ?JSON.parse( dataEmailTemplates.emailTemplate):dataEmailTemplates.emailTemplate;//para llenar el template de email
-  const emailTemplatesFull=dataEmailTemplates;
-  // console.log(' en loadDataActivity emailTemplatesFull',emailTemplatesFull, typeof emailTemplatesFull);
-  
-  const responseProject=await fetch(`/api/projects/${projectActivityData.idProject}`);
-  const dataProject=await responseProject.json();
-  //  console.log(' en loadDataActivity dataProject',dataProject);
-  const responseUploadsFiles=await fetch(`/api/files/by-project?idProject=${dataProject.idProject}`);
-  const dataUploadsFiles=await responseUploadsFiles.json();
-  // console.log(' en loadDataActivity dataUploadsFiles',dataUploadsFiles);
-  const jsFiles=dataUploadsFiles.map((fil:any) => {//transforma el archivo de dataUploadsFiles a jsFiles
+    const responseEmpresa=await fetch(`/api/empresa`);
+    const empresa=await responseEmpresa.json();
+    console.log(' en loadDataActivity empresa',empresa);
+    // const emailTemplatesFull=typeof dataEmailTemplates.bodyTemplate ==='string' ?JSON.parse( dataEmailTemplates.emailTemplate):dataEmailTemplates.emailTemplate;//para llenar el template de email
+    const emailTemplatesFull=dataEmailTemplates;
+    // console.log(' en loadDataActivity emailTemplatesFull',emailTemplatesFull, typeof emailTemplatesFull);
+    
+    const responseProject=await fetch(`/api/projects/${projectActivityData.idProject}`);
+    const dataProject=await responseProject.json();
+    //  console.log(' en loadDataActivity dataProject',dataProject);
+    const responseUploadsFiles=await fetch(`/api/files/by-project?idProject=${dataProject.idProject}`);
+    const dataUploadsFiles=await responseUploadsFiles.json();
+    // console.log(' en loadDataActivity dataUploadsFiles',dataUploadsFiles);
+    const jsFiles=dataUploadsFiles.map((fil:any) => {//transforma el archivo de dataUploadsFiles a jsFiles
     // console.log(' en loadDataActivity fil',fil);
     
     return {//los 2 primeros son para el selector de archivos 
@@ -104,12 +106,12 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
       FechaEntregaTrabajo: fechatermino,
       Observacion: "",
       CotizacionURL: "",
-      NombreContratante: `Felipe Ramos
+      NombreContratante: `${userName}
         Gerente de proyecto
-        EVOLUSOL
-        Generación Eficiente
-        cel: +569 5420 2611
-        felipe.ramos@evolusol.cl`
+        ${empresa.razonSocial}
+        ${empresa.subNombre}
+        cel: ${empresa.phone}
+        ${email}`
       });
       // console.log('placeholders',placeholders);
       return {...proveedor, placeholders, asuntoPlaceholders};
