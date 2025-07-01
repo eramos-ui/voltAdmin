@@ -10,13 +10,14 @@ import { ActivityEmailFilesType,  OptionsSelect } from '@/types/interfaces';
 import { LoadingIndicator } from '../../components/general/LoadingIndicator';
 import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faSave, faCancel } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faSave, faCancel, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { compareTwoObj } from '@/utils/compareTwoObj';
 import { separarCamelPascalCase } from '@/utils/separarCamelPascalCase';
 import { EmailTemplateSelection, PreviewEmail, ProveedorSelection } from './components';
 import { replacePlaceholders } from '@/utils/replacePlaceholders';
 import { SendEmailButton } from './components/SendEmailButton';
 import { sendingEmails } from '../services/projectEmails/sendEmailAndRegister';
+import { ConsultaCotizaciones } from './ConsultaCotizaciones';
 
 const validationSchema = Yup.object({
     proveedoresSelected: Yup.array().min(1, "Debe seleccionar al menos un proveedor"),
@@ -28,8 +29,8 @@ const ElijeProveedoresPage = () => {
     const searchParams                                              = useSearchParams();
     const { data: session, status }                                 = useSession();
     const [ loading, setLoading             ]                       = useState(true);
-    
     const [ sendingEmail, setSendingEmail   ]                       = useState(false);
+    const [ showConsulta, setShowConsulta   ]                       = useState(false);
     const [ proveedoresOptions, setProveedoresOptions ]             = useState<OptionsSelect[]>();
     // const [ proveedorSelectedOptions, setProveedorSelectedOptions ] = useState<OptionsSelect[]>();
     const [ filesOptions, setFilesOptions   ]                       = useState<OptionsSelect[]>();
@@ -187,6 +188,9 @@ const ElijeProveedoresPage = () => {
     const handleSubmit = (values: any) => {//no se ejecuta
         console.log("Formulario enviado con valores:", values);
     };
+    const handleConsultaCotizaciones = () => {
+      console.log('Consultando cotizaciones');
+    };
     const ShowPreviewEmail =() =>{
       const { values, setFieldValue } = useFormikContext<any>();
       // console.log('en ShowPreviewEmail proveedorEdit',proveedorEdit);
@@ -196,6 +200,10 @@ const ElijeProveedoresPage = () => {
     }
     return( // { console.log('JSX AdminActivity proveedorEdit',proveedorEdit, proveedorEdit.length) }  
     <>  
+      { showConsulta ? <ConsultaCotizaciones idProject={initialValues.idProject} idProjectActivity={270} setShowConsulta={setShowConsulta}
+      title={`Cotizaciones enviadas para la actividad ${initialValues.numActividad} ${initialValues.actividad} del proyecto ${initialValues.projectName}`} /> 
+      :
+      (
        <div className="p-4">
        <p className="text-3xl font-bold text-center" > Define proveedores de la actividad {initialValues.numActividad}</p>
        <p  className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`}</p>
@@ -230,13 +238,19 @@ const ElijeProveedoresPage = () => {
             setProveedorEdit('');
           }
          return (
-          <>
+          <>            
             <Form id="emailForm" >
+              <div className="mb-1 justify-center flex">
+                <CustomButton buttonStyle="secondary" size="small"  label="Cotizaciones enviadas" style={{ marginTop:15 , marginLeft:30 }} 
+                  icon={<FontAwesomeIcon icon={faMagnifyingGlass} size="lg" color="white" />} onClick={() => setShowConsulta(true)} 
+                  tooltipContent='Consultar cotizaciones ya enviadas' tooltipPosition='right'
+                />
+              </div>
               <div className="mb-1 flex items-start space-x-2">
                   <div className="w-3/5">
                       <Field name="actividad" type="text" as={CustomInput} label="Descripción de la actividad" placeholder="Ingresa la descripción de la actividad"
-                      error={touched.actividad && errors.actividad ? errors.actividad : undefined} required theme="light" width="100%"
-                      onChange={(e:any) => setFieldValue("actividad", e.target.value)}
+                        error={touched.actividad && errors.actividad ? errors.actividad : undefined} required theme="light" width="80%"
+                        onChange={(e:any) => setFieldValue("actividad", e.target.value)}
                       />
                   </div>
               </div>
@@ -361,13 +375,16 @@ const ElijeProveedoresPage = () => {
           )
          }}
        </Formik>
+       
        <div className="mt-3 flex items-start ">
         <CustomButton buttonStyle="primary" size="small" htmlType="button" label="Volver al página anterior" tooltipContent='Volver a seleccionar otra actividad'
             tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit }
         />
        </div>
-     </div> {/* Fin del renderizado condicional */}
+       </div>
+       )}
     </>
+    
     );
 };
 export default ElijeProveedoresPage;

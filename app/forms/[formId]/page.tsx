@@ -117,25 +117,48 @@ import { EditForm } from '@/components/dynamicForm/EditForm';
     return <LoadingIndicator  message='cargando' />;    
   }
   const handleDelete = (index: number) => {
-    const spFetchSaveGrid=formData?.table.spFetchSaveGrid;           
+    const apiSaveForm=formData?.table.apiSaveForm;           
+   
     const updateData = async () => {
       try {
-        const response = await saveFormData(
-          spFetchSaveGrid!,
-          { ...initialValues.items[index], action:'delete',idUserModification: session?.user.id },
-          formatRut,//va la función de formatRut para que se graben los ruts est  ándar
-        );
-        if (response.success) {
-          alert("Item eliminado exitosamente");
-          // setTimeout(handleClose, 3000);
+        const body={...rows[index], action:'delete',idUserModification: session?.user.id};
+        console.log('en handleDelete body',body,apiSaveForm);
+        const response = await fetch(`/api/${apiSaveForm}`, {
+        method: 'POST',    
+        body: JSON.stringify(body),
+        });
+        const result=await response.json();
+        console.log('en handleDelete response',response.ok, result);
+        if (response.ok) {
+          alert("Eliminado exitosamente");
+      //     // setTimeout(handleClose, 3000);
+      //     onClose();
         } else {
-          //console.log('en FormPage grabar response',response.error);
-          alert(`${response.error.error}, favor comuníquelo al administrador del sistema.`);          
+          if (response.status === 400) {
+            alert(`${result.error}`);     
+          }else{
+            console.log('en FormPage grabar response',result.error);
+            alert(`${result.error}, favor comuníquelo al administrador del sistema.`);    
+          }
         }
-      } catch (error) {
-        alert(`${error}, favor comuníquelo al administrador del sistema.`);
-      }
-   };
+        // const response = await saveFormData(
+        //   apiSaveForm!,
+        //   { ...rows[index], action:'delete',idUserModification: session?.user.id },
+        //   formatRut,//va la función de formatRut para que se graben los ruts estándar
+        // );
+      //   if (response.success) {
+      //     alert("Item eliminado exitosamente");
+      //     // setTimeout(handleClose, 3000);
+      //   } else {
+      //     //console.log('en FormPage grabar response',response.error);
+      //     alert(`${response.error.error}, favor comuníquelo al administrador del sistema.`);          
+      //   }
+       } catch (error) {
+         alert(`${error}, favor comuníquelo al administrador del sistema.`);
+       }
+    };
+   console.log('en handleDelete index',index,apiSaveForm!); 
+   console.log('en handleDelete rows',rows[index]);
    updateData();
    window.location.reload();//recarga la página
   };

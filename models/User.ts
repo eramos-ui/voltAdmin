@@ -70,13 +70,13 @@ const userSchema = new Schema({
     valid:{
         type:String,
         required:true,
-        default:'Vigente'
-    },
-    validDate:{
-        type:Date,
-        required:true,
         default:'vigente'
     },
+    // validDate:{
+    //     type:Date,
+    //     required:true,
+    //     default:'vigente'
+    // },
     system: {
         type: String,
         required: true
