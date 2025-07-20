@@ -12,6 +12,7 @@ import { Footer } from './Footer';
 import { LoadingIndicator } from './LoadingIndicator'; 
 // import { fetchUserMenu } from '@/lib/users/fetchUserMenu';
 import { useMenu } from '@/context/MenuContext';
+import { connectDB } from '@/lib/db';
 
 const AppContent = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status }                   = useSession();
@@ -98,8 +99,9 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
   */
  const fetchUserData = useCallback(async (userId: string) => {
    if (!userId) return;
+  //  console.log('🔒 En AppContent fetchUserData userId:', userId);
    try {
-     const response = await fetch(`/api/usuarios/${userId}`);
+      const response = await fetch(`/api/usuarios/${userId}`);
       if (response.ok) {
         const userData = await response.json();
         setUserInContext({

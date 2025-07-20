@@ -6,7 +6,7 @@ import { getUserVigenteById } from '@/app/services/users/getUserVigenteById';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
-
+  // console.log('🔒 En api/usuarios/[id].ts id:', id);
   await connectDB();
 
   const user = await getUserVigenteById(id as string);
