@@ -1,6 +1,5 @@
 "use client";
 
-
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, Suspense  } from 'react';
@@ -15,7 +14,6 @@ import { faFloppyDisk, faQuestion, faSignOutAlt } from '@fortawesome/free-solid-
 import { numeroATexto } from '@/utils/numeroATexto';
 import { HelperPage } from '@/components/general/Helper';
 import { ModificarProveedorPage } from '@/components/ModificarProveedor';
-import { MongoDBCollectionNamespace } from 'mongodb';
 import { LoadingIndicator } from '@/components/general/LoadingIndicator';
 
 export default function CotizarProveedorPage() {

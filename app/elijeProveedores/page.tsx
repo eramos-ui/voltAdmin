@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams  } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Field, Form, Formik, useFormikContext  } from 'formik';
 import * as Yup from "yup";;
@@ -32,11 +32,10 @@ const ElijeProveedoresPage = () => {
     const [ sendingEmail, setSendingEmail   ]                       = useState(false);
     const [ showConsulta, setShowConsulta   ]                       = useState(false);
     const [ proveedoresOptions, setProveedoresOptions ]             = useState<OptionsSelect[]>();
-    // const [ proveedorSelectedOptions, setProveedorSelectedOptions ] = useState<OptionsSelect[]>();
     const [ filesOptions, setFilesOptions   ]                       = useState<OptionsSelect[]>();
     const [ emailOptions, setEmailOptions   ]                       = useState<OptionsSelect[]>();
     const [ editableBody, setEditableBody   ]                       = useState("");
-    const [ editableAsunto, setEditableAsunto   ]                   = useState("");
+    // const [ editableAsunto, setEditableAsunto   ]                   = useState("");
     const idTask                                                    = Number(searchParams?.get("idTask"));
     const [ proveedorEdit, setProveedorEdit ]                       = useState<string>('');//fuera de formik
     const [ placeholders, setPlaceholders   ]                       = useState<Record<string, string>>({ });//fuera de formik
@@ -47,13 +46,9 @@ const ElijeProveedoresPage = () => {
         ubicacionPanel:'',  nroInstalaciones:1, tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, tipoDocumento:'ACTIVIDAD',
         jsFiles:[],emailTemplate:[], selectedTemplate:null,proveedores:[], anexosSelected:[], proveedoresSelected:[],selectedTemplateId:0,
         idProcessInstance:0, idActivity:0, FechaEntregaTrabajo:'', PlazoRespuestaCotizacion:'',attributes:[],
-        //proveedorEditing:'', placeholder:{}, asuntoPlaceholder:{}, 
         editableBody:'', editableAsunto:''
      }
     );
-    //const [ formikValues, setFormikValues ]                         = useState<typeof initialValues>(initialValues); //para tener los values fuera de Formik
-    //const formikValuesRef = useRef<typeof initialValues>(initialValues);//aquí están los datos fuera de Formik
-  //  console.log('en ElijeProveedoresPage',idTask);
   const SyncFields = () => {
     const { values, setFieldValue } = useFormikContext<any>();  
     useEffect(() => {
@@ -68,7 +63,6 @@ const ElijeProveedoresPage = () => {
           } 
         ).filter((p:any) => !p );
         if (proveedoresSelected && proveedoresSelected.length>0){            
-          // setProveedorSelectedOptions(values.proveedoresSelected as OptionsSelect[]);
           setFieldValue("proveedoresSelected", proveedoresSelected);
         }
       }        
@@ -98,7 +92,6 @@ const ElijeProveedoresPage = () => {
   },[initialValues.idProjectActivity]);
      useEffect(()=>{
       if (initialValues.proveedores && initialValues.proveedores.length>0 ){
-        console.log('en useEffect initialValues.proveedores',initialValues.proveedores);
         setProveedoresOptions(initialValues.proveedores.map( (proveedor: any) =>  { return { label:proveedor.name, value:proveedor._id.toString() }}));
       }
      },[initialValues.proveedores]);
@@ -120,18 +113,14 @@ const ElijeProveedoresPage = () => {
      if (loading) {// Calculamos valores y renderizamos el loading fuera del return
        return <LoadingIndicator message={'cargando'} />;
      }
-     
      if (sendingEmail) {
        return <LoadingIndicator message={'enviando correos'} />;
      }
     const handlePlaceholderChange=( proveedorId:any,proveedores:any) =>{// 📌 Función para actualizar los valores de los placeholders dada la selección de un proveedor a editar
-      // console.log('handlePlaceholderChange',proveedorId);
       const id=proveedorId;
        if (proveedores && id !== proveedorEdit.toString()){//proveedores tiene la actual versión de los proveedores (placeholders)
         const newProveedores= proveedores.map( (proveedor:any) => proveedor.id === id ? {...proveedor, placeholders }:proveedor );  
-        // console.log('newProveedores',newProveedores);
         const sinCambios=compareTwoObj(proveedores,newProveedores);//si no hubo cambios
-        // console.log('sinCambios',sinCambios);
         if (!sinCambios){
           let confirmed=true;
           confirmed = window.confirm(String.fromCodePoint(0x26A0) +" Al cambiar de proveedor, perderá lo realizado. Para guardar presione aquí <cancelar> y luego, <guardar cambios> " );
@@ -139,7 +128,6 @@ const ElijeProveedoresPage = () => {
         }  
        }
        const found=proveedores?.filter((obj:any) => obj._id.toString() === id)[0];      
-        // console.log('handlePlaceholderChange found',found);
        if (found){
         setProveedorEdit(id);      
         const newPlaceholders=found.placeholders;
@@ -163,11 +151,8 @@ const ElijeProveedoresPage = () => {
      }
      // 📌 Función para actualizar los valores del email, por ahora sólo se puede cambiar Observacion y las fechas de entrega del trabajo y de respuesta de cotización
      const handleTemplateChange = (values:any,key: string, value: string) => {//placeholders es Json con los metadatos, aquí los actualiza en el preview email
-      //  console.log('handleTemplateChange',values,key,value);
-      //  console.log('handleTemplateChange placeholders',placeholders);
         setPlaceholders((prev) => {
           const newPlaceholders = { ...prev, [key]: value };
-          // console.log('handleTemplateChange newPlaceholders',newPlaceholders);
           if (values.selectedTemplate) {// 📌 Actualiza el editableBody cada vez que cambian los placeholders
             setEditableBody(replacePlaceholders(values.selectedTemplate.bodyTemplate, newPlaceholders));
           }
@@ -177,7 +162,6 @@ const ElijeProveedoresPage = () => {
      const handleSendEmail =  async (vals: ActivityEmailFilesType) => {// 📌 Función para "enviar" el email      
       if (!vals.selectedTemplate) return alert("Selecciona una plantilla antes de enviar.");
       if (!vals.proveedoresSelected || vals.proveedoresSelected.length === 0 || !vals.proveedores || vals.proveedores.length === 0) return alert("Seleccione proveedores a enviar correo.");
-      console.log('handleSendEmail vals',vals);    
       setSendingEmail(true);
       const finListaProveedores='completada';//el otro es 'pendiente'
       const userEmail=(session?.user.email)?session?.user.email:'';
@@ -188,15 +172,13 @@ const ElijeProveedoresPage = () => {
     const handleSubmit = (values: any) => {//no se ejecuta
         console.log("Formulario enviado con valores:", values);
     };
-    const handleConsultaCotizaciones = () => {
-      console.log('Consultando cotizaciones');
-    };
+    // const handleConsultaCotizaciones = () => {
+    //   console.log('Consultando cotizaciones');
+    // };
     const ShowPreviewEmail =() =>{
       const { values, setFieldValue } = useFormikContext<any>();
-      // console.log('en ShowPreviewEmail proveedorEdit',proveedorEdit);
       if (proveedorEdit.length ===0) return null;
       return  <PreviewEmail editableBody={editableBody} values={values} placeholders={placeholders}  asuntoPlaceholders={asuntoPlaceholders} /> 
-      // return <PreviewEmail editableBody={values.editableBody} values={values} placeholders={values.placeholder}  asuntoPlaceholders={values.asuntoPlaceholder} /> 
     }
     return( // { console.log('JSX AdminActivity proveedorEdit',proveedorEdit, proveedorEdit.length) }  
     <>  
@@ -209,14 +191,10 @@ const ElijeProveedoresPage = () => {
        <p  className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`}</p>
        <Formik initialValues={initialValues} validationSchema={validationSchema} enableReinitialize  onSubmit={handleSubmit} >
          {({ values, errors, touched, setFieldValue }) => {//, handleSubmit ejecución manual de handleSubmit          
-          // useEffect(() => {  console.log('useEffect values',values); }, [values]);
           const handleSaveEditValue=() =>{//para guardar el template editado 
-            // console.log('handleSaveEditValue',values.proveedores,proveedorEdit);
             if (values.proveedores){
               const newProveedores= values.proveedores.map( (proveedor:any) => proveedor._id.toString() === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
-              // console.log('handleSaveEditValue newProveedores',newProveedores);
               const sinCambios=compareTwoObj(values.proveedores,newProveedores);//si hubo cambios
-              // console.log('andleSaveEditValue sinCambios',sinCambios)
                if (!sinCambios){  
                 setFieldValue("proveedores", newProveedores); setProveedorEdit('');
                 setTimeout(() => { window.confirm(String.fromCodePoint(0x2705)+"Modificaciones guardadas"); window.focus();}, 0);
@@ -374,8 +352,7 @@ const ElijeProveedoresPage = () => {
           </>
           )
          }}
-       </Formik>
-       
+       </Formik>       
        <div className="mt-3 flex items-start ">
         <CustomButton buttonStyle="primary" size="small" htmlType="button" label="Volver al página anterior" tooltipContent='Volver a seleccionar otra actividad'
             tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={ handleExit }
@@ -384,7 +361,6 @@ const ElijeProveedoresPage = () => {
        </div>
        )}
     </>
-    
     );
 };
 export default ElijeProveedoresPage;
