@@ -6,11 +6,9 @@ import { connectGridFS } from '@/lib/gridfs';
 import { upsertProject } from '@/lib/projectManager/upsertProject';
 import { uploadFiles } from '@/lib/projectManager/uploadFiles';
 import { createInitialWorkflowData } from '@/app/services/processEngine/createInitialWorkflow';
-//import mongoose from 'mongoose';
 import { getDiagramByIdProcess, getCompletedTaskKeys, finishTask, getContextByIdTask } from '@/app/services/processEngine';
-import { getActivityPropertiesByIdTask } from '@/app/services/processEngine/getActivityPropertiesByIdTask';
 
-export const config = {
+export const config = { 
   api: {
     bodyParser: false,
   },
@@ -38,7 +36,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // session.startTransaction();
     try {
       const values = fields.values ? JSON.parse(fields.values[0]) : {};
-      //console.log('en saveProject values',values);
+      console.log('***en saveProject values',values);
       const state = fields.state?.[0] || '';
       // const userId = values.userId;
       const email = values.email;
@@ -53,7 +51,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       let currentContext: Record<string, string> = {};
       //  console.log('en saveProject values',values,idActivity);
 
-      let { idProject } = values;
+      let { idProject } = values; 
       const isNew = !idProject || idProject === 0;
  
       if (isNew) {
@@ -67,6 +65,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         values.idProject = idProject;
       }
       // 1️⃣ Actualizar o crear el documento de proyecto
+      // console.log('values en saveProject ',values)
       const { activities, ...generalData } = values;
       await upsertProject(values, session);
 
@@ -164,212 +163,3 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export default handler;
-
-
-// import { NextApiRequest, NextApiResponse } from 'next'; // pages/api/saveProject.ts
-// import formidable, { File } from 'formidable';
-// import fs from 'fs';
-// import { isEqual, omit } from 'lodash';
-// import { connectDB } from '@/lib/db';
-// import { connectGridFS, gfs } from '@/lib/gridfs';
-// import { Project } from '@/models/Project';
-// import { Counter } from '@/models/Counter';
-// import { createInitialWorkflowData } from '@/lib/workflow/createInitialWorkflow';
-
-
-// export const config = {
-//   api: {
-//     bodyParser: false,
-//   },
-// };
-
-// async function isFileAlreadyUploaded(filename: string, metadata: any): Promise<boolean> {//para evitar subir archivos repetidos
-//   const existing = await gfs.find({
-//     filename,
-//     'metadata.idProject': metadata.idProject,
-//     'metadata.gridName': metadata.gridName || metadata.fileClass,
-//     'metadata.userId': metadata.userId,
-//   }).toArray();
-
-//   return existing.length > 0;
-// }
-
-// const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-//   console.log('saveProject');
-//   if (req.method !== 'POST') {
-//     return res.status(405).json({ error: 'Método no permitido' });
-//   }
-
-//   await connectDB();
-//   await connectGridFS();
-  
-//   const form = formidable({ multiples: true });
-
-//   form.parse(req, async (err, fields, files) => {
-//     if (err) {
-//       console.error('Error al parsear el formulario:', err);
-//       return res.status(500).json({ error: 'Error al procesar archivos' });
-//     }
-
-//     try {
-//       const values = fields.values ? JSON.parse(fields.values[0]) : {};
-//       const state = fields.state?.[0] || '';
-//       const userId = values.userId;
-//       const userModification = values.userModification;
-//       const userName = values.userName;
-//       const ubicacionPanel = values.ubicacionPanel;
-
-//       // Generar idProject si no existe
-//       let { idProject } = values;
-//       const isNew = !idProject || idProject === 0;
-
-//       if (isNew) {
-//         const counter = await Counter.findByIdAndUpdate(
-//           { _id: 'project' },
-//           { $inc: { seq: 1 } },
-//           { new: true, upsert: true }
-//         );
-//         idProject = counter.seq;
-//         values.idProject = idProject;
-//       }
-
-//       const {  activities, ...generalData } = values;
-
-//       // === Procesar kmlFile ===
-//       const kmlFileArray = files.kmlFile;
-//       if (kmlFileArray && kmlFileArray.length > 0) {
-//         const kmlFile = kmlFileArray[0];
-//         const content = fs.readFileSync(kmlFile.filepath, 'utf-8');
-//         generalData.kmlFileContent = content;
-//       }
-
-//       // === Procesar excelFile (guardar en GridFS) ===
-//       const excelFileArray = files.excelFile;
-//       if (excelFileArray && excelFileArray.length > 0) {
-//         const excelFile = excelFileArray[0];
-//         const alreadyExists = await isFileAlreadyUploaded(excelFile.originalFilename || 'archivo.xlsx', {
-//           idProject,
-//           userId,
-//           fileClass: 'Activities',
-//           state
-//         });
-
-//         if (!alreadyExists) {
-//           const readStream = fs.createReadStream(excelFile.filepath);
-//           const uploadStream = gfs.openUploadStream(excelFile.originalFilename || 'archivo.xlsx', {
-//             metadata: {
-//               idProject,
-//               userId,
-//               fileClass: 'Activities',
-//               state
-//             }
-//           });
-//           await new Promise((resolve, reject) => {
-//             readStream.pipe(uploadStream).on('error', reject).on('finish', () => {
-//               generalData.excelFileId = uploadStream.id;
-//               resolve(null);
-//             });
-//           });
-//         }
-//       }
-
-//       // Procesar archivos en grillas y almacenarlos en GridFS
-//       const fileKeys = Object.keys(files).filter(k => !['kmlFile', 'excelFile'].includes(k));
-
-//       for (const key of fileKeys) {
-//         const fileArray = files[key];
-//         if (fileArray && fileArray.length > 0) {
-//           const file = fileArray[0];
-
-//           const metadata = {
-//             idProject: values.idProject ?? 'sin_idProject',
-//             gridName: key,
-//             nroEmpalme: values.nroEmpalme ?? 'sin_nroEmpalme',
-//             nroInstalacion: values.nroInstalacion ?? 'sin_nroInstalacion',
-//             nroAgua: values.nroAgua ?? 'sin_nroAgua',
-//             userId: userId ?? 'sin_userId',
-//             state: state ?? 'sin_state',
-//           };
-
-//           const alreadyExists = await isFileAlreadyUploaded(file.originalFilename || 'archivo', metadata);
-//           if (alreadyExists) {
-//             console.log(`🟡 Archivo ${file.originalFilename} ya existe. Se omite carga.`);
-//             continue;
-//           }
-
-//           const readStream = fs.createReadStream(file.filepath);
-//           const uploadStream = gfs.openUploadStream(file.originalFilename || 'archivo', {
-//             metadata
-//           });
-//           await new Promise((resolve, reject) => {
-//             readStream.pipe(uploadStream).on('error', reject).on('finish', resolve);
-//           });
-//         }
-//       }
-
-//       const currentProjectDoc = await Project.findOne({ idProject }).lean() as any;//lee la versión actual del proyecto si la hay
-//        // === Actualizar información general ===
-//        if (!currentProjectDoc) { // Crear nuevo proyecto si no existe
-//         await Project.create({ idProject, ...generalData, activities });
-           
-//           // Crear Process y Task inicial asociadas
-//           await createInitialWorkflowData({
-//             idProcess: 2,
-//             processName: 'Crear proyecto',
-//             idActivity: 208,
-//             tipoDocumento: 'PROYECTO',
-//             nroDocumento: idProject,
-//             attributes: {
-//               proyectoCompletado:'pendiente',
-//               ubicacionPanel,
-//               usuarioCreador: userModification//el email del usuario que crea el proyecto
-//             },
-//             infotodo: `Responsable: ${userName}, proyecto N° ${idProject} - Nombre proyecto: ${generalData.projectName}`,
-//             userModification,
-//             nameActivity: 'Completar proyecto'
-//           });
-//        } else {
-//         const { activities: _ignore, _id, __v, createdAt, updatedAt, ...currentGeneral } = currentProjectDoc;
-//         const currentActivities = currentProjectDoc.activities ?? [];
-
-//         const activitiesChanged = !isEqual(currentActivities, activities);
-//         const camposIgnorados = ['_id', '__v', 'createdAt', 'updatedAt', 'kmlFileContent'];
-
-//         const generalChanged = !isEqual(
-//           omit(currentGeneral, camposIgnorados),
-//           omit(generalData, camposIgnorados)
-//         );
-        
-        
-//         if (generalChanged) console.log('🟡 Cambios detectados en datos generales');
-//         if (activitiesChanged) console.log('🟠 Cambios detectados en actividades');
-
-//         if (generalChanged) {
-//           console.log('🔍 Ejecutando findOneAndUpdate para generalData');
-//           await Project.findOneAndUpdate(
-//             { idProject },
-//             { ...generalData },
-//             { new: true }
-//           );
-//         }
-
-//       // === Actualizar actividades ===
-//       if (activitiesChanged) {
-//         await Project.findOneAndUpdate(
-//           { idProject },
-//           { activities },
-//           { new: true }
-//         );
-//       }
-//       }
-
-//       res.status(200).json({ message: 'Proyecto y archivos guardados con éxito' });
-//     } catch (error) {
-//       console.error('❌ Error al guardar en MongoDB:', error);
-//       res.status(500).json({ error: 'Error al guardar proyecto' });
-//     }
-//   });
-// };
-
-// export default handler;
-

@@ -81,7 +81,7 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    role: {
+    perfil: {//era role
         type: String,
         required: true
     },

@@ -14,10 +14,10 @@ interface LocationFormProps {
 }
 export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, touched }) => {
   const { values, setFieldValue } = useFormikContext<ProjectFormValuesType>(); // ✅ Especifica el tipo // Hook de Formik para manejar valores
-  const [ regionSelected, setRegionSelected ] =useState<number>(0);
+  // const [ regionSelected, setRegionSelected ] =useState<number>(0);
   // const [ comunaSelected, setComunaSelected ] =useState<number>(0);
   const [ comunasPorRegion, setComunasPorRegion ] = useState<OptionsSelect[]>(); 
-  // console.log('En LocationForm regiones', regiones);
+  // console.log('En LocationForm values', values);
   // useEffect(() => {
   //   console.log('LocationForm useEffect comunasPorRegion', comunasPorRegion);
   // }, [comunasPorRegion]);
@@ -26,57 +26,50 @@ export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, t
     if (!res.ok) throw new Error('Error al cargar comunas');
     return await res.json();
    };
+
    useEffect(() => {
-      if (regionSelected) {
-        fetchComunas(regionSelected).then(setComunasPorRegion);
-        // console.log('En LocationForm comunasPorRegion', comunasPorRegion);
-      }
-   }, [regionSelected]);
+     if (values.idRegion>0) {
+       fetchComunas(values.idRegion).then(setComunasPorRegion);
+       // console.log('En LocationForm comunasPorRegion', comunasPorRegion);
+     }
+  }, [values.idRegion]);
   return (
     <div className="mb-1 flex items-start space-x-2">
        <div className="w-2/6">
-        <Field name="region">
-          {({ field, form }: any) => {
-            return (
-            <CustomSelect
-                name='region'
-                label="Región"
-                options={regiones}
-                placeholder="Seleccione una región"
-                required
-                multiple={false}
-                theme="light"
-                captionPosition="top"
-                style={{ marginBottom: "1rem" }}
-                width="100%"
-                error={touched.region && errors.region ? errors.region : undefined}
-                {...field}
-                onChange={(value:number) => {
-                  // console.log('en LocationFormProps onChange value', value);  
-                  const regionValue:number = value;
-                  form.setFieldValue("region", regionValue);
-                  setRegionSelected(regionValue); // ✅ Asegura que siempre sea un string
-                  form.setFieldValue("comuna", 0); // 🔹 Reinicia comuna cuando cambia región
-                }}
-            />
-            )
-          }}
-        </Field>
-        {/* {errors.region && touched.region && <p className="text-red-500 text-sm">{errors.region}</p>} */}
+       <Field
+         as={CustomSelect}
+         label="Región"
+         name='idRegion'
+         options={regiones  || []}
+         placeholder="Seleccione una región"
+         required
+         multiple={false}
+         theme="light"
+         captionPosition="top"
+         width="100%"
+         value={values.idRegion}
+         onChange={(value:number) => {
+          setFieldValue('idRegion',Number(value));  
+        }}
+      />
       </div>
       <div className="w-1/6">
-      {/* {comunasPorRegion && ( */}
         <Field
           as={CustomSelect}
           label="Comuna"
-          name='comuna'
-          options={comunasPorRegion || []}
-          placeholder="Seleccione la comuna"
-          disabled={!regionSelected}//para que ocupe el espacio de la comuna aunque no haya comuna
-          width="100%"
+          name='idComuna'
+          options={comunasPorRegion  || []}
+          placeholder="Seleccione una comuna"
           required
+          multiple={false}
+          theme="light"
+          captionPosition="top"
+          width="100%"
+          value={values.idComuna}
+          onChange={(value:number) => {
+            setFieldValue('idComuna',Number(value));  
+          }}
         />
-      {/* )} */}
       </div>
       <div className="w-3/6">
         <Field

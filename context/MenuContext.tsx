@@ -26,13 +26,17 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserData | null>(null);
   // console.log('en MenuProvider user',user);
   const refreshMenu = () => {
-    if (user?.email && user?.role && user?.roleswkf) {
-      fetchUserMenu(user.email, user.role, user.roleswkf)
+    // console.log('en refreshMenu user',user)
+    // if (user?.email && user?.role && user?.roleswkf) {
+      if (user?.email && user?.perfil && user?.roleswkf) {//usé perfil y no role
+      fetchUserMenu(user.email, user.perfil, user.roleswkf)
         .then(setMenuData)
         .catch(console.error);
     }
   };
+
   useEffect(() => {
+    // console.log('en MenuContext useEffect user', user)
     refreshMenu(); // cargar cuando se setea el usuario
   }, [user]);
   return (

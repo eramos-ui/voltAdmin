@@ -17,6 +17,7 @@ export interface UserData {
   updateAt?:string;  
   state?:string;
   role?:string;
+  perfil?:string; //agregado
   roleperfil?:string;
   
 }
@@ -324,8 +325,8 @@ export interface SubMenuItem {
   }
   export interface ProjectFormValuesType {
     projectName: string;
-    region:number;
-    comuna:number;
+    idRegion:number;
+    idComuna:number;
     direccion: string;
     ubicacionPanel: string;
     tipoTerreno: string;

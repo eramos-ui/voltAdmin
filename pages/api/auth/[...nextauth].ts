@@ -21,9 +21,9 @@ export const authOptions: AuthOptions = {
       //cuando es Credentials interna aquí se ejecuta primero
       async authorize(credentials) {
         if (!credentials) return null;
-        // console.log('🔒 En auth/[...nextauth]-authorize credentials:', credentials);
-       //console.log('**credentials.email:', credentials.email);
-       const user=await getUserVigenteByEmail(credentials.email);
+        console.log('🔒 En auth/[...nextauth]-authorize credentials:', credentials.email);
+        console.log('**credentials.email:', credentials.email);
+        const user=await getUserVigenteByEmail(credentials.email);
 
        if (!user) return null;
         // console.log('🔒 En auth/[...nextauth]-getUserVigente user:', user);      
@@ -62,8 +62,10 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async signIn({ user }: { user: any }) {
+      console.log("Iniciando authorize");
+      console.log('🔑 Usuario busca:',user);
       const userInDb=await getUserVigenteByEmail(user.email);
-      //console.log('🔑 Usuario encontrado:', userInDb);
+       console.log('🔑 Usuario encontrado:', userInDb.email,userInDb.name);
       return !!userInDb;
     },
     async session({ session, token }: { session: Session, token: any }) {

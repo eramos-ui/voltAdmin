@@ -5,7 +5,7 @@ import { Task } from '@/models/Task';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, perfil, roles } = req.query;
-  // console.log('en API user_menu email',email,perfil,roles);
+   console.log('en API user_menu email',email,perfil,roles);
   if (!email || !perfil || !roles || typeof email !== 'string' || typeof perfil !== 'string') {
     return res.status(400).json({ error: 'Parámetros requeridos: email, perfil, roles' });
   }

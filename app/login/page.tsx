@@ -68,7 +68,7 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
                 <FontAwesomeIcon icon={faSignInAlt} className="mr-1" />
                 {labels.login.botonLogin}
               </button>
-              <div className="my-4 text-center text-gray-600">{labels.login.labelOpcion}</div>
+              {/* <div className="my-4 text-center text-gray-600">{labels.login.labelOpcion}</div>
               <button
                 onClick={() => handleSocialLogin('google')}
                 className="w-full bg-white text-black border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 mb-4 flex items-center justify-center"
@@ -98,7 +98,7 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
                   />
                 </svg>
                 {labels.login.botonGoogle}
-              </button>
+              </button> */}
               <p 
                 className="text-blue-500 hover:underline cursor-pointer"
                 onClick={handleRegister}

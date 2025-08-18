@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { useField, useFormikContext, FormikContextType, FormikValues} from 'formik';
+import React, { useState, useMemo } from 'react';
+import { useField } from 'formik';
 import './CustomSelect.css';
 
 export interface CustomSelectProps {
@@ -20,6 +20,8 @@ export interface CustomSelectProps {
   */  
   value?: string | string[]; // Puede ser string o array de strings si es múltiple es un array de los
   style?: React.CSSProperties;
+  maxHeight?: string;
+  overflowY?: 'auto' | 'scroll' | 'hidden' | 'visible';
   width?: string ; 
   onChange?: (value: string | string[]) => void; // Acepta string o array de strings
 
@@ -30,124 +32,64 @@ export interface CustomSelectProps {
   captionPosition?: 'top' | 'left';
   id?: string;
   enabled?:boolean;
+  visible?:boolean;
   // dependentValue?: any;//dato para select anidado
 }
-
-// Hook personalizado que maneja de forma segura useField
-const useSafeField = (name?: string) => {
-  // ✅ Siempre pasamos un nombre seguro a `useField()`
-  const safeName = name ?? "__unused_field__"; // Un nombre ficticio que no afectará el formulario
-  
-  return useField(safeName);
+export const CustomSelect: React.FC<CustomSelectProps> = (props) => {
+  if (props.name) {
+    return <CustomSelectWithFormik {...(props as Required<CustomSelectProps>)} />;
+  } else {
+    return <CustomSelectStandalone {...props} />;
+  }
 };
 
-
-// const useSafeField = (name?: string) => {
-//   // Si no hay name, devolvemos valores por defecto
-//   if (!name) {
-//     return [
-//       { value: undefined, onChange: () => {}, onBlur: () => {} },
-//       { touched: false, error: undefined }
-//     ];
-//   }
-  
-//   // Si hay name, usamos useField
-//   return useField(name);
-// };
-
-export const CustomSelect: React.FC<CustomSelectProps> = ({
-  label,
-  name,
-  options,
-  value,
-  style, 
-  width='100%',
-  onChange,
-  placeholder = 'Seleccione una opción',
-  required = false,
-  theme = 'light',
-  multiple = false,
-  captionPosition = 'top',
-  id,
-  enabled=true,
-  // dependentValue,
+const CustomSelectWithFormik: React.FC<Required<CustomSelectProps>> = ({
+  label, name, options, placeholder = 'Seleccione una opción', style,maxHeight='150px',overflowY='auto',
+  width = '100%', required = false, theme = 'light', multiple = false,
+  captionPosition = 'top', id, enabled = true, visible = true
 }) => {
-  // Usamos el hook personalizado que siempre se ejecuta
-  const [field, meta] = useSafeField(name);
-  // console.log('CustomSelect field',field,name);
-  // Siempre inicializamos useFormikContext
-  const formik = useFormikContext<FormikContextType<FormikValues>>() || { 
-    handleChange: () => {}, 
-    setFieldValue: () => {} 
-  };
-  
-  // El valor seleccionado depende de si estamos usando Formik o no
-  const selectedValue = useMemo(() => {
-    return name ? field.value ?? (multiple ? [] : "") : value ?? (multiple ? [] : "");
-  }, [name, field.value, value, multiple]);
-  // const selectedValue = name 
-  //   ? field.value ?? (multiple ? [] : "") 
-  //   : value ?? (multiple ? [] : "");
-  
-  // Estado local para el valor seleccionado
-  const [selectedInside, setSelectedInside] = useState<string | string[]>(
-    selectedValue || (multiple ? [] : "")
-  );
-  
-  // Actualizar el estado interno cuando cambia el valor externo
-  // useEffect(() => {
-  //   setSelectedInside(selectedValue);
-  // }, [selectedValue]);
-  
-  // Manejador para selección múltiple (checkboxes)
+  const [field, meta] = useField(name);
+  const selectedValue = useMemo(() => field.value ?? (multiple ? [] : ''), [field.value, multiple]);
+  const [selectedInside, setSelectedInside] = useState<string | string[]>(selectedValue);
+
+  if (!visible) return null;
+
   const handleCheckboxChange = (checkedValue: string | number) => {
-    let updatedValues: string[];
-    
+    let updatedValues: string[] = [];
+
     if (Array.isArray(selectedValue)) {
       if (selectedValue.includes(checkedValue)) {
-        updatedValues = selectedValue.filter(val => val !== checkedValue); // Quitar selección
+        updatedValues = selectedValue.filter((val) => val !== checkedValue);
       } else {
-        updatedValues = [...selectedValue, checkedValue]; // Agregar selección
+        updatedValues = [...selectedValue, String(checkedValue)];
       }
     } else {
       updatedValues = [String(checkedValue)];
     }
 
-    // Actualizar Formik si el componente está dentro de un formulario Formik
-    if (name) {
-      formik.setFieldValue(name, updatedValues);
-    }
-    
-    // Notificar el cambio al padre (si `onChange` está definido)
-    if (onChange && onChange !== formik.handleChange) {
-      onChange(updatedValues);
-    }
+    field.onChange({ target: { name, value: updatedValues } });
   };
-  // useEffect(()=>{
-  //   console.log('CustomSelect selectedValue',selectedValue);
-  // },[selectedValue]);
-  // Manejador de cambio para selección única
+
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newValue = event.target.value;
-    
     setSelectedInside(newValue);
-    
-    if (name) {
-      formik.setFieldValue(name, newValue);
-    }
-    
-    if (onChange) {
-      onChange(newValue);
-    }
+    field.onChange({ target: { name, value: newValue } });
   };
 
   return (
     <div className={`custom-select-container ${theme} ${captionPosition}`}>
-      <label className={`custom-select-label ${captionPosition}` } >
+      <label className={`custom-select-label ${captionPosition}`} style={style}>
         {label} {required && '*'}
       </label>
-      {multiple ? (
-        <div className="custom-multiple-select" style={{ ...style, width }}>
+      {multiple ? (//en style podría venir el maxHeight y el overflowY
+        <div className="custom-multiple-select" 
+        style={{
+          ...style,
+          width,
+          ...(maxHeight ? { maxHeight } : {}),
+          ...(overflowY ? { overflowY } : {}),
+        }}
+        >
           {options.map((option) => (
             <label key={option.value} className="custom-option">
               <input
@@ -161,7 +103,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         </div>
       ) : (
         <select
-          {...(name ? field : {})} // Solo pasamos field si name está definido
+          {...field}
           id={id}
           name={name}
           value={selectedInside as string}
@@ -169,17 +111,98 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           className="custom-select"
           style={{ ...style, width }}
           disabled={!enabled}
+          required={required}
         >
           <option value="">{placeholder}</option>
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option key={option.value} value={String(option.value)}>
               {option.label}
             </option>
           ))}
         </select>
       )}
-      {/* Mostrar error si hay un error en meta */}
-      {meta.error && <div className="error-message">{meta.error}</div>}
+      {/* {meta?.touched && meta?.error && (
+        <div className="text-red-500 text-sm mt-1">{meta.error}</div>
+      )} */}
+    </div>
+  );
+};
+const CustomSelectStandalone: React.FC<CustomSelectProps> = ({
+  label, name, options, value, onChange, placeholder = 'Seleccione una opción',
+  style, maxHeight='150px', overflowY='auto', width = '100%', required = false, theme = 'light', multiple = false,
+  captionPosition = 'top', id, enabled = true, visible = true
+}) => {
+  const selectedValue = useMemo(() => value ?? (multiple ? [] : ''), [value, multiple]);
+  const [selectedInside, setSelectedInside] = useState<string | string[]>(selectedValue);
+
+  if (!visible) return null;
+
+  const handleCheckboxChange = (checkedValue: string | number) => {
+    let updatedValues: string[] = [];
+
+    if (Array.isArray(selectedValue)) {
+      if (selectedValue.includes(String(checkedValue))) {
+        updatedValues = selectedValue.filter((val) => val !== String(checkedValue));
+      } else {
+        updatedValues = [...selectedValue, String(checkedValue)];
+      }
+    } else {
+      updatedValues = [String(checkedValue)];
+    }
+    onChange?.(updatedValues);
+  };
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue = event.target.value;
+    setSelectedInside(newValue);
+    onChange?.(newValue);
+  };
+  return (
+    <div className={`custom-select-container ${theme} ${captionPosition}`}>
+      <label className={`custom-select-label ${captionPosition}`}>
+        {label} {required && '*'}
+      </label>
+      {multiple ? (
+        <div className="custom-multiple-select" 
+                style={{
+          ...style,
+          width,
+          ...(maxHeight ? { maxHeight } : {}),
+          ...(overflowY ? { overflowY } : {}),
+        }}
+        >
+          {options.map((option) => (
+            <label key={option.value} className="custom-option">
+              <input
+                type="checkbox"
+                checked={
+                  Array.isArray(selectedValue) &&
+                  selectedValue.includes(String(option.value))
+                }
+                onChange={() => handleCheckboxChange(option.value)}
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
+      ) : (
+        <select
+          id={id}
+          name={name}
+          value={selectedInside as string}
+          onChange={handleSelectChange}
+          className="custom-select"
+          style={{ ...style, width }}
+          disabled={!enabled}
+          required={required}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((option) => (
+            <option key={option.value} value={String(option.value)}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   );
 };

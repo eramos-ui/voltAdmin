@@ -49,54 +49,6 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
     }
   }, [status, session, pathname, router]);
 
-   
-  // const fetchUserData = async (userId: string) => {
-  //    if (!userId) return;
-  //    try {
-  //     // console.log('AppContent fetchUserData', `/api/usuarios/${userId}`);
-  //     const response = await fetch(`/api/usuarios/${userId}`);///api/usuarios/6800ff9cb9b53ba220c73996
-  //     if (response.ok) {//obtiene los datos del usuario vía el _id
-  //       const userData = await response.json();  
-  //       setUserInContext({
-  //         ...userData,
-  //         theme: userData.theme,
-  //         avatar: userData.avatar,
-  //       });
-  //       refreshMenu();               // ✅ Aquí fuerza la carga del menú
-  //     } else {
-  //       console.error('Failed to fetch user data');
-  //     }
-  //    } catch (error) {
-  //      console.error('Error fetching user data:', error);
-  //    }
-  // }; 
-  /*
-    useEffect(() => {
-    const fetchUserData = async (userId: string) => {
-      if (!userId) return;
-      try {
-        const response = await fetch(`/api/usuarios/${userId}`);
-        if (response.ok) {
-          const userData = await response.json();
-          setUserInContext({
-            ...userData,
-            theme: userData.theme,
-            avatar: userData.avatar,
-          });
-          refreshMenu();
-        } else {
-          console.error('Failed to fetch user data');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-  
-    if (session?.user?.id) {
-      fetchUserData(session.user.id);
-    }
-  }, [session, setUserInContext, refreshMenu]);
-  */
  const fetchUserData = useCallback(async (userId: string) => {
    if (!userId) return;
   //  console.log('🔒 En AppContent fetchUserData userId:', userId);
@@ -104,6 +56,7 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
       const response = await fetch(`/api/usuarios/${userId}`);
       if (response.ok) {
         const userData = await response.json();
+        // console.log('🔒 En AppContent fetchUserData userData:', userData);
         setUserInContext({
           ...userData,
           theme: userData.theme,
@@ -124,6 +77,7 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
       !hasFetched.current
     ) {
       hasFetched.current = true;
+      // console.log('en AppContent session', session)
       fetchUserData(session.user.id);
     }
   }, [session, fetchUserData]);

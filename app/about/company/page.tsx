@@ -10,7 +10,7 @@ const CompanyPage = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-3xl font-bold">Company</h1>
+      <h1 className="text-3xl font-bold">Company - (página no implementada)</h1>
       <CustomButton
           buttonStyle="primary" size="small" htmlType="button" label="Volver a página inicial" style={{ marginLeft:3, marginTop:15 }}
           icon={<FontAwesomeIcon icon={faHome} size="lg" color="white" />} onClick={() =>  router.push('/') } 

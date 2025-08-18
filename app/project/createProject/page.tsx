@@ -29,6 +29,9 @@ import { formatProjectForFormik } from "@/utils/projectUtils/formatProjectForFor
 import { getProjectById } from "@/app/services/projects/getProjectById";
 import { updateProject } from "@/app/services/projects/updateProject";
 import { useMenu } from '@/context/MenuContext';
+import { getProjectByName } from "@/app/services/projects/getProjectByName";
+import { RowToken } from "tedious/lib/token/token";
+import { checkProjectName } from "@/app/services/projects/checkProjectName";
 
 const validationSchema = Yup.object({
     projectName: Yup.string().required("El nombre del proyecto es obligatorio"),
@@ -37,8 +40,7 @@ const validationSchema = Yup.object({
     direccion: Yup.string().required("La ubicación es obligatoria"),
     nivelPiedras: Yup.string().required("El nivel de piedras es obligatorio"),
     nivelFreatico: Yup.string().required("El nivel freático es obligatorio"),
-  });
-  
+  });  
 const NewProjectPage = () => {
   const router                                                  = useRouter();
   const searchParams                                            = useSearchParams();
@@ -52,7 +54,7 @@ const NewProjectPage = () => {
   const [ geoJSONDataL, setGeoJSONDataL ]                       = useState<FeatureCollection<Geometry> | null>(null);//la L es por local para no confundir con setGeoJSONData del context
   const { setGeoJSONData, setSelectedKmlFile, selectedKmlFile } = useContext(MapContext);
   const [ isModalOpen, setIsModalOpen ]                         = useState(false);
-
+  // const [ projectNameAvailable, setProjectNameAvailable ]       = useState<boolean | null>(true);
   const [ columnsActivities, setColumnsActivities ]             = useState<any>(activityColumns);
   const [ selectedRow, setSelectedRow ]                         = useState<GridRowType | null>(null);//de las activities
   const [ isAdding, setIsAdding ]                               = useState(false);
@@ -69,9 +71,9 @@ const NewProjectPage = () => {
      nroEmpalmes: 1,  empalmesGrid: [],  instalacionesGrid:[],techoGrid:[], kmlFileName: null, kmlFileContent: null, excelFileId: null, 
      activities:[{"numActividad":"1.0", actividad:"Inicial",fechaInicio:"","fechaTermino":"",duracion:0,"presupuesto": 0},],
      userModification:"", dateModification: "",state: "draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
- } );
+  } );
  const { refreshMenu } = useMenu();
-//  console.log('initialValues en regiones', regiones);
+  // console.log('ubicacionPanel en initialValues ', initialValues.ubicacionPanel);//5 es piso si un nuevo project
  const fetchRegiones = async (): Promise<OptionsSelect[]> => {
   const res = await fetch('/api/catalogs/regiones');
   if (!res.ok) throw new Error('Error al cargar regiones');
@@ -83,6 +85,7 @@ const NewProjectPage = () => {
  const loadProject =useCallback( async () => {  
    try {
      const raw = await getProjectById(nroDocumento);
+    //  console.log('raw',raw)
      const formatted = formatProjectForFormik(raw);
      // 🔹 Carga archivos desde GridFS o contenido base64
      let excelFile: File | null = null;
@@ -210,6 +213,25 @@ useEffect(() => {
     console.log('en handleSaveComplete idTask',idTask);
     const values={...vals,state:'complete',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
     console.log('en handleSaveComplete values',values);
+    if (vals.projectName.length === 0) {
+      window.alert("Para guardar el proyecto, mínimo debe ingresar el nombre del proyecto y éste debe ser único.");
+      return;      
+    } 
+    let projectNameAvailable:boolean=true;
+    const name=vals.projectName;
+    if ( vals.idProject === 0){
+      console.log('Revisa si existe', name)
+      const availableName= await checkNameExist(name);
+      if (!availableName){
+        window.alert(`El nombre del proyecto "${name}" ya existe y no se permite nombre del proyecto duplicado.`);
+        return;
+      }
+    }
+    if (values.activities.length === 1 || values.idComuna === 0 || values.direccion.length === 0 ){
+      window.alert("Para guardar el proyecto, deben estar ingresadas al menos, su ubicación y las actividades del mismo.");
+      return;      
+    }
+
     // const { activities, ...generalValues } = vals;
     const result = await updateProject(values);
     console.log('result',result);
@@ -217,22 +239,44 @@ useEffect(() => {
     router.push('/');
     refreshMenu();//pára refrescar el menú dinámico
   };
+  const checkNameExist= async (name:string) =>{
+    try{
+      const res = await fetch(`/api/projects/exists?name=${encodeURIComponent(name)}`, {
+        cache: 'no-store',
+      });
+      if (res.status === 409) return false;
+      return res.status === 204 || (res.ok && !(await res.json()).exists);
+      // setProjectNameAvailable(res.status === 204 || (res.ok && !(await res.json()).exists));
+    } catch{
+      return true;
+    }
+  }
   const handleSaveDraft = async (vals:any) => { 
     // console.log('idTask',idTask,vals)
     // const { activities, ...generalValues } = vals;
     if (vals.projectName.length === 0) {
-      window.alert("Para guardar un borrador mínimo debe ingresar el nombre del proyecto");
+      window.alert("Para guardar un borrador mínimo debe ingresar el nombre del proyecto y éste debe ser único.");
       return;      
     }     
     const userModification = session?.user.email || '';
     const userId = session?.user.id || '' ;
     const userName = session?.user.name || '';
     const values={...vals,state:'draft',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
-    console.log('en handleSaveDraft values',values); 
-    const result = await updateProject(values); 
-    console.log('result',result);    
-    router.push('/');
-    refreshMenu();//pára refrescar el menú dinámico
+    let projectNameAvailable:boolean=true;  //revisa que projectName no existe cuando idProject=0
+    const name=vals.projectName;
+    if ( vals.idProject === 0){
+      console.log('Revisa si existe', name)
+      projectNameAvailable= await checkNameExist(name);      
+    }
+    if (projectNameAvailable){
+      console.log('al grabar borrdor values',values)
+      const result = await updateProject(values); 
+      console.log('result',result);    
+      // router.push('/');
+      // refreshMenu();//pára refrescar el menú dinámico
+    } else {
+      window.alert(`El nombre del proyecto "${name}" ya existe y no se permite nombre del proyecto duplicado.`);
+    }
   };  
   const handleRowSelection = (row: any | null) => {
     setSelectedRow(row);
@@ -241,11 +285,12 @@ useEffect(() => {
     return <p>Cargando...</p>;//chequea si proyecto existe y al menos tiene name
   }  
   if (error) { return <p>{error}</p>; }  
-  return ( // console.log('initialValues en createProject antes de renderizar', initialValues);
+  //  console.log('initialValues en createProject antes de renderizar', initialValues);
+  return ( 
     <>
       <div className="p-4">
         <h1 className="text-3xl font-bold text-center">{(idTask && idTask>0) ? 'Completar ' : 'Crear un nuevo '}  
-          proyecto fotovoltáico ubicado en {(menuId === 5) ? 'Piso' : 'Techo'}
+          proyecto fotovoltáico ubicado en {(initialValues.ubicacionPanel === 'piso') ? 'Piso - no implementado' : 'Techo'}
         </h1>
         <Formik
           initialValues={initialValues}

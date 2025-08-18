@@ -56,6 +56,7 @@ const projectSchema = new Schema<ProjectType>({
     ubicacionPanel: {type:String, required:true},
     idRegion: {type:Number, required:false},
     idComuna: {type:Number, required:false},
+    direccion:{type:String, required:false},
     nroEmpalmes: {type:Number, required:true},
     empalmesGrid: {type:[empalmeSchema], required:false},
     nroInstalaciones: {type:Number, required:false},

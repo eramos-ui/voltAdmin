@@ -2,7 +2,7 @@ import { deepClonePreservingFiles } from "@/utils/deepClonePreservingFiles";
 import { limpiarGrillasConArchivos } from "@/utils/projectUtils/limpiarGrillasConArchivos";
 import { limpiarValoresInvalidos } from "@/utils/projectUtils/limpiarValores";
 
-export const updateProject = async (  
+export const updateProject = async (   
     values: any,
   ): Promise<any> => {
     // const formData = new FormData();

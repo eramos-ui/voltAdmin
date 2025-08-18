@@ -55,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
     // console.log('handleNavigation subitem mongo',subitem);return;
     // console.log('handleNavigation subitem',subitem); 
   // || processType ==='init activity'  && (!processActivity || processActivity.length<=0 )
-    if (processType && processType!=='from toDo' && processType !=='init activity' && processType !=='app'  ){
+    if (processType && processType!=='from toDo' && processType !=='init activity' && !processType.includes('app')   ){
       alert(`Menú mal configurado para ${processType}` ) 
       return; 
     }
@@ -73,12 +73,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, closeSidebar, user, menuDa
       // router.push(urlProcess,);
       router.push(`${urlProcess}?${queryParams.toString()}`);
  
-    } else if( processType === 'app' ) {
-      // console.log('subitem,path,processType,processActivity',subitem,path,processType,urlProcess);
+    } else if( processType.includes('app')   ) {
+      // console.log('subitem,path,processType,processActivity',subitem,path,processType,urlProcess,formId);
       if (formId) {// Si el campo "form" no es null, redirige el formulario construido desde JSON
         // console.log('subMenuId',subMenuId);
         router.push(`/forms/${formId}`);
-        // router.push(`/forms/1016`);
+       }else{
+        router.push(`${path}`);
        }
     } else if( processType === 'init activity' ) {
       router.push(path || '/');//menuId es 4 o 5  para techo o piso
