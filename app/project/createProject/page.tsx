@@ -79,6 +79,14 @@ const NewProjectPage = () => {
   if (!res.ok) throw new Error('Error al cargar regiones');
   return await res.json();
  };
+ const ValuesWatcher = () => {//para obtener los cambios en Formik de los values y lanzar useEffect
+  const { values } = useFormikContext<{ activities: any[] }>();
+  useEffect(() => {
+    setActivities(values.activities)
+  }, [values.activities]);
+
+  return null; // no renderiza nada
+};
  useEffect(() => {
   fetchRegiones().then(setRegiones);
  }, []);
@@ -117,7 +125,6 @@ useEffect(() => {
    if (selectedRow) {
      const currentActivity = (selectedRow["numActividad"])? selectedRow["numActividad"].toString():'';
      const existingIds = new Set(activities?.map((row) => String(row["numActividad"]))); 
-    //  console.log('en NewProjectPage useEffect selectedRow existingIds',existingIds,currentActivity);
      setNextActivityToAdd(getNextActivityId(currentActivity, existingIds));
    }
  }, [selectedRow, activities]); 
@@ -148,11 +155,12 @@ useEffect(() => {
     };
     init();
  }, [idTask, session?.user.id, setLoading,  loadProject]); //initialValues, setInitialValues,
- useEffect(() => { // Este useEffect actualiza el estado activities cuando cambia initialValues.activities, se usa para add activities
-   if (initialValues.activities) {
-     setActivities(initialValues.activities);
-   }
- }, [initialValues.activities,setActivities]); 
+//  useEffect(() => { // Este useEffect actualiza el estado activities cuando cambia initialValues.activities, se usa para add activities
+//   // console.log('useEffect initialValues.activities',initialValues.activities)
+//    if (initialValues.activities) {
+//      setActivities(initialValues.activities);
+//    }
+//  }, [initialValues.activities, setActivities]); 
  const handleFileUpload = async (file: File | null) => { 
     if (!file) {
       setError("No se seleccionó ningún archivo");
@@ -244,7 +252,8 @@ useEffect(() => {
       const res = await fetch(`/api/projects/exists?name=${encodeURIComponent(name)}`, {
         cache: 'no-store',
       });
-      if (res.status === 409) return false;
+      console.log('res',res)
+      if (res.status === 409) return false;//no Existe
       return res.status === 204 || (res.ok && !(await res.json()).exists);
       // setProjectNameAvailable(res.status === 204 || (res.ok && !(await res.json()).exists));
     } catch{
@@ -252,7 +261,7 @@ useEffect(() => {
     }
   }
   const handleSaveDraft = async (vals:any) => { 
-    // console.log('idTask',idTask,vals)
+    // console.log('idTask',idTask,vals) 
     // const { activities, ...generalValues } = vals;
     if (vals.projectName.length === 0) {
       window.alert("Para guardar un borrador mínimo debe ingresar el nombre del proyecto y éste debe ser único.");
@@ -268,16 +277,19 @@ useEffect(() => {
       console.log('Revisa si existe', name)
       projectNameAvailable= await checkNameExist(name);      
     }
+    // console.log('projectNameAvailable',projectNameAvailable,vals.idProject,name)
+
     if (projectNameAvailable){
-      console.log('al grabar borrdor values',values)
+      // console.log('al grabar borrdor values',values)
       const result = await updateProject(values); 
       console.log('result',result);    
-      // router.push('/');
-      // refreshMenu();//pára refrescar el menú dinámico
+      router.push('/');
+      refreshMenu();//pára refrescar el menú dinámico
     } else {
-      window.alert(`El nombre del proyecto "${name}" ya existe y no se permite nombre del proyecto duplicado.`);
+      window.alert(`El nombre del proyecto "${name}" ya existe y no se permite duplicidad.`);
     }
   };  
+
   const handleRowSelection = (row: any | null) => {
     setSelectedRow(row);
   };  
@@ -314,16 +326,17 @@ useEffect(() => {
               setIsAdding(true);
             };            
             const handleDelete = (row: any) => {
+              // console.log('en handleDelete row',row)
               setEditingRow(row);
-              const actividadId = row["NumActividad"];
+              const actividadId = row["numActividad"];
               const hasChildren = values.activities.some(item =>
                 item["numActividad"].toString().startsWith(`${actividadId}.`)
               );
               if (hasChildren) {
-                alert(`No puedes eliminar la actividad "${actividadId} ${row.Actividad}" porque tiene actividades dependientes.`);
+                alert(`No puedes eliminar la actividad "${actividadId} ${row.actividad}" porque tiene actividades dependientes.`);
                 return;
               }
-              if (window.confirm(`¿Eliminar la actividad "${actividadId} ${row.Actividad}"?`)) {
+              if (window.confirm(`¿Eliminar la actividad "${actividadId} ${row.actividad}"?`)) {
                 const newRows = values.activities.filter((item) => item["numActividad"] !== actividadId);
                 setFieldValue("activities", newRows);
               }
@@ -384,7 +397,7 @@ useEffect(() => {
                 {/* {alertMessage && ( <CustomAlert message={alertMessage} type={alertType} duration={3000} onClose={() => setAlertMessage(null)} /> )} */}
                 {values.activities && values.activities.length > 1 && (
                   <div style={{ marginLeft:"0rem" }}>
-                    <CustomGrid title="Actividades actuales" columns={columnsActivities}  data={values.activities} fontSize="13px"
+                    <CustomGrid title="Actividades actuales" columns={columnsActivities} data={values.activities} fontSize="13px"
                       actions={["add", "edit", "delete"]} labelButtomActions={[(selectedRow) ? `Agregar actividad ${nextActivityToAdd}` : 'Agregar actividad', "", ""]}
                       actionsTooltips={[
                         `Agregar actividad que sigue a la seleccionada (${nextActivityToAdd})`, 
@@ -424,6 +437,7 @@ useEffect(() => {
                   <SaveDraftButton handleSaveDraft={handleSaveDraft} />                 
                   <SaveCompleteButton handleSaveComplete={handleSaveComplete} />                  
                 </div>
+                <ValuesWatcher />
               </Form>
             );
           }}

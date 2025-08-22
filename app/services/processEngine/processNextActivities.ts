@@ -98,7 +98,6 @@ export const processNextActivities = async (
           }
         }
         break;
-
       case 'inicio':
         console.log('Inicio detectado. Resuelto en createInitialWorkflowData');
         // const newActivities = findNextActivities(

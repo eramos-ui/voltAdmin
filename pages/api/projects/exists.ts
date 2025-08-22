@@ -20,12 +20,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const nameNormal=normalizeName(name)
     await connectDB();
-    const exists = await Project.exists({ projectName: normalizeName(name) });
+    const exists = await Project.exists({ projectName: name });//sin normalizar el name
+    // console.log('exists en API ',exists,name,nameNormal)
     if (exists) return res.status(409).json({ error: 'El nombre de proyecto ya existe', exists: true });
-
     // No existe: 204 No Content o 200 con exists:false
-    return res.status(204).end();
+    return res.status(204).end();//proyecto NO existe, devuelve un 204
   } catch (error) {
     console.error('❌ Error al verificar nombre:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });

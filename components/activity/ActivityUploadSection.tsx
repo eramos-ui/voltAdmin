@@ -50,7 +50,7 @@ const ActivityUploadSection: React.FC = (   ) => { //{ setColumns, setFormColumn
     //   width: col.width,
     //   row: (col.key === 'Actividad')? 1:(col.key !== 'Presupuesto')? 2:3 
     // }));
-      // console.log('grilla',grilla);
+      // console.log('en ActivityUploadSection grilla',grilla);
       setFieldValue('activities',grilla );
       setFieldValue('excelFile', excelFile);//en saveProject se actualiza en Mongo como excelFileId
       setDisabledUpload(false);
