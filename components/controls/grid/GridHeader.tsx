@@ -4,6 +4,7 @@ import { ColumnConfigType } from "@/types/interfaces";
 type GridHeaderProps<T> = {// <T> indica genérico
     columns: ColumnConfigType<T>[]; // Configuración de columnas
     actions: ("edit" | "delete" )[]; // Acciones disponibles (sin "add")
+    rowHeight: string;
     borderColor: string; // Color del borde
     borderWidth: string; // Ancho del borde
     padding: string; // Padding interno
@@ -12,7 +13,8 @@ type GridHeaderProps<T> = {// <T> indica genérico
     fontSize: string;
   };
   //const MAX_COLUMN_WIDTH = 200; // 📌 Define el ancho máximo por columna
-  export const GridHeader = <T,>({ columns, actions, borderColor, borderWidth, padding, borderVertical = false,  columnWidths, fontSize }: GridHeaderProps<T>) => {
+  export const GridHeader = <T,>({ columns, actions, borderColor, borderWidth, padding, borderVertical = false,  
+       columnWidths, fontSize }: GridHeaderProps<T>) => {
     return (
       <div
       style={{

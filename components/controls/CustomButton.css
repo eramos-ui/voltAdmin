@@ -1,92 +1,81 @@
-.custom-button {
+/* ===============================
+   Base con variables y flex
+   =============================== */
+   .custom-button {
+    /* Fallbacks (si no defines variables desde React) */
+    --btn-h: 44px;     /* altura */
+    --btn-fs: 16px;    /* font-size */
+    --btn-px: 16px;    /* padding horizontal */
+    --btn-icon: 18px;  /* tamaño del ícono */
+  
     font-family: Arial, sans-serif;
-    font-size: 16px;
-    padding: 0.5rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;         /* espacio entre ícono y texto */
+  
+    height: var(--btn-h);
+    padding: 0 var(--btn-px);
+    font-size: var(--btn-fs);
+    line-height: 1;      /* usamos flex; no dependemos de line-height para centrar */
     border-radius: 4px;
     cursor: pointer;
     border: none;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s, color 0.3s, opacity 0.2s;
   }
-
+  
+  /* Ícono escala con variable --btn-icon (FontAwesome usa 1em) */
+  .custom-button .button-icon {
+    font-size: var(--btn-icon);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .custom-button .button-icon.left { margin-right: 0.5rem; }
+  .custom-button .button-icon.right { margin-left: 0.5rem; }
+  
+  /* ===============================
+     Presets de tamaño (compatibilidad)
+     Sobrescriben variables por defecto
+     =============================== */
+  .custom-button.small  { --btn-h: 32px; --btn-fs: 14px; --btn-px: 12px; --btn-icon: 16px; }
+  .custom-button.medium { --btn-h: 38px; --btn-fs: 16px; --btn-px: 14px; --btn-icon: 18px; }
+  .custom-button.large  { --btn-h: 44px; --btn-fs: 18px; --btn-px: 16px; --btn-icon: 20px; }
+  
+  /* ===============================
+     Tipos de botón (colores)
+     =============================== */
+  .custom-button.primary   { background-color: #007bff; color: white; }
+  .custom-button.secondary { background-color: #6c757d; color: white; }
+  
+  .custom-button.light.primary   { background-color: #007bff; color: white; }
+  .custom-button.light.secondary { background-color: #6c757d; color: white; }
+  
+  .custom-button.dark.primary    { background-color: #0056b3; color: #e1e1e1; }
+  .custom-button.dark.secondary  { background-color: #343a40; color: #e1e1e1; }
+  
+  /* ===============================
+     Deshabilitado
+     =============================== */
+  .custom-button:disabled,
+  .custom-button.disabled {
+    background-color: rgba(152, 165, 185, 0.7);
+    color: rgba(235, 232, 232, 0.8);
+    cursor: not-allowed;
+    opacity: 0.9;
+  }
+  
+  .custom-button.dark:disabled,
+  .custom-button.dark.disabled {
+    background-color: rgba(50, 50, 50, 0.6);
+    color: rgba(221, 220, 220, 0.8);
+  }
+  
+  /* ===== (opcional) Contenedor de contenido si alguna vez lo usas ===== */
   .button-content {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem; /* Espaciado entre ícono y texto */
-  }
-  /* Tamaños */
-  .custom-button.large {
-    padding: 0.75rem 1.5rem;
-    font-size: 18px;
-  }
-  .custom-button.medium {
-    padding: 0.5rem 1rem;
-    font-size: 16px;
-  }
-  .custom-button.small {
-    padding: 0.25rem 0.5rem;
-    font-size: 14px;
+    gap: 0.5rem;
   }
   
-  /* Tipos de botón */
-  .custom-button.primary {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  .custom-button.secondary {
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  /* Temas */
-  .custom-button.light.primary {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  .custom-button.light.secondary {
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  .custom-button.dark.primary {
-    background-color: #0056b3;
-    color: #e1e1e1;
-  }
-  
-  .custom-button.dark.secondary {
-    background-color: #343a40;
-    color: #e1e1e1;
-  }
-  
-  /* Estado deshabilitado */
-  .custom-button:disabled {
-    background-color: #8a8686;
-    color: #a0a0a0;
-    cursor: not-allowed;
-  }
-/* Estado deshabilitado (más opaco para ambos temas) */
-.custom-button:disabled,
-.custom-button.light.disabled {
-  background-color: rgba(152, 165, 185, 0.7);
-  color: rgba(235, 232, 232, 0.8);
-  cursor: not-allowed;
-}
-
-.custom-button.dark:disabled,
-.custom-button.dark.disabled {
-  background-color: rgba(50, 50, 50, 0.6);
-  color: rgba(221, 220, 220, 0.8);
-}
-/* .custom-button .button-icon {
-  display: flex;
-  align-items: center;
-} */
-
-.custom-button .button-icon.left {
-  margin-right: 0.5rem;
-}
-
-.custom-button .button-icon.right {
-  margin-left: 0.5rem;
-}

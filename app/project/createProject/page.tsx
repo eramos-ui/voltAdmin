@@ -88,13 +88,14 @@ useEffect(()=>{//para modificar el atributo rowFormEdit a row que usa DynamicFor
       const newColumnsActitivies=columnsActivities.map(obj =>{
       let { rowFormEdit ,...rest}=obj;
       return {...rest, row:obj.rowFormEdit,field:obj.key,headerName:obj.label,columnType:obj.inputType };//, width:obj.widthFormEdit
-    });    // console.log('newColumnsActitivies',newColumnsActitivies)
+    });    
+    // console.log('newColumnsActitivies',newColumnsActitivies)
     setColumnsActivities(newColumnsActitivies )
   }
 },[])
- useEffect(() => {
+useEffect(() => {
   fetchRegiones().then(setRegiones);
- }, []);
+}, []);
  const loadProject =useCallback( async () => {  
    try {
      const raw = await getProjectById(nroDocumento);
@@ -118,7 +119,7 @@ useEffect(()=>{//para modificar el atributo rowFormEdit a row que usa DynamicFor
      console.error('Error al cargar proyecto:', error);
    }
   }, [nroDocumento, idTask]); 
- useEffect(() => {
+useEffect(() => {
   if (nroDocumento > 0) {loadProject() } else { setLoading(false); }
 }, [nroDocumento,loadProject]);
 useEffect(() => {
@@ -395,7 +396,7 @@ useEffect(() => {
                       actions={["add", "edit", "delete"]} labelButtomActions={[(selectedRow) ? `Agregar actividad ${nextActivityToAdd}` : 'Agregar actividad', "", ""]}
                       actionsTooltips={[`Agregar actividad que sigue a la seleccionada (${nextActivityToAdd})`, 
                         "Editar esta actividad","Eliminar esta actividad" ]}
-                      onAdd={handleAdd} onEdit={handleEdit}  onDelete={handleDelete} gridWidth="95%" rowsToShow={7} 
+                      onAdd={handleAdd} onEdit={handleEdit}  onDelete={handleDelete} gridWidth="95%" rowsToShow={10} 
                       exportable={true} borderVertical={true} rowHeight="30px" selectable={true} onRowSelect={handleRowSelection}                 
                     />
                   </div>

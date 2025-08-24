@@ -96,7 +96,7 @@ export const CustomGrid = <T,>({
       onRowSelect(row); // 📌 Notificar al componente padre
     }
   };
-  // Función para actualizar el ancho de una columna globalmente
+  // Función para actualizar el ancho de una columna globalmente 
   const updateColumnWidth = (colKey: string, newWidth: string) => {
     setColumnWidths(prevWidths => {
       if (parseInt(prevWidths[colKey] || "150", 10) < parseInt(newWidth, 10)) {
@@ -113,13 +113,22 @@ export const CustomGrid = <T,>({
         return { [newKey]: value, ...rest };
       });
     };
+  /*
+  Este código es específico par voltAdmin, sino basta con:  exportToExcel(fileName, data, columns);
+  */
     const updatedColumns = columns.map(col => ({
       ...col, // Mantener los demás atributos sin cambios
       key: col.key === "NumActividad" ? "Nro Actividad" : col.key, 
       label: col.key === "NumActividad" ? "Nro Actividad" : col.label // Cambiar valores específicos
     }));
-  const updatedData = renameKey(data, "NumActividad", "Nro Actividad");
-  exportToExcel(fileName, updatedData, updatedColumns);
+    const updatedData = renameKey(data, "NumActividad", "Nro Actividad");
+    // console.log('updatedData',updatedData)
+    const newData=updatedData.map(obj =>{//elimina columna duracion
+      let { duracion ,...rest}=obj;
+      return {...rest };
+    }); 
+    const newColumns=updatedColumns.filter( x => x.key !=='duracion' )
+    exportToExcel(fileName, newData, newColumns);
   };
   const filteredActions: ("edit" | "delete")[] = actions.filter((action): action is "edit" | "delete" => action !== "add");
   const minWidth = columns
@@ -156,7 +165,7 @@ export const CustomGrid = <T,>({
       </div>    
       <div style={{ border: `${borderWidth} solid ${borderColor}`, display: "inline-block", }}> 
         <GridHeader columns={columns} actions={filteredActions} borderColor={borderColor} borderWidth={borderWidth} padding={padding}
-          borderVertical={borderVertical} columnWidths={columnWidths} fontSize={ fontSize}
+          borderVertical={borderVertical} columnWidths={columnWidths} fontSize={ fontSize} rowHeight={rowHeight}
         />
         <div>
           <div>

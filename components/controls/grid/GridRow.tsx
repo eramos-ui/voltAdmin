@@ -47,8 +47,8 @@ type GridRowProps<T> = {
   columnWidths: Record<string, string>; 
   updateColumnWidth: (colKey: string, newWidth: string) => void; 
 }) => {
-  //console.log('En GridRow columns',columns);
-  const [ rowMaxHeight, setRowMaxHeight ] = useState<string>(rowHeight);
+  // console.log('En GridRow rowHeight',rowHeight);
+  const [ rowMaxHeight, setRowMaxHeight ] = useState<string>('20px');
 
   const rowRef                            = useRef<HTMLDivElement>(null);
 
@@ -88,6 +88,7 @@ type GridRowProps<T> = {
           backgroundColor: isSelected ? "#d0ebff" : "white",
           cursor: selectable ? "pointer" : "default",
           borderBottom: `${borderWidth} solid ${borderColor}`,
+          height:rowHeight,
           fontSize
         }}
       >
@@ -127,7 +128,9 @@ type GridRowProps<T> = {
             )
         })}
         {actions.length > 0 && (
-          <div style={{ padding }} >
+          <div style={{ justifyContent:'center', justifyItems:'flex-end', }} 
+          //decía style={{ padding }} 
+          >
           <GridActions
             row={row}
             actions={actions}
