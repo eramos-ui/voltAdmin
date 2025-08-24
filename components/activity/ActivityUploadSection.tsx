@@ -73,7 +73,7 @@ const ActivityUploadSection: React.FC = (   ) => { //{ setColumns, setFormColumn
         disabled={ !selectedExcel || !disabledUpload}
         style={{ marginTop: '10px' }}
       />
-      {error && <CustomLabel label={error} fontColor={'#EF4444'} />}
+      {/* {error && <CustomLabel label={error} fontColor={'#EF4444'} />} */}
     </div>
   );
 };

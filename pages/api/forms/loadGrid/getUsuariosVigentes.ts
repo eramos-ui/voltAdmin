@@ -8,7 +8,11 @@ import { getUsersVigentes } from '@/app/services/users/getUsersVigentes';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectDB();
-    const users = await getUsersVigentes();
-    //  console.log('en api forms/loadGrid/getUsuariosVigentes',users);
+    const usersVigentes = await getUsersVigentes();
+    const users=usersVigentes.map( (usr:any) => {
+        const usuario={...usr, valid: (usr.isValid)?'vigente':'no Vigente'};
+        return usuario;
+    } )
+    //    console.log('en api forms/loadGrid/getUsuariosVigentes',users);
     res.status(200).json(users);
 }

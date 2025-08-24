@@ -57,6 +57,8 @@ export const FieldComponentDF: React.FC<FieldComponentDFProps> = ({ field, value
     placeholder: field.placeholder,
     style: { width: field.width ?? '100%' },
     width: field.width ?? '100%',
+    formatNumber: field.formatNumber,
+    validations:field?.validations,
   };
   
    const errorMessage = errors[name] ? String(errors[name]) : undefined;// función para Obtener error de este campo

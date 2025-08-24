@@ -6,13 +6,10 @@ import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSidebarToggle } from '../../context/SidebarToggleContext';
 import Navbar from './Navbar';
-// import { UserData, MenuItem } from '../../types/interfaces';
 import Sidebar from './Sidebar';
 import { Footer } from './Footer';  
 import { LoadingIndicator } from './LoadingIndicator'; 
-// import { fetchUserMenu } from '@/lib/users/fetchUserMenu';
 import { useMenu } from '@/context/MenuContext';
-import { connectDB } from '@/lib/db';
 
 const AppContent = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status }                   = useSession();

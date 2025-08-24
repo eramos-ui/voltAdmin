@@ -207,7 +207,7 @@ export interface SubMenuItem {
     label: string; // Título de la columna
     key: keyof T; // Clave del dato en cada fila (debe existir en T)
     visible?: boolean; // Si la columna es visible
-    type?: "string" | "number"; // Tipo de dato de la columna
+    type?: "string" | "number" | "Date"; // Tipo de dato de la columna
     textAlign?: "left" | "center" | "right"; // Alineación del texto
     width?: string; // Ancho de la columna (por ejemplo, "150px")
     widthFormEdit?:string;//el ancho en el modal
@@ -224,6 +224,11 @@ export interface SubMenuItem {
     dependencies?:{ field: string; valueMap: Record<string, any> }[];
     required?:boolean;      
     renderCell?: (row: T) => React.ReactNode;// ✅ Nueva propiedad para renderizado personalizado (como mostrar el nombre del archivo) cuando es file
+    sortable?: boolean;
+    hideOnSort?: boolean; /** Si es true, se oculta esta columna cuando hay un ordenamiento activo */
+    format?:string; //para las fechas
+    headerName?:string;
+    formatNumber?:boolean;
   };
   export interface OptionsSelect {
     value: string | number ;

@@ -1,6 +1,7 @@
 
 "use client";
-//import React, { useEffect, useState } from 'react';
+import React, { useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 // import Modal from 'react-modal';
 
 import { useSession } from 'next-auth/react';
@@ -23,8 +24,8 @@ import { CustomButton } from '../controls';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 import { FieldComponentDF } from '../dynamicForm/FieldComponentDF';
-import { useEffect, useState } from 'react';
 import { buildInitialValues } from '@/utils/buildInitialValuesForDynamicForm';
+import { normalizeStringValues } from '@/utils/normalizeStringValue';
 
 interface EditFormProps { // formulario dynamic
   formConfig: FormConfigDFType;
@@ -35,6 +36,7 @@ interface EditFormProps { // formulario dynamic
   columns:GridColumnDFType[];
   isAdding?:boolean;
   apiSaveForm?:string;
+  apiGetRow?:string;//si es necesario leer los campos del formulario (cuando no corresponden a los de la grilla), el name parametro viene en la ApI [xxxxId] el valor está en row
   theme?:string;
   requirePassword?:boolean;
   formId:Number;
@@ -47,6 +49,24 @@ interface Option {
   value: string | number;
   label: string;
 }
+function findFilePaths(obj: any, currentPath = ''): string[] {
+  if (!obj || typeof obj !== 'object') return [];
+  // Si es un File → devolver la ruta actual
+  if (obj instanceof File) {
+    return [currentPath || '(root)']; // "(root)" si es el mismo objeto
+  }
+  // Si es un array → buscar en cada elemento
+  if (Array.isArray(obj)) {
+    return obj.flatMap((item, index) =>
+      findFilePaths(item, `${currentPath}[${index}]`)
+    );
+  }
+  // Si es objeto plano → buscar en cada propiedad
+  return Object.entries(obj).flatMap(([key, value]) => {
+    const newPath = currentPath ? `${currentPath}.${key}` : key;
+    return findFilePaths(value, newPath);
+    });
+  }
 // const typeValues= ['number','string','rut','sin','boolean','money'];
 //form para editar los datos de la grilla de la tabla que administra el Dynamic Form
 export const EditForm: React.FC<EditFormProps> = ({
@@ -58,12 +78,15 @@ export const EditForm: React.FC<EditFormProps> = ({
   columns,
   isAdding,
   apiSaveForm,
+  apiGetRow,
   requirePassword=false,  
   formId,
   ...props
 }) => {
-  const initialValues = buildInitialValues(fields, row);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const rowInitial = useMemo(() => buildInitialValues(fields, row), [fields, row]);
   // console.log('en EditForm row',row,initialValues);
+  // console.log('en EditForm  row', row);
   const { theme: themeEdit, formSize, formTitle, modalStyles } = formConfig;
   const { data: session }                                      = useSession();
   // const [ alertMessage, setAlertMessage ]                      = useState<string | null>(null);
@@ -76,6 +99,30 @@ export const EditForm: React.FC<EditFormProps> = ({
   //   return !isNaN(Number(valor));
   // };
   const [loadedFields, setLoadedFields] = useState<FormFieldDFType[]>([]);
+  useEffect(() =>{//carga datos iniciales del form de edición si viene apiGetRow, sino pasa la fila editada
+    const fetchData = async (apiGet:string) => {//
+      // console.log('apiGet',apiGet)
+      try{
+        // const res = await fetch(`${apiGet}`);
+        const res = await fetch(`/api/${apiGet}`);
+        const data = await res.json();
+        console.log('en fetchData data FALTA',data)
+        // console.log('en fetchData rowInitial',rowInitial)
+        // console.log('en fetchData row',row)
+        // console.log('en fetchData full',{...rowInitial,...data })
+        //rowInitial={...rowInitial,...data };
+      } catch (err) {
+        console.log('An unknown error occurred');
+        }
+     } 
+    if (!apiGetRow || !row) return;
+    const urlInicio=apiGetRow.split('[')[0];
+    let inicio=apiGetRow.split('[')[1];
+    const param=inicio.split(']')[0];   
+    const valueParam=row[param]  
+    const urlRow=urlInicio+valueParam+inicio.split(']')[1];
+    if (valueParam) fetchData(urlRow);
+  },[apiGetRow, row])
   useEffect(() => {
     const loadOptionsForSelects = async () => {
       const updatedFields = await Promise.all(
@@ -112,56 +159,109 @@ export const EditForm: React.FC<EditFormProps> = ({
   }, [fields]); // ⚠️ Solo depende de los fields originales
 
   //grabar
-  const grabar = async( values:any) =>{
-    console.log('en EditForm grabar',{...values});
-
-  // const requirePassword=fields.find(field => field.type === 'password')?.requirePassword;
-  const password = requirePassword ? await bcrypt.hash('password123', 10) : undefined;
-  //console.log('grabar',fields,requirePassword,password);    return;
-  const withRutFields=fields.filter(field => field.type === 'RUT');//field que tienen field type='RUT' para formatearlo estándar
-    let updateValues:any=values;
-    if (withRutFields && withRutFields.length > 0) {
-        //actualizar rut de los values[field.name] cuando es un rut para que se graben ###.###.###-# , se hace 2 veces porque formatRut lo repite
-      withRutFields.forEach((field:any) => {
-        const valueRut=values[field.name];
-        updateValues[field.name]=valueRut;
+  const grabar = async( values:any) =>{//amvos nuevo usuario y edit usuairo
+    console.log('values al graba en EditForm',values,requirePassword);
+    if (!session) return //debe estar definido el usuario
+    // console.log('fields, values, session',fields, values, session)
+    const filesFields=findFilePaths(values);//tiene todos los fields que son File
+    /*
+     1. Si hay archivos (File) se graba primero el file y queda en uploads.<< y en Files esta API viene en formConfig.table.apiUploadFile
+    */
+    if (filesFields && filesFields.length>0 ){//implementado sólo 1 File por formId
+      let apiUploadFile=formConfig.table.apiUploadFile || '';
+      if (!apiUploadFile || apiUploadFile.length === 0){
+        console.log('Falta definir formConfig.table.apiUploadFile',apiUploadFile);
+        return;
+      }
+      apiUploadFile='/api'+(apiUploadFile.substring(0,1) === '/' ? apiUploadFile : '/'+apiUploadFile);
+      const file:string=values[filesFields[0]];
+      const rowSinFile= { ...values };
+      delete rowSinFile['file'];
+      // console.log('rowSinFile',rowSinFile)
+      const fd = new FormData();
+      fd.append('file',file);
+      fd.append('row',JSON.stringify(rowSinFile));//se pasa json con los values del formulario como row
+      fd.append("formId", String(formId));
+      fd.append("idUserModification", session?.user.id);
+      const res = await fetch(`${apiUploadFile}`, {
+        method: "POST",
+        body: fd, // ⚠️ No pongas Content-Type manualmente
       });
-    }   
-    const changedItem=_.isEqual(updateValues,row); //compara si los valores de updateValues son iguales a los de row
-    if (changedItem) {
-      console.log('en FormPage grabar no hay cambios');
-      return;
-    } 
-    // console.log('en EditForm grabar updateValues',updateValues);return;   
-    const apiSaveForms=`/api/${apiSaveForm}`;
-    const body={...updateValues, formId:formId,  idUserModification:session?.user.id};
-    console.log('en EditForm grabar body',body);
-    // const res = await fetch(`/api/${field.apiOptions}`);
-
-     try {
-      const response = await fetch(`${apiSaveForms}`, {
-        method: 'POST',    
-        body: JSON.stringify(body),
+      const dataResp = await res.json();
+      if (!apiSaveForm || apiSaveForm.length === 0){
+        if (dataResp.ok) {
+          alert("Grabado exitosamente");
+          setTimeout(()=>{
+            onClose();
+          }, 1000);
+        } else {
+          if (dataResp.status === 400) {
+            alert(`${dataResp.error}`);     
+          }else{
+            console.log('errorMsg',dataResp.message,typeof dataResp.erro)
+            const errorMsg=( typeof dataResp.error ==='object')? dataResp.error.message:dataResp.message;          
+            alert(`${errorMsg}.`);    
+          }
+        }
+        return
+      } //viene como parámetro y si no está no hay nada que salver (caso que todo se guarda en File)
+    }
+    /*
+     2. Si además o sólo hay apiSaveForm se actualiza la coleección que corresponda
+    */
+    const password = requirePassword ? await bcrypt.hash('voltaico', 10) : undefined;
+    const withRutFields=fields.filter(field => field.type === 'RUT');//field que tienen field type='RUT' para formatearlo estándar
+    let updateValues:any=values;
+  
+    if (withRutFields && withRutFields.length > 0) {
+          //actualizar rut de los values[field.name] cuando es un rut para que se graben ###.###.###-# , se hace 2 veces porque formatRut lo repite
+        withRutFields.forEach((field:any) => {
+          const valueRut=values[field.name];
+          updateValues[field.name]=valueRut;
+        });
+      }   
+      const changedItem=_.isEqual(updateValues,row); //compara si los valores de updateValues son iguales a los de row
+      // console.log('en EditForm grabar row',row)
+      // console.log('en EditForm grabar updateValues',updateValues,changedItem);return;   
+      if (changedItem) {
+        console.log('en FormPage grabar no hay cambios');
+        return;
+      } 
+      if (!apiSaveForm || apiSaveForm.length === 0){
+        console.log('en EditForm grabar apiSaveForms no definido');
+        return;
+      } 
+      const  apiSaveForms='/api'+(apiSaveForm.substring(0,1) === '/' ? apiSaveForm : '/'+apiSaveForm);
+      // console.log('apiSaveForms en grabar',apiSaveForms); return;
+      const rowValues={...updateValues};
+      let body={row:rowValues, formId:formId,  idUserModification:session?.user.id, password};//siempre agrega el idUserModification
+      try {
+        const response = await fetch(`${apiSaveForms}`, {
+          method: 'POST',    
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
       });
       const result=await response.json();
-      console.log('en EditForm grabar response',response.ok, result);
       if (response.ok) {
         alert("Grabado exitosamente");
-    //     // setTimeout(handleClose, 3000);
-    //     onClose();
+        setTimeout(()=>{
+          onClose();
+        }, 1000);
       } else {
         if (response.status === 400) {
           alert(`${result.error}`);     
         }else{
-          console.log('en FormPage grabar response',result.error);
-          alert(`${result.error}, favor comuníquelo al administrador del sistema.`);    
+          console.log('errorMsg',result.message,typeof result.erro)
+          const errorMsg=( typeof result.error ==='object')? result.error.message:result.message;          
+          alert(`${errorMsg}.`);    
         }
       }
     } catch (error) {
+      console.log(error);
       alert(`${error}, favor comuníquelo al administrador del sistema.`);
     }
   };
-  const groupedFields = loadedFields.reduce((acc, field, width) => {
+   const groupedFields = loadedFields.reduce((acc, field, width) => {
     if (!acc[field.row]) {
       acc[field.row] = [];
     }
@@ -184,15 +284,37 @@ export const EditForm: React.FC<EditFormProps> = ({
         <Formik
          initialValues={row}
          validateOnBlur={true} //ejecuta la validación Yup cuando el usuario sale del campo
-         validationSchema={validationSchema}//validations es el schema de valicaicón Yup para el formulario dinámico
-         onSubmit={async (values, { setSubmitting, validateForm }) => {
-          const errors=await validateForm(values); // 🔹 Valida antes de ejecutar submit
-          if (Object.keys(errors).length === 0) {
-            const _id=initialValues._id;
-            await grabar({...values,_id});
-          }
-          setSubmitting(false);//previene el doble clic en el botón de submit 
-         }}  
+         validate={async (values) => {
+          //  console.log("🔎 validate ejecutado con:", values);
+            const schema = getValidationSchemaDynamicForm(fields);
+            try {
+              await schema.validate(values, { abortEarly: false });
+              console.log("✅ Validación pasada sin errores");
+              return {}; // sin errores
+            } catch (err: any) {
+              const errors: Record<string, string> = {};
+              err.inner?.forEach((e: any) => {
+                if (e.path) errors[e.path] = e.message;
+              });
+              console.log("❌ Errores detectados:", errors);
+              return errors;
+            }
+           }}
+
+           onSubmit={async (values, { setSubmitting, validateForm }) => {
+            //  console.log("🚀 onSubmit ejecutado con:", values);
+            const correctedValues = normalizeStringValues(values, fields);
+            const errors = await validateForm(correctedValues);
+             console.log('Errores de validación:',errors);
+            if (Object.keys(errors).length === 0) {
+              const _id = row._id;
+              await grabar({ ...correctedValues, _id });
+            } else {
+              console.log('Submit bloqueado por errores:', errors);
+            }
+            setSubmitting(false);
+          }}
+    
             >
         {({ errors={}, touched={},values, setFieldValue, isSubmitting, isValid  }) => {// console.log("Formik errors,touched,isValid:", errors,touched,isValid);
           //  useEffect(()=>{ console.log('en EditForm useEffect',values);},[values])
@@ -220,13 +342,13 @@ export const EditForm: React.FC<EditFormProps> = ({
             </div>
             <div className="flex justify-end mt-4 space-x-4 mr-10">
                 <CustomButton label='Cancelar y salir' onClick={onClose} buttonStyle='secondary'
-                    size='small'  icon={<FontAwesomeIcon icon={faSignOutAlt} size="lg" color="white" />}
+                    size='small' icon={<FontAwesomeIcon icon={faSignOutAlt} size="lg" color="white" />}
                     tooltipContent='Abandonar la página sin salvar los cambios' tooltipPosition='left' 
                   />
                   <CustomButton label= {isSubmitting ? "Enviando..." : "Salvar cambios"}  buttonStyle='primary'
-                    size='small' icon={<FontAwesomeIcon icon={faFloppyDisk} size="lg" color="white" />} htmlType='submit'
+                    size='small' icon={<FontAwesomeIcon icon={faFloppyDisk} size="lg" color="white" />} //htmlType='submit'
                     tooltipContent='Salvar los cambios y volver a la página anterior' tooltipPosition='left' style={{ marginLeft:5 }} 
-                    // onClick={() => grabar(values)} disabled={isSubmitting} 
+                    onClick={() => grabar(values)} disabled={isSubmitting} 
                   />
               </div>   
           </Form>

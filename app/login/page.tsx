@@ -99,17 +99,17 @@ const LoginPage = () => {//eramos@cibeles.cl    poiuyt
                 </svg>
                 {labels.login.botonGoogle}
               </button> */}
-              <p 
+              {/* <p 
                 className="text-blue-500 hover:underline cursor-pointer"
                 onClick={handleRegister}
               >
                 {labels.login.linkNewUser}
-              </p>
+              </p> */}
               <p 
                 onClick={handleForgotPassword} 
                 className="text-blue-500 hover:underline cursor-pointer"
               >
-                {labels.login.linkForgotPass}            
+                 ¿Olvidaste tu contraseña?          
               </p>          
             </div>
           </div>

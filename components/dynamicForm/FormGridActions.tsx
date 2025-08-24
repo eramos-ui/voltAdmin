@@ -10,7 +10,7 @@ interface GridActionsProps {
   onDelete: () => void;
   label: string; //el de la grilla que se usa en los tooltips de las Action
   objectGrid?:string;
-  actions: ('add' | 'edit' | 'delete')[];
+  actions: ('add' | 'edit' | 'delete' |'zoom')[];
 }
 
 const FormGridActions: React.FC<GridActionsProps> = ({ onEdit, onDelete, actions, label,objectGrid }) => {

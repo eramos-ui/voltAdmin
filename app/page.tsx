@@ -8,7 +8,7 @@ export default function HomePage() {
   const userName=session?.user.name;
   const menuOptions = [
     { title: "Proyectos", description: "Gestión y seguimiento de proyectos solares fotovoltáicos.", icon: <FaProjectDiagram /> },
-    { title: "Proveedores", description: "Explora y contacta proveedores de productos y servicios, .", icon: <FaIndustry /> },
+    { title: "Proveedores", description: "Explora y contacta proveedores de productos y servicios.", icon: <FaIndustry /> },
     { title: "Cronogramas", description: "Planifica y organiza cada tareas asignando responsables y plazos.", icon: <FaCalendarAlt /> },
     { title: "Costos y presupuestos", description: "Herramientas para controlar costos de cada actividad.", icon: <FaCalculator /> },
     { title: "Validación de entregables", description: "Verifica y certifica el cumplimiento de los requisitos, tanto de los proveedores como de los ejecutores internos.", icon: <FaCheckCircle /> },

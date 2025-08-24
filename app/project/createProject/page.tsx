@@ -8,9 +8,9 @@ import { faEraser, faFloppyDisk, faMapLocation, faHome, faTrash} from '@fortawes
 import { ProjectDetailsForm } from "@/components/project/ProjectDetailsForm";
 
 import { LocationForm } from "@/components/project/LocationForm";
-import { Comunas, GridRowType, OptionsSelect, ProjectType } from "@/types/interfaces";
+import { ColumnConfigType, Comunas, GridRowType, OptionsSelect, ProjectType } from "@/types/interfaces";
 import { MapContext } from "../../context"; 
-
+import { LoadingIndicator } from '@/components/general/LoadingIndicator';
 import { CustomButton, CustomFileInput, CustomGrid, CustomLabel } from "@/components/controls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { processFileToGeoJSON } from "@/utils/kmzProcessor";
@@ -29,9 +29,7 @@ import { formatProjectForFormik } from "@/utils/projectUtils/formatProjectForFor
 import { getProjectById } from "@/app/services/projects/getProjectById";
 import { updateProject } from "@/app/services/projects/updateProject";
 import { useMenu } from '@/context/MenuContext';
-import { getProjectByName } from "@/app/services/projects/getProjectByName";
-import { RowToken } from "tedious/lib/token/token";
-import { checkProjectName } from "@/app/services/projects/checkProjectName";
+import { calculateDuration } from "@/utils/calculateDuration";
 
 const validationSchema = Yup.object({
     projectName: Yup.string().required("El nombre del proyecto es obligatorio"),
@@ -48,14 +46,12 @@ const NewProjectPage = () => {
   const idTask                                                  = Number(searchParams?.get("idTask"));
   const nroDocumento                                            = Number(searchParams?.get("nroDocumento"));
   const [ regiones, setRegiones ]                               = useState<OptionsSelect[]>();
-  // const [ comuna, setComuna ]                                  = useState<number>(); 
   const [ loading, setLoading ]                                 = useState(true);
   const [ error, setError ]                                     = useState<string | null>(null);
   const [ geoJSONDataL, setGeoJSONDataL ]                       = useState<FeatureCollection<Geometry> | null>(null);//la L es por local para no confundir con setGeoJSONData del context
   const { setGeoJSONData, setSelectedKmlFile, selectedKmlFile } = useContext(MapContext);
   const [ isModalOpen, setIsModalOpen ]                         = useState(false);
-  // const [ projectNameAvailable, setProjectNameAvailable ]       = useState<boolean | null>(true);
-  const [ columnsActivities, setColumnsActivities ]             = useState<any>(activityColumns);
+  const [ columnsActivities, setColumnsActivities ]             = useState<any[]>(activityColumns);
   const [ selectedRow, setSelectedRow ]                         = useState<GridRowType | null>(null);//de las activities
   const [ isAdding, setIsAdding ]                               = useState(false);
   const [ isEditing, setIsEditing ]                             = useState(false);
@@ -66,6 +62,7 @@ const NewProjectPage = () => {
   const [ isDirty, setIsDirty ]                                 = useState(false);
   const [ nextActivityToAdd, setNextActivityToAdd ]             = useState<string>();
   const [ activities, setActivities ]                           = useState<any[]>([]);
+  const [ messageLoadingIndicator, setMessageLoadingIndicator ] = useState<string>('leyendo...');
   const [ initialValues, setInitialValues ]                     = useState <ProjectType>({ idProject:0, projectName: "",
      ubicacionPanel: (menuId === 5) ? 'piso':'techo',  idRegion: 0, idComuna: 0, direccion: "",
      nroEmpalmes: 1,  empalmesGrid: [],  instalacionesGrid:[],techoGrid:[], kmlFileName: null, kmlFileContent: null, excelFileId: null, 
@@ -84,9 +81,17 @@ const NewProjectPage = () => {
   useEffect(() => {
     setActivities(values.activities)
   }, [values.activities]);
-
   return null; // no renderiza nada
 };
+useEffect(()=>{//para modificar el atributo rowFormEdit a row que usa DynamicForm, la fila de edición de la row que se edita
+  if (columnsActivities){
+      const newColumnsActitivies=columnsActivities.map(obj =>{
+      let { rowFormEdit ,...rest}=obj;
+      return {...rest, row:obj.rowFormEdit,field:obj.key,headerName:obj.label,columnType:obj.inputType };//, width:obj.widthFormEdit
+    });    // console.log('newColumnsActitivies',newColumnsActitivies)
+    setColumnsActivities(newColumnsActitivies )
+  }
+},[])
  useEffect(() => {
   fetchRegiones().then(setRegiones);
  }, []);
@@ -107,12 +112,7 @@ const NewProjectPage = () => {
        const blob = new Blob([formatted.kmlFileContent], { type: 'application/vnd.google-earth.kml+xml' });
        kmlFile = new File([blob], formatted.kmlFileName || 'archivo.kml');
      }
-     setInitialValues({
-       ...formatted,
-       excelFile,
-       kmlFile,
-       idTask
-     });
+     setInitialValues({...formatted, excelFile, kmlFile, idTask });
      setLoading(false);
    } catch (error) {
      console.error('Error al cargar proyecto:', error);
@@ -138,10 +138,7 @@ useEffect(() => {
  useEffect(() => {
     const fetchData = async (idTask:number) => {
       try {
-        if (session?.user.id) {
-          // await loadDataProject(idTask, Number(session.user.id), setInitialValues, initialValuesRef.current);
-          loadProject();
-        }
+        if (session?.user.id) { loadProject(); }
       } catch (err) {
         console.log('error', err);
       }
@@ -155,12 +152,6 @@ useEffect(() => {
     };
     init();
  }, [idTask, session?.user.id, setLoading,  loadProject]); //initialValues, setInitialValues,
-//  useEffect(() => { // Este useEffect actualiza el estado activities cuando cambia initialValues.activities, se usa para add activities
-//   // console.log('useEffect initialValues.activities',initialValues.activities)
-//    if (initialValues.activities) {
-//      setActivities(initialValues.activities);
-//    }
-//  }, [initialValues.activities, setActivities]); 
  const handleFileUpload = async (file: File | null) => { 
     if (!file) {
       setError("No se seleccionó ningún archivo");
@@ -239,30 +230,27 @@ useEffect(() => {
       window.alert("Para guardar el proyecto, deben estar ingresadas al menos, su ubicación y las actividades del mismo.");
       return;      
     }
-
-    // const { activities, ...generalValues } = vals;
+    console.log('al grabar complete values', values)
+    setMessageLoadingIndicator('grabando...');
+    setLoading(true);
     const result = await updateProject(values);
     console.log('result',result);
-    // updateNewProject(vals, userModification,userId, 'complete',generalChanged, activitiesChanged);  
     router.push('/');
-    refreshMenu();//pára refrescar el menú dinámico
+    refreshMenu();//para refrescar el menú dinámico
   };
   const checkNameExist= async (name:string) =>{
     try{
       const res = await fetch(`/api/projects/exists?name=${encodeURIComponent(name)}`, {
         cache: 'no-store',
       });
-      console.log('res',res)
       if (res.status === 409) return false;//no Existe
       return res.status === 204 || (res.ok && !(await res.json()).exists);
-      // setProjectNameAvailable(res.status === 204 || (res.ok && !(await res.json()).exists));
     } catch{
       return true;
     }
   }
   const handleSaveDraft = async (vals:any) => { 
     // console.log('idTask',idTask,vals) 
-    // const { activities, ...generalValues } = vals;
     if (vals.projectName.length === 0) {
       window.alert("Para guardar un borrador mínimo debe ingresar el nombre del proyecto y éste debe ser único.");
       return;      
@@ -277,10 +265,9 @@ useEffect(() => {
       console.log('Revisa si existe', name)
       projectNameAvailable= await checkNameExist(name);      
     }
-    // console.log('projectNameAvailable',projectNameAvailable,vals.idProject,name)
-
     if (projectNameAvailable){
-      // console.log('al grabar borrdor values',values)
+      setMessageLoadingIndicator('grabando...');
+      setLoading(true);
       const result = await updateProject(values); 
       console.log('result',result);    
       router.push('/');
@@ -289,12 +276,11 @@ useEffect(() => {
       window.alert(`El nombre del proyecto "${name}" ya existe y no se permite duplicidad.`);
     }
   };  
-
   const handleRowSelection = (row: any | null) => {
     setSelectedRow(row);
   };  
   if (loading || (nroDocumento > 0 && initialValues.projectName.length === 0)) {
-    return <p>Cargando...</p>;//chequea si proyecto existe y al menos tiene name
+    return <LoadingIndicator  message={messageLoadingIndicator} />;  
   }  
   if (error) { return <p>{error}</p>; }  
   //  console.log('initialValues en createProject antes de renderizar', initialValues);
@@ -311,17 +297,18 @@ useEffect(() => {
           onSubmit={() => {}}
         >
           {({ values, errors, touched, setFieldValue, resetForm }) => {//no poner useEffect aqui porque se ejecuta cada vez que cambia el formulario      
-            // useEffect(() => { console.log('🔍 Formik values actualizados:', values);     }, [values]); 
+           //  useEffect(() => { console.log('🔍 Formik values actualizados:', values);     }, [values]); 
             const handleCancel = () => {
               const confirmed = window.confirm("¿Está seguro de que desea cancelar y limpiar el formulario?");
               if (confirmed) {     resetForm(); }
             };            
             const handleEdit = (row: any) => { setEditingRow(row);  setIsEditing(true);  setSelectedRow(row);  };             
-            const handleAdd = () => {
+            const handleAdd = () => {  
               if (!selectedRow) { alert('Debe seleccionar la actividad previa a la que desea agregar.'); return;  }
               const currentActivity =(selectedRow["numActividad"])? selectedRow["numActividad"].toString():'';
               const existingIds = new Set(values.activities?.map((row) => String(row["numActividad"]))); 
               const newActivity = getNextActivityId(currentActivity, existingIds);
+              setEditingRow({actividad:'', duracion:0,fechaInicio:"", fechaTermino:"",numActividad:newActivity,presupuesto:0})
               setNextActivity(newActivity);
               setIsAdding(true);
             };            
@@ -344,7 +331,17 @@ useEffect(() => {
              const handleSave = (updatedRow: GridRowType) => {
               if (isAdding) {
                 const newRows = values.activities ? sortGridByActivityId([...values.activities, updatedRow]) : [updatedRow];
-                setFieldValue('activities', newRows);
+                const updateRows=newRows.map(row =>{
+                      if (updatedRow.numActividad === row.numActividad){
+                        const newDuracion=calculateDuration(row.fechaInicio,row.fechaTermino);
+                        const newValue=Number(row.presupuesto)
+                        let { presupuesto, duracion ,...rest}= row;
+                        return {...rest,presupuesto:newValue,duracion:newDuracion}; //esto es para asegura que presupuesto es number y calculas duracion
+                      }else{
+                        return row;  
+                      }
+                })
+                setFieldValue('activities', updateRows);
               } else if (isEditing) {
                 const updatedRows = values.activities?.map(row =>
                   row["numActividad"] === editingRow?.["numActividad"] ? updatedRow : row
@@ -361,9 +358,7 @@ useEffect(() => {
                   optionsStoneType={optionsStoneType} optionsConectionPointType={optionsConectionPointType} optionsCertificadoAccesoType={optionsCertificadoAccesoType} 
                   optionsOrientationType={optionsOrientationType} optionsCeilingElementType={optionsCeilingElementType} techoOptions={techoOptions}
                 />                
-                {regiones && (
-                  <LocationForm regiones={regiones}  errors={errors}  touched={touched} />
-                )}                 
+                {regiones && <LocationForm regiones={regiones}  errors={errors}  touched={touched} /> }                 
                 <div className="mb-4 flex items-center space-x-4">
                   <Field  name='kmlFile' component={CustomFileInput} showUploadButton={false} 
                     label="Archivo kml o kmz"  accept=".kml,.kmz" className="100%" useStandaloneForm={false} 
@@ -394,16 +389,12 @@ useEffect(() => {
                     <ActivityUploadSection />
                   </div>
                 )}  
-                {/* {alertMessage && ( <CustomAlert message={alertMessage} type={alertType} duration={3000} onClose={() => setAlertMessage(null)} /> )} */}
                 {values.activities && values.activities.length > 1 && (
                   <div style={{ marginLeft:"0rem" }}>
                     <CustomGrid title="Actividades actuales" columns={columnsActivities} data={values.activities} fontSize="13px"
                       actions={["add", "edit", "delete"]} labelButtomActions={[(selectedRow) ? `Agregar actividad ${nextActivityToAdd}` : 'Agregar actividad', "", ""]}
-                      actionsTooltips={[
-                        `Agregar actividad que sigue a la seleccionada (${nextActivityToAdd})`, 
-                        "Editar esta actividad", 
-                        "Eliminar esta actividad"
-                      ]}
+                      actionsTooltips={[`Agregar actividad que sigue a la seleccionada (${nextActivityToAdd})`, 
+                        "Editar esta actividad","Eliminar esta actividad" ]}
                       onAdd={handleAdd} onEdit={handleEdit}  onDelete={handleDelete} gridWidth="95%" rowsToShow={7} 
                       exportable={true} borderVertical={true} rowHeight="30px" selectable={true} onRowSelect={handleRowSelection}                 
                     />
@@ -414,7 +405,7 @@ useEffect(() => {
                     <CustomModal isOpen={isEditing || isAdding} onClose={handleCloseModal} height='80vh' width="650px"
                       title={isAdding ? `Agregar actividad ${nextActivity}` : `Modificar actividad ${editingRow?.["numActividad"]}`}
                     > 
-                      <DynamicForm columns={activitiesColumnsDynamic} onSave={handleSave}  onCancel={handleCloseModal}  setIsDirty={setIsDirty}   
+                      <DynamicForm columns={columnsActivities} onSave={handleSave}  onCancel={handleCloseModal}  setIsDirty={setIsDirty}   
                         initialValues={ editingRow || { "numActividad": nextActivity, actividad: "", presupuesto: "",  fechaInicio: "", fechaTermino: "", }} 
                       />
                     </CustomModal>

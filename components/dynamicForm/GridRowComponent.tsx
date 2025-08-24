@@ -14,7 +14,7 @@ interface GridRowProps {
   onDelete: () => void;
   label:string;
   objectGrid?:string;//para el tooltips de los botones de actions
-  actions: ('add' | 'edit' | 'delete')[];
+  actions: ('add' | 'edit' | 'delete'| 'zoom')[];
 }
 
 const GridRowComponent: React.FC<GridRowProps> = ({ row, columns , actions, objectGrid, columnWidths = [], onEdit, onDelete, label }) => {

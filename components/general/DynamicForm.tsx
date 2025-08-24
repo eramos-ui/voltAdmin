@@ -31,6 +31,7 @@ export type ColumnDynamicForm = {
     dependsOn?: { field: string; value: string | number | boolean }; 
     dependencies?:{ field: string; valueMap: Record<string, any> }[];    
     required?:boolean;
+    format?:string; //para los Date 
  
   };
 
@@ -44,7 +45,7 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
     rowIndex?:number;
     handleFileUpload?: (file: File | null, rowIndex?: number, field?: string) => void;
   }) => {
-  // console.log('DynamicForm columns',columns);
+  //  console.log('DynamicForm columns',columns);
   // console.log('DynamicForm initialValues',initialValues);
   useEffect(() => {
     setIsDirty(false); // 📌 Inicializa como no modificado al cargar
@@ -66,7 +67,7 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
    }, {});
   //console.log('groupedColumns',groupedColumns);
   const handleFieldChange = (field: string, newValue: string, setFieldValue:any) => {
-     setFieldValue(field, newValue);
+    setFieldValue(field, newValue);
     const columnWithDependencies = columns.find((col) => col.field === field);// 📌 Busca si hay dependencias configuradas para este campo
     if (columnWithDependencies?.dependencies) {
         //console.log('dependencies',columnWithDependencies?.dependencies);
@@ -83,7 +84,7 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
     useEffect(() => {
       const dirty = !isEqual(values, initialValues);
       setIsDirty(dirty);
-      //console.log('FormObserver dirty',dirty);
+      console.log('FormObserver dirty',dirty);
     }, [values, initialValues, setIsDirty]);
     return null;
   };
@@ -96,18 +97,20 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
       }}
     >
      {({ handleSubmit, handleChange, setFieldValue, values }) => {
+    
       // useEffect(() => {  console.log('DynamicForm values',values); }, [values]);
       //FormObserver es para detectar si los valores han cambiado respecto a los iniciales sin poner un useEffect que No puede ir aquí
       <FormObserver initialValues={initialValues} setIsDirty={setIsDirty} />
        return (
           <div className="dynamic-form">
-              {Object.entries(groupedColumns).map(([rowNumber, rowColumns]) => (
+              {Object.entries(groupedColumns).map(([rowNumber, rowColumns]) => 
+              {   // console.log('rowNumber',rowNumber); console.log('rowColumns',rowColumns) 
+              return (
                   <div key={rowNumber} className="dynamic-form-row">
                       {rowColumns.filter((col) => col.editable).map((col) => {
                           const isDisabled = col.dependsOn
                               ? values[col.dependsOn.field] == null || values[col.dependsOn.field] !== col.dependsOn.value
                               : false;
-                          // if (col.field === 'fechaF3') console.log('col,isDisabled',col.field,isDisabled);    
                           return (
                               <div key={col.field} className="dynamic-form-field">
                                   {col.inputType === "file" ? (
@@ -123,7 +126,7 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                                         />
                                   ) : col.inputType === "date" ? (
                                       <CustomDate label={col.headerName} name={col.field} theme="light" width="80px" value={values[col.field]}
-                                      disabled={isDisabled} //disabled={false} //disabled={isDisabled} 
+                                      disabled={isDisabled} format={col.format} required={col.required} placeholder={`Ingrese ${col.headerName.toLowerCase()}`}
                                       />
                                   ) : col.inputType === "select" && col.options ? (
                                       <CustomSelect  id={col.field} name={col.field} label={col.headerName} options={col.options} value={values[col.field]}
@@ -140,7 +143,8 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                                       />
                                   ) : (
                                       <CustomInput id={col.field} label={col.headerName} width={col.width} style={{ width: "100%" }} value={values[col.field]}
-                                          placeholder={`Ingrese ${col.headerName.toLowerCase()}`} onChange={handleChange}
+                                          placeholder={`Ingrese ${col.headerName.toLowerCase()}`}
+                                          onChange={handleChange} formatNumber={true } name={col.field}
                                           type={col.inputType && validInputTypes.includes(col.inputType as InputType) ? (col.inputType as InputType) : "text"}
                                           captionPosition={col.captionPosition || "top"} theme="light" disabled={isDisabled} required={col.required}
                                       />
@@ -149,7 +153,8 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                           );
                       })}
                   </div>
-              ))}
+              )}
+              )}
               <div className="dynamic-form-actions">
                   <CustomButton buttonStyle="secondary" size="small" htmlType="button" label="Cancelar" tooltipPosition="top" onClick={onCancel} 
                       icon={<FontAwesomeIcon icon={faEraser} size="lg" color="white" />} tooltipContent="Para salir del formulario sin actualizar"                   

@@ -215,7 +215,7 @@ import { EditForm } from '@/components/dynamicForm/EditForm';
               }
               {isModalOpen && formData.table.editFormConfig && formData.table.columns && formData.table.editFormConfig && (
                 <EditForm isOpen={isModalOpen} onClose={() => reLoad()   } theme={formData.table.editFormConfig.theme} // onSubmit={handleFormAdd} 
-                  row={editingRowIndex !== null ? rows[editingRowIndex] : {}} columns={formData.table.columns} formId={Number(formId)}
+                  row={editingRowIndex !== null ? rows[editingRowIndex] : {}} columns={formData.table.columns} formId={Number(formId)} apiGetRow={ formData.table.apiGetRow}
                   formConfig={ formData.table.editFormConfig as FormConfigDFType} // Pasa el editFormConfig al componente de edición
                   requirePassword={formData.table.requirePassword} apiSaveForm={apiSaveform} isAdding={isAdding} fields={formData.editFields || []} //rows={rows} //setRows={setAllValues }
                 />

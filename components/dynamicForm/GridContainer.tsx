@@ -9,7 +9,7 @@ import { TitleOverGridAndAddButton } from './TitleOverGridAndAddButton';
 interface GridContainerProps {
   columns: GridColumnDFType[];
   rows: GridRowDFType[];
-  actions: ('add' | 'edit' | 'delete')[];
+  actions: ('add' | 'edit' | 'delete' | 'zoom')[];
   onEdit: (index: number, editFormConfig?: FormConfigDFType) => void; // Pasamos el editFormConfig aquí
   onDelete: (index: number) => void;
   columnWidths?: string[];

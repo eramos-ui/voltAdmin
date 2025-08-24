@@ -9,19 +9,23 @@ import { Rol } from '@/models/Rol';
 import { getUserVigenteByEmail } from '@/app/services/users/getUserVigenteByEmail';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('en updateUsuario');
   await connectDB();
 
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
+  const { action='edit', idUserModification, row, password } = req.body;//sólo vienen estos 4 datos
+  console.log('en updateUsuario req.body',  action,idUserModification, row);
 
-  const {
-    _id, name, email, userModification, aditionalData,
-    phone, rut, valid, roleId,action,
-  } = JSON.parse(req.body);
+  // const {
+  //   _id, name, email, userModification, aditionalData,
+  //   phone, rut, valid, roleId,action,
+  // } = JSON.parse(req.body);
   //  console.log('en updateUsuario req.body', _id, name, email, userModification, aditionalData, phone, rut, valid, roleId,action);
    if (action ==='delete') {
-      const user = await User.findById(_id);
+    const id=row._id;
+    const user = await User.findById(id);
       if (!user) {
         return res.status(404).json({ message: 'Usuario no encontrado' });
       }
@@ -30,52 +34,83 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await user.save();
       return res.status(200).json({ message: 'Usuario eliminado' });
    }
-  try { 
+
     const roles=await Rol.find();
-    const rol=roles.find(r => Number(r.value) === Number(roleId));
-    const role=rol?.label;//para grabar también role que es el label del rol
+    const rol=roles.find(r => Number(r.value) === Number(row.roleId));
+    const perfil=rol?.label;//para grabar también role que es el label del rol
     // console.log('en updateUsuario  rol',rol,role);
-    if (_id) {
+    let idUser=0;
+    let clave=password;
+
+    const id=(row._id)?row._id: null;
+    if (!id || id === null){
       // 🔁 UPDATE parcial
-      const user = await User.findById(_id);
-
-      if (!user) {
-        return res.status(404).json({ message: 'Usuario no encontrado' });
+      // const user = await User.findById(_id);
+      const userSameEmail = await getUserVigenteByEmail(row.email as string);
+      try {
+        if (userSameEmail) {
+          // console.log('usuario repetido')
+          return res.status(404).json({ message: `Error se encontró usuario con el mismo email ${userSameEmail.email}` });
+        }
+        type IdUserOnly = { idUser: number };//busca idUser
+        const userMax = await User.findOne({}, 'idUser')
+          .sort({ idUser: -1 })
+          .lean<IdUserOnly | null>();
+        //  console.log('userMax',userMax,typeof userMax, userMax?.idUser)
+         if  (userMax)  idUser= userMax?.idUser;
+        // res.status(200).json({ maxIdUser: userMax ? NumberuserMax.idUser : null });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener el mayor idUser' });
       }
-      console.log('en updateUsuario  UPDATE user',user);
+      // if (!user) {
+      //   return res.status(404).json({ message: 'Usuario no encontrado' });
+      // }
+       
       // Solo los campos permitidos
-      user.name = name;
-      user.email = email;
-      user.userModification = userModification;
-      user.aditionalData = aditionalData;
-      user.phone = phone;
-      user.rut = rut;
-      user.isValid = (valid ==='vigente')?true:false;
-      user.role = role;
-      user.roleId = roleId;
-      await user.save();
-
-      return res.status(200).json({ message: 'Usuario actualizado', user });
-    } else {
-      const emailAdd=email.toString();
-      const userByEmail=await getUserVigenteByEmail(emailAdd);
-      // console.log('en updateUsuario  userByEmail',userByEmail);
-      if (userByEmail) {
-        return res.status(400).json({ error: 'Ya existe un usuario con este correo electrónico.' });
+      const newUser= new User({
+        name : row.name,
+        email : row.email,
+        userModification : idUserModification,
+        aditionalData : row.aditionalData,
+        phone : row.phone,
+        rut : row.rut,
+        isValid : true,
+        perfil,
+        roleId : row.roleId,
+        user: row.email,   
+        password,
+        theme: 'light',
+        system: 'fotvadmin',   
+        valid: 'vigente',
+        validDate: new Date(),
+        roleswkf: [],
+        idUser,
+      });
+      console.log('en crea usuario en UPDATE user',newUser,perfil);
+      try{
+        await newUser.save();
+        return res.status(201).json({ message: 'Usuario actualizado', user: newUser.name });         
+      }catch(error){
+        console.log(error);
+        return res.status(500).json({ message: 'Error al grabar nuevo usuario' });
       }
+    } else {
+      const user = await User.findById(id);
+      
       // 🆕 INSERT: completar campos faltantes
-      const newUser = new User({
-        name,
-        email,
-        userModification,
-        aditionalData,
-        phone,
-        rut,
-        isValid: (valid ==='vigente')?true:false,
-        role,
-        roleId,
+      const actualizaUser = new User({
+        name: row.name,
+        email: row.email,
+        userModification:idUserModification,
+        aditionalData:row.aditionalData,
+        phone:row.phone,
+        rut:row.rut,
+        isValid: true,
+        perfil,
+        roleId: row.roleId,
         // Campos adicionales requeridos
-        user: email,                      // por ejemplo, usar email como user si no se define
+        user: row.email,                      // por ejemplo, usar email como user si no se define
         password: 'changeme123',         // ⚠️ reemplazar luego por un flujo real de password
         theme: 'light',
         system: 'fotvadmin',                 // por defecto, si aplica
@@ -84,12 +119,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         avatar: '',                      // opcional
         roleswkf: [],
       });
-      console.log('en updateUsuario  INSERT newUser',newUser);
-      await newUser.save();
-      return res.status(201).json({ message: 'Usuario creado', user: newUser });
+      try{
+        await actualizaUser.save();
+        return res.status(201).json({ message: 'Usuario actualizado', user: actualizaUser.name });      
+      
+      }catch(error){
+        console.log(error);
+        return res.status(500).json({ message: 'Error al grabar nuevo usuario que existía' });
+      }
     }
-  } catch (error) {
-    console.error('Error en updateUsuario:', error);
-    return res.status(500).json({ message: 'Error interno', error });
   }
-}

@@ -4,7 +4,7 @@ import { GridColumnDFType } from '@/types/interfaceDF';
 interface GridHeaderProps {
   columns: GridColumnDFType[];
   columnWidths?: string[];
-  actions: ('add' | 'edit' | 'delete')[];
+  actions: ('add' | 'edit' | 'delete'| 'zoom')[];
   label: string;
 }
 
