@@ -44,7 +44,7 @@ export const updateProject = async (
           }
         }
       }
-    };  
+    };   
     appendGridFiles(values?.empalmesGrid ?? [], ['rutCliente', 'boleta', 'poder', 'f2', 'diagrama', 'otrasImagenes'], 'nroEmpalme');
     appendGridFiles(values?.instalacionesGrid ?? [], ['memoriaCalculo'], 'nroInstalacion');
     appendGridFiles(values?.techoGrid ?? [], ['imagenTecho'], ['nroInstalacion', 'nroAgua']);

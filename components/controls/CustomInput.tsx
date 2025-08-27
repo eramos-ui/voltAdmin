@@ -130,8 +130,8 @@ export const CustomInput = ({
     const [ formattedValue, setFormattedValue ] = useState<string>(value ? value.toString() : "");
     const [ valueInside, setValueInside ]       = useState<any>( value ? value.toString() : "");
     const [ rutError, setRutError ]             = useState<string | null>(null);
-    // console.log('CustomInput field ',field,formatNumber);
-
+    // if(field.name ==='emailContact') console.log('CustomInput field ',field);
+// console.log('en input field',field)
     const inputClassNames = ` 
     custom-input-field ${theme}SS
     ${leftIcon ? 'has-left-icon' : ''} 
@@ -158,7 +158,7 @@ export const CustomInput = ({
     }, [valueInside, formatNumber, formatNumberValue]);
     useEffect(() => {
       if (type === 'RUT' && valueInside) {
-        // console.log('CustomInput useEffect type',type,valueInside);
+        //  console.log('CustomInput useEffect type',type,valueInside);
         const isValid= validateRut(valueInside);
         setRutError(isValid ? null : 'RUT no válido');
       } else {

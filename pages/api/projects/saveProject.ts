@@ -1,4 +1,21 @@
 // pages/api/projects/saveProject.ts
+/*
+1. Crea o actualiza  y crea una instancia del documento del proyecto, si es nuevo se crea idProject=nroDocumento incrmentando 
+  contador  desde la tabla Counter.
+2. en GridFS almacena los archivos, excepto KML ello ocurre en uploadFiles
+3. se crea el process y la task inicial, la activity está definida en la tabla diagram.activityProperties 
+  Si es un nuevo process es la idActivity 201 con isNew=true (idProject=0), sin no es 208 que es "Completar proyecto" (existente). 
+  Esto lo hace en upsertProject que actualiza el context del process (attributes). 
+  Cuando state='complete', entonces aplica finishTask que le pone la 'F' a taskStatus y actualiza 
+  atributos del process (idProcessInstance) o context. Es finishTask quien lanza las actividades siguientes en processNextActivities.
+  Para ell utiliza findNextActivities que las obtiene del diagram dada la activity que se finaliza. Puden ser ninguna o varias (nextActivity) 
+  y su tipo se lee de las destinationShape = diagram.shapes, si nextActivity.isAutomatic se ejecuta createTaskForUser, luego se revisa
+  destinationShape.type, si es  'fin' no se hace nada más; si es 'actividad' se ejecuta createTaskForUser; si es 'join' se ejecuta canCreateJoinTask;
+  si es 'cuestion' se resuelve la(s) activity(ies) que sigue(n) a partir de resolvedActivity obtenidos de la función resolvedActivity=resolveCuestion(...)
+  que puede tener definda un acción personalizada (este está definido en diagram.activityProperties.onExitActions) , si existe la ejecuta action(...)
+  Como el proceso es recursivo, dependiendo del caso, se incrementa las lista de activitiesToProcess los cual se hace también para nextActivity.isAutomatic;
+  finalmente si es "inicio" no se hace nada.
+*/
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import { connectDB } from '@/lib/db';
@@ -91,12 +108,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           userModification,
           nameActivity: 'Completar proyecto',
           session
-        });
-       
+        });       
         idTaskExisting = idTask;
         idProcessInstanceExisting = idProcessInstance;
-        idTaskExisting = idTask;
-      
+        idTaskExisting = idTask;      
       }else {
         // console.log('idTaskExisting',idTaskExisting)
         const result = await getContextByIdTask(idTaskExisting);
@@ -128,7 +143,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         // console.log('en saveProject idActivity',idActivity,context,tipoDocumento,nroDocumento); 
 
         const userFinish = userModification;
-        const idProcessInstance=idProcessInstanceExisting;
+        const idProcessInstance=idProcessInstanceExisting; 
         // console.log('en saveProject antes de finishTask',idProcessInstance); 
         await finishTask(
           diagram.diagram,//que tiene los connectors, shapes y las pages attributes-dibujo 

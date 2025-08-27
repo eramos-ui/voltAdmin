@@ -2,7 +2,7 @@ import { Project } from '@/models/Project';
 import { Counter } from '@/models/Counter';
 import { omit, isEqual } from 'lodash';
 
-export const upsertProject = async (values: any, session: any) => {
+export const upsertProject = async (values: any, session: any) => { 
   let { idProject } = values;
   const isNew = !idProject || idProject === 0;
 

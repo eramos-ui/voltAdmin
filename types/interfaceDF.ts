@@ -65,7 +65,7 @@ export interface ButtonConfigDFType {
     apiOptions?: string;
     spFetchSaveGrid?:string;
     apiSaveForm?:string;
-    apiDeleteForm?:string;
+    apiDeleteForm?:string;//para eliminar un registro de la BD
     apiUploadFile?:string;
     requirePassword?:boolean; 
     padding?:string;
@@ -153,6 +153,11 @@ export interface FormConfigDFType { //del formulario dynamic
     formSize?: {
       width?: string;
       maxWidth?: string;
+    };
+    editFormSize?: {
+      width?: string;
+      maxWidth?: string;
+      height?: string;
     };
     buttons: ButtonConfigDFType[];
     table: FormFieldDFType;

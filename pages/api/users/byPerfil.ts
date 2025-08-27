@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Obtener el último documento por usuario con ese perfil
     const usuarios = await User.aggregate([
-      { $match: { role, valid: 'vigente' } },
+      { $match: { perfil:role, isValid: true } },
       { $sort: { updatedAt: -1 } },
       {
         $group: {
@@ -26,6 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       { $replaceRoot: { newRoot: '$doc' } }
     ]);
+    // console.log('API User byPerfil',usuarios.length, usuarios)
     // Transformar a OptionsSelect
     // const options = usuarios.map((u) => ({
     //   value: u.user,

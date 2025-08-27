@@ -43,7 +43,10 @@ const AdminActivityPage = () => {
     const { refreshMenu } = useMenu();
     //  console.log('AdminActivityPage idTask-previousUrl',idTask,previousUrl);
     useEffect(()=>{
-        const cargaResponsables=async () => setResponsablesOptions(  await getUsersByPerfilForOptions('Responsable de actividad'));
+        const cargaResponsables= async () => {
+          const responsables= await getUsersByPerfilForOptions('Responsable de actividad');
+          setResponsablesOptions( responsables)
+        }
         cargaResponsables();          
     },[])
     useEffect(() => {

@@ -1,5 +1,7 @@
 // /app/services/processEngine/actions/onExitActions.ts
-
+/*
+Lanza subproceso(s) si existe(n) 
+*/
 import { crearSubProcesoGantt } from "@/helpers/actions/crearSubProcesoGantt";
 import { ActionFn } from "./types";
     

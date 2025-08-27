@@ -79,7 +79,7 @@ const NewProjectPage = () => {
  const ValuesWatcher = () => {//para obtener los cambios en Formik de los values y lanzar useEffect
   const { values } = useFormikContext<{ activities: any[] }>();
   useEffect(() => {
-    setActivities(values.activities)
+    setActivities(values.activities);
   }, [values.activities]);
   return null; // no renderiza nada
 };
@@ -213,6 +213,7 @@ useEffect(() => {
     console.log('en handleSaveComplete idTask',idTask);
     const values={...vals,state:'complete',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
     console.log('en handleSaveComplete values',values);
+return;
     if (vals.projectName.length === 0) {
       window.alert("Para guardar el proyecto, mínimo debe ingresar el nombre del proyecto y éste debe ser único.");
       return;      
@@ -235,7 +236,8 @@ useEffect(() => {
     setMessageLoadingIndicator('grabando...');
     setLoading(true);
     const result = await updateProject(values);
-    console.log('result',result);
+    setLoading(false);
+    alert("Grabado exitosamente");  
     router.push('/');
     refreshMenu();//para refrescar el menú dinámico
   };
@@ -270,7 +272,8 @@ useEffect(() => {
       setMessageLoadingIndicator('grabando...');
       setLoading(true);
       const result = await updateProject(values); 
-      console.log('result',result);    
+      setLoading(false);
+      alert("Grabado exitosamente");  
       router.push('/');
       refreshMenu();//pára refrescar el menú dinámico
     } else {
@@ -312,6 +315,7 @@ useEffect(() => {
               setEditingRow({actividad:'', duracion:0,fechaInicio:"", fechaTermino:"",numActividad:newActivity,presupuesto:0})
               setNextActivity(newActivity);
               setIsAdding(true);
+              
             };            
             const handleDelete = (row: any) => {
               // console.log('en handleDelete row',row)
@@ -344,8 +348,16 @@ useEffect(() => {
                 })
                 setFieldValue('activities', updateRows);
               } else if (isEditing) {
-                const updatedRows = values.activities?.map(row =>
-                  row["numActividad"] === editingRow?.["numActividad"] ? updatedRow : row
+                const updatedRows = values.activities?.map(row => {
+                  if (row.numActividad === updatedRow.numActividad){
+                    const fechaInicio=String(updatedRow?.fechaInicio);
+                    const fechaTermino=String(updatedRow?.fechaTermino);
+                    const newDuracion=calculateDuration(fechaInicio,fechaTermino);                  
+                    return {...row,fechaInicio,fechaTermino,duracion:newDuracion, presupuesto:updatedRow.presupuesto}
+                  } else{
+                    return row;
+                  }
+                }
                 );
                 setFieldValue('activities', updatedRows);
               }

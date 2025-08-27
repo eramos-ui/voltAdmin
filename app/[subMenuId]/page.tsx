@@ -116,6 +116,14 @@ import { EditForm } from '@/components/dynamicForm/EditForm';
   if (!formData || loading ) {
     return <LoadingIndicator  message='cargando' />;    
   }
+  const replaceParam=((param:string) => { //para el que está en handleDelete
+    switch ( param ){
+    case 'userId':      
+      return session?.user.id
+    default:
+    return param;   
+    }
+  })
   const handleDelete = (index: number) => {
     const apiSaveForm=formData?.table.apiSaveForm;           
    
@@ -185,6 +193,20 @@ import { EditForm } from '@/components/dynamicForm/EditForm';
     
     router.push('/');
   }
+  const handleZoom=( row:any) =>{//actions de consulta en la grilla
+    if( !formData.table.zoomUrl) console.log('No esta definida la url que muestra la consulta');
+    let ruta=formData.table.zoomUrl;
+    if (ruta && ruta.includes('[')){
+      const urlInicio=ruta.split('[')[0];
+      const inicio=ruta.split('[')[1];
+      const param=inicio.split(']')[0];      
+      const valueParam=row[param];
+      ruta=urlInicio+replaceParam(valueParam)+inicio.split(']')[1];
+      //  ruta=uri+'/api/files/689f4b4ef266124a4b8bfaf6'
+      console.log('ruta final', `${ruta}`);
+    }
+    router.push(`${ruta}`);
+  }
   // const spFetchSaveGrid=formData.table.spFetchSaveGrid;
   // const apiGetRows=formData.table.apiGetRows;
   const apiSaveform=formData.table.apiSaveForm;
@@ -206,12 +228,18 @@ import { EditForm } from '@/components/dynamicForm/EditForm';
         <h1 className="text-3xl font-bold mb-4">{formData.formTitle}</h1> 
           <>       
               { !loading && formData.table.columns && formData.table.actions && formData.table.columnWidths && formData.table.editFormConfig &&         
-              <GridContainer  columns={formData.table.columns} rows={rows} actions={formData.table.actions} 
-                    columnWidths={formData.table.columnWidths} onEdit={handleEdit} handleAdd={handleAdd} table={formData.table}
-                    onDelete={handleDelete} editFormConfig={formData.table.editFormConfig} // Pasamos el editFormConfig a GridContainer
-                    label={formData.table.label} //requerido para los tooltips de la Actions
-                    objectGrid={formData.table.objectGrid}//para el tooltips de los botones de actions
-                />
+              // <GridContainer  columns={formData.table.columns} rows={rows} actions={formData.table.actions} 
+              //       columnWidths={formData.table.columnWidths} onEdit={handleEdit} handleAdd={handleAdd} table={formData.table}
+              //       onDelete={handleDelete} editFormConfig={formData.table.editFormConfig} // Pasamos el editFormConfig a GridContainer
+              //       label={formData.table.label} //requerido para los tooltips de la Actions
+              //       objectGrid={formData.table.objectGrid}//para el tooltips de los botones de actions
+              //   />
+              <GridContainer  columns={formData.table.columns} rows={rows} actions={formData.table.actions} actionsTooltips={formData.table.actionsTooltips} 
+              rowToShow={formData.table.rowToShow} columnWidths={formData.table.columnWidths} onEdit={handleEdit} handleAdd={handleAdd} table={formData.table}
+              onDelete={handleDelete} editFormConfig={formData.table.editFormConfig} // Pasamos el editFormConfig a GridContainer
+              onZoom={handleZoom} label={formData.table.label} //requerido para los tooltips de la Actions
+              objectGrid={formData.table.objectGrid}//para el tooltips de los botones de actions
+            />
               }
               {isModalOpen && formData.table.editFormConfig && formData.table.columns && formData.table.editFormConfig && (
                 <EditForm isOpen={isModalOpen} onClose={() => reLoad()   } theme={formData.table.editFormConfig.theme} // onSubmit={handleFormAdd} 

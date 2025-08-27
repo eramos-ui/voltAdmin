@@ -4,9 +4,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { connectDB } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // console.log('en updateUserVersion',req.body.user);
+  console.log('en updateUserVersion',req.body.user);
   if (req.method !== 'POST') return res.status(405).end();
 
+console.log('en updateUserVersion', req.body.user)
+res.status(500).json('Probando APU');
+return;
   try {
     await connectDB();
     const updatedUser = await addUserVersion(req.body.user);

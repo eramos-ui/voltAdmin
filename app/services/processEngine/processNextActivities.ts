@@ -22,7 +22,7 @@ export const processNextActivities = async (
   nroDocumento: number,
   nameActivity: string
 ): Promise<void> => {
-  let activitiesToProcess: NextActivity[] = findNextActivities(
+  let activitiesToProcess: NextActivity[] = findNextActivities( 
     { connectors: diagram.connectors },
     activityProperties,
     currentKey,

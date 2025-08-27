@@ -15,26 +15,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
-  const { action='edit', idUserModification, row, password } = req.body;//sólo vienen estos 4 datos
+  const { action='edit', idUserModification, row, password } = JSON.parse(JSON.stringify(req.body));//sólo vienen estos 4 datos
   console.log('en updateUsuario req.body',  action,idUserModification, row);
 
-  // const {
-  //   _id, name, email, userModification, aditionalData,
-  //   phone, rut, valid, roleId,action,
-  // } = JSON.parse(req.body);
-  //  console.log('en updateUsuario req.body', _id, name, email, userModification, aditionalData, phone, rut, valid, roleId,action);
-   if (action ==='delete') {
-    const id=row._id;
-    const user = await User.findById(id);
-      if (!user) {
-        return res.status(404).json({ message: 'Usuario no encontrado' });
-      }
-      user.isValid=false;
-      user.valid="no Vigente"
-      await user.save();
-      return res.status(200).json({ message: 'Usuario eliminado' });
-   }
-
+  //  if (action ==='delete') {
+  //   const id=row._id;
+  //   const user = await User.findById(id);
+  //     if (!user) {
+  //       return res.status(404).json({ message: 'Usuario no encontrado' });
+  //     }
+  //     user.isValid=false;
+  //     user.valid="no Vigente"
+  //     await user.save();
+  //     return res.status(200).json({ message: 'Usuario eliminado' });
+  //  }
+   console.log('en Api update usuarios row',row)
+   let email=row.email as string;
+   email=email.toLowerCase();
     const roles=await Rol.find();
     const rol=roles.find(r => Number(r.value) === Number(row.roleId));
     const perfil=rol?.label;//para grabar también role que es el label del rol
@@ -45,8 +42,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const id=(row._id)?row._id: null;
     if (!id || id === null){
       // 🔁 UPDATE parcial
-      // const user = await User.findById(_id);
-      const userSameEmail = await getUserVigenteByEmail(row.email as string);
+      
+      const userSameEmail = await getUserVigenteByEmail(email);
       try {
         if (userSameEmail) {
           // console.log('usuario repetido')
@@ -62,23 +59,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al obtener el mayor idUser' });
-      }
-      // if (!user) {
-      //   return res.status(404).json({ message: 'Usuario no encontrado' });
-      // }
-       
+      }     
+
       // Solo los campos permitidos
       const newUser= new User({
         name : row.name,
-        email : row.email,
+        email : email,
         userModification : idUserModification,
         aditionalData : row.aditionalData,
         phone : row.phone,
         rut : row.rut,
+        user: email,
         isValid : true,
         perfil,
         roleId : row.roleId,
-        user: row.email,   
         password,
         theme: 'light',
         system: 'fotvadmin',   
@@ -101,7 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // 🆕 INSERT: completar campos faltantes
       const actualizaUser = new User({
         name: row.name,
-        email: row.email,
+        email: email,
         userModification:idUserModification,
         aditionalData:row.aditionalData,
         phone:row.phone,
@@ -110,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         perfil,
         roleId: row.roleId,
         // Campos adicionales requeridos
-        user: row.email,                      // por ejemplo, usar email como user si no se define
+        user: email,                      // por ejemplo, usar email como user si no se define
         password: 'changeme123',         // ⚠️ reemplazar luego por un flujo real de password
         theme: 'light',
         system: 'fotvadmin',                 // por defecto, si aplica

@@ -57,7 +57,6 @@ export const finishTask = async (
     nroDocumento,
     nameActivity
   );
-
   console.log('en finishTask despues de processNextActivities');
   console.log(`finishTask completado para key=${currentKey}`);
 };
@@ -118,22 +117,22 @@ const updateProcessContext = async (
   const names = processContextArray.map((item: any) => item.name);
   // console.log('en updateProcessContext names',names);
   const attributesArray = Array.isArray(attributes) ? attributes : [attributes];
-// Paso 1️⃣: obtener atributos actuales del proceso
-const doc = await Process.findOne({ idProcessInstance });
-const currentContext = doc?.attributes || [];
+  // Paso 1️⃣: obtener atributos actuales del proceso
+  const doc = await Process.findOne({ idProcessInstance });
+  const currentContext = doc?.attributes || [];
 
-// Paso 2️: hacer merge solo si cambia el valor
+  // Paso 2️: hacer merge solo si cambia el valor
 
-// const mergedAttributes: { idAttribute: string; value: any }[] = [];
-const mergedAttributes = processContextArray
-  .map((ctx: any) => {
-    const name = ctx.name;
+  // const mergedAttributes: { idAttribute: string; value: any }[] = [];
+  const mergedAttributes = processContextArray
+    .map((ctx: any) => {
+      const name = ctx.name;
 
-    const value =
-      attributes?.[name] ??
-      currentContext.find((item: any) => item.idAttribute === name)?.value;
-      return { idAttribute: name, value };
-  })
+      const value =
+        attributes?.[name] ??
+        currentContext.find((item: any) => item.idAttribute === name)?.value;
+        return { idAttribute: name, value };
+    })
   // Solo incluir si el atributo es nuevo o cambió su valor
   .filter((attr) => {
     const currentAttr = currentContext.find(
@@ -142,27 +141,25 @@ const mergedAttributes = processContextArray
     return !currentAttr || currentAttr.value !== attr.value;
   }).filter(attr => attr.value !== undefined);
 
-// console.log('en updateProcessContext mergedAttributes',mergedAttributes);
-// incluimos los actuales NO modificados
-// Paso 3️⃣: guardar en base de datos
-if (mergedAttributes.length > 0) {
-  // console.log('en updateProcessContext actualiza attributes',[...currentContext.filter((attr: any) =>
-  //   !mergedAttributes.find(m => m.idAttribute === attr.idAttribute)), ...mergedAttributes ]);
-  await Process.updateOne(
-    { idProcessInstance },
-    {
-      // solo reemplaza los que cambian
-      $set: {
-        attributes: [
-          // incluimos los actuales NO modificados
-          ...currentContext.filter((attr: any) =>
-            !mergedAttributes.find(m => m.idAttribute === attr.idAttribute)
-          ),
-          ...mergedAttributes
-        ]
+  // console.log('en updateProcessContext mergedAttributes',mergedAttributes);
+  // incluimos los actuales NO modificados
+  // Paso 3️⃣: guardar en base de datos
+  if (mergedAttributes.length > 0) {
+    await Process.updateOne(
+      { idProcessInstance },
+      {
+        // solo reemplaza los que cambian
+        $set: {
+          attributes: [
+            // incluimos los actuales NO modificados
+            ...currentContext.filter((attr: any) =>
+              !mergedAttributes.find(m => m.idAttribute === attr.idAttribute)
+            ),
+            ...mergedAttributes
+          ]
+        }
       }
-    }
-  );
-}
+    );
+  }
   console.log(`Attributes del proceso ${idProcessInstance} actualizados correctamente.`);
 };

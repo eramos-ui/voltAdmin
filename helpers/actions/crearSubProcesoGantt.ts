@@ -14,7 +14,7 @@ export const crearSubProcesoGantt = async ( idProcessInstance: number,tipoDocume
   const idProcess=3;
   const tipoDocumentoActivity="ACTIVIDAD";
   const idActivity=302;
-  const processName='Administrar tarea';
+  const processName='Administrar tarea'; 
   // 2. Iterar sobre cada actividad del proyecto
   for (const actividad of actividades) {
     try {

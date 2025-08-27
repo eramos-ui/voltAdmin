@@ -21,9 +21,10 @@ export const authOptions: AuthOptions = {
       //cuando es Credentials interna aquí se ejecuta primero
       async authorize(credentials) {
         if (!credentials) return null;
-        console.log('🔒 En auth/[...nextauth]-authorize credentials:', credentials.email);
-        console.log('**credentials.email:', credentials.email);
-        const user=await getUserVigenteByEmail(credentials.email);
+        console.log('🔒 En auth/[...nextauth]-authorize credentials:', credentials.email.toLowerCase());
+        console.log('**credentials.email:', credentials.email.toLowerCase());
+        const user=await getUserVigenteByEmail(credentials.email.toLowerCase());
+        if(!user) console.log('usuario no encontrado')
 
        if (!user) return null;
         // console.log('🔒 En auth/[...nextauth]-getUserVigente user:', user);      

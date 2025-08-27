@@ -4,8 +4,6 @@ export const findNextActivities = (
   diagram: { connectors: any[] },
   activityPropsArray: any[],
   currentKey: string,
-
-
 ): NextActivity[] => {
   if (!Array.isArray(diagram?.connectors) || !Array.isArray(activityPropsArray)) {
     console.warn('El diagrama no tiene conectores o activityProperties válidos.');

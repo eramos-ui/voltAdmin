@@ -33,7 +33,7 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
         fieldSchema = Yup.string()
         .required("Debe seleccionar una opción") // 📌 Asegura que no sea vacío o null
         //.nullable()
-        .test("validate-select", "Debe seleccionar una opción válida", (value) => {//.test("nombreDelTest", "mensajeDeError", (value) => {funciónDeValidación}) //true es válido
+        .test("validate-select", `Debe seleccionar una opción válida para ${field.name}`, (value) => {//.test("nombreDelTest", "mensajeDeError", (value) => {funciónDeValidación}) //true es válido
           // console.log('validate-select',field.options,field.apiOptions);
           // Si tiene opciones predefinidas, validar que esté en ellas
           if (field.options && field.options.length > 0) {
@@ -56,6 +56,7 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
     }
     // Validación especial para RUT
     if (field.type === "RUT") {
+      // console.log('en getValidationShemaDF Rut',field)
       fieldSchema = Yup.string()
         .required("El RUT es obligatorio")
         .test(
@@ -79,7 +80,9 @@ export const getValidationSchemaDynamicForm = (fields: FormFieldDFType[]) => {
           fieldSchema  = (fieldSchema  as Yup.StringSchema).min(Number(rule.value!), rule.message || `Mínimo ${rule.value} caracteres`);
           break;
         case "email":
+          // console.log('getValidationSchema email rule', rule,field)
           fieldSchema  = (fieldSchema  as Yup.StringSchema).email(rule.message || "Debe ser un correo válido");
+          // if(field.name='email') console.log('fieldSchema',fieldSchema)
           break;
         // case "pattern":
         //   const regex = new RegExp(rule.value as string); // 📌 Convierte el string en RegExp
