@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useFormikContext, Field } from "formik";
 
-import { CustomSelect } from "@/components/controls/CustomSelect";
 import { Comunas, OptionsSelect, ProjectFormValuesType } from "@/types/interfaces";
-import { CustomInput } from "../controls";
+import { CustomInput, SelectFormikSingle } from "../controls";
 
 
 interface LocationFormProps {
@@ -35,15 +34,14 @@ export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, t
   }, [values.idRegion]);
   return (
     <div className="mb-1 flex items-start space-x-2">
-       <div className="w-2/6">
+       <div className="w-2/7">
        <Field
-         as={CustomSelect}
+         as={SelectFormikSingle}
          label="Región"
          name='idRegion'
          options={regiones  || []}
          placeholder="Seleccione una región"
          required
-         multiple={false}
          theme="light"
          captionPosition="top"
          width="100%"
@@ -53,9 +51,9 @@ export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, t
         }}
       />
       </div>
-      <div className="w-1/6">
+      <div className="w-3/7">
         <Field
-          as={CustomSelect}
+          as={SelectFormikSingle}
           label="Comuna"
           name='idComuna'
           options={comunasPorRegion  || []}
@@ -71,7 +69,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, t
           }}
         />
       </div>
-      <div className="w-3/6">
+      {/* <div className="w-3/9"> */}
         <Field
             name="direccion"
             type="text"
@@ -82,9 +80,9 @@ export const LocationForm: React.FC<LocationFormProps> = ({ regiones,  errors, t
             error={touched.direccion && errors.direccion ? errors.direccion : undefined}
             required
             theme="light"
-            width="54%" // Define el ancho como un porcentaje
+            width="500px" // Define el ancho como un porcentaje
         />
-      </div>      
+      {/* </div>       */}
     </div>
   );
 };

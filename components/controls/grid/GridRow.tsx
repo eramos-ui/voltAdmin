@@ -1,7 +1,8 @@
+
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ColumnConfigType } from "@/types/interfaces";
-import { GridActions } from "./GridActions";
+import {GridActions} from "./GridActions";
 
 type GridRowProps<T> = {
     row: T;
@@ -47,40 +48,61 @@ type GridRowProps<T> = {
   columnWidths: Record<string, string>; 
   updateColumnWidth: (colKey: string, newWidth: string) => void; 
 }) => {
-  // console.log('En GridRow rowHeight',rowHeight);
   const [ rowMaxHeight, setRowMaxHeight ] = useState<string>('20px');
-
-  const rowRef                            = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (rowRef.current) {
-      const maxHeight = Math.max(
-        ...Array.from(rowRef.current.children).map((cell) => (cell as HTMLElement).offsetHeight)
-      );
-      setRowMaxHeight(`${maxHeight}px`);
+  
+  const rowElRef                          = useRef<HTMLDivElement>(null);
+  // const rowRef                            = useRef<HTMLDivElement>(null);
+  const widthsRef                         = useRef(columnWidths);
+  useEffect(() => { widthsRef.current = columnWidths; }, [columnWidths]);
+  useLayoutEffect(() => {
+    const rowEl = rowElRef.current;
+    if (!rowEl) return;
+  
+    const updates: Array<[string, string]> = [];
+    rowEl.querySelectorAll<HTMLElement>('[data-col]').forEach((cell) => {
+      const colKey = cell.getAttribute('data-col')!;
+      // Mejor que innerText.length: mide contenido real
+      const idealPx = Math.min(cell.scrollWidth + 16 /* padding aprox */, 300);
+      const currPx = parseInt(widthsRef.current[colKey] || '150', 10);
+      if (idealPx > currPx) updates.push([colKey, `${idealPx}px`]);
+    });
+  
+    if (updates.length) {
+      // aplica todos los cambios (1 render del padre por ciclo)
+      updates.forEach(([k, w]) => updateColumnWidth(k, w));
     }
-  }, [row]);
+  // 👇 depende solo de “lo que cambia en la fila”
+  }, [columns.map(c => String((row as any)[c.key] ?? '')).join('|')]);
+  
+//   useEffect(() => {
+//     if (rowRef.current) {
+//       const maxHeight = Math.max(
+//         ...Array.from(rowRef.current.children).map((cell) => (cell as HTMLElement).offsetHeight)
+//       );
+//       setRowMaxHeight(`${maxHeight}px`);
+//     }
+//   }, [row]);//
 
- useEffect(() => {
-  if (!rowRef.current) return;
-  //console.log('useEffect en GridRow',columns[0].key, row, isSelected);
-  rowRef.current.querySelectorAll(`[data-col]`).forEach((cell) => {
-    const colKey = cell.getAttribute("data-col") as string;
-    const cellElement = cell as HTMLElement;
-    const textLength = cellElement.innerText.length;
-    const baseWidth = 10;
-    const idealWidth = Math.min(baseWidth * textLength, 300);
-    if (idealWidth > parseInt(columnWidths[colKey] || "150", 10)) {
-      updateColumnWidth(colKey, `${idealWidth}px`); // 📌 Actualiza el ancho en CustomGrid
-    }
-  });
-}, [row,updateColumnWidth,columnWidths]);
+//  useEffect(() => {
+//   if (!rowRef.current) return;
+//   console.log('useEffect en GridRow',columns[0].key, row, isSelected);
+//   rowRef.current.querySelectorAll(`[data-col]`).forEach((cell) => {
+//     const colKey = cell.getAttribute("data-col") as string;
+//     const cellElement = cell as HTMLElement;
+//     const textLength = cellElement.innerText.length;
+//     const baseWidth = 10;
+//     const idealWidth = Math.min(baseWidth * textLength, 300);
+//     if (idealWidth > parseInt(columnWidths[colKey] || "150", 10)) {
+//       updateColumnWidth(colKey, `${idealWidth}px`); // 📌 Actualiza el ancho en CustomGrid
+//     }
+//   });
+// }, [row,updateColumnWidth,columnWidths]);//
 //console.log('rowRef',rowRef.current);
   return (
     <>
     {/* {console.log('JSX GridRow',columns)} */}
       <div
-        ref={rowRef}
+        ref={rowElRef}
         onClick={selectable ? onSelect : undefined}
         style={{
           display: "flex",
@@ -106,7 +128,7 @@ type GridRowProps<T> = {
             return (
               <div 
                 key={String(col.key)} 
-                ref={ rowRef }
+                // ref={ rowRef }
                 data-col={String(col.key)} // 🔹 Identificador para `querySelector`
                 style={{
                   width: columnWidths[String(col.key)] || col.width || "150px", // Usa los mismos anchos que el encabezado

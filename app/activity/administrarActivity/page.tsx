@@ -7,7 +7,7 @@ import { loadDataActivityWithFilesAndEmails } from '@/app/services/loadPages/loa
 
 import { ActivityType, OptionsSelect } from '@/types/interfaces';
 import { Field, Form, Formik, useFormikContext  } from 'formik';
-import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '@/components/controls';
+import { CustomButton, CustomDate, CustomInput, CustomLabel, SelectFormikSingle } from '@/components/controls';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEraser, faFloppyDisk, faHome } from '@fortawesome/free-solid-svg-icons';
 import { formEjecucionActividadOptions } from '@/data/selectType';
@@ -173,12 +173,12 @@ const AdminActivityPage = () => {
                 />
                </div> 
                <div className="w-1/5" >
-               <Field as={CustomSelect}  width="100%" required   
+               <Field as={SelectFormikSingle}  width="100%" required   
                     label="Responsable asignado" name='responsable' options={responsablesOptions || []} placeholder="Asigne al responsable"
                     />
                </div>   
                <div className="w-1/5" >
-               <Field as={CustomSelect} width="100%" required  
+               <Field as={SelectFormikSingle} width="100%" required  
                     label="Forma de ejecución actividad" name='formaEjecucion' options={formEjecucionActividadOptions || []} placeholder="Defina forma de ejecución"
                     />
                </div>   

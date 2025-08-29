@@ -1,7 +1,7 @@
 import { FormFieldDFType } from "@/types/interfaceDF"; 
 //import { FormikErrors, FormikTouched  } from "formik";
 
-import { CustomFileInput,  CustomInput, CustomSelect, CustomDate, CustomLabel } from "@/components/controls";
+import { CustomFileInput,  CustomInput, SelectStandaloneSingle, CustomDate, CustomLabel, SelectStandaloneMulti } from "@/components/controls";
       
 import { useState } from "react";
 import { LoadingIndicator } from "../general/LoadingIndicator";
@@ -112,14 +112,14 @@ export const FieldComponentDF: React.FC<FieldComponentDFProps> = ({ field, value
     case 'select':
       return(
         <FieldWrapper name={name}>
-          <CustomSelect {...commonProps} options={field.options || []} />
+          <SelectStandaloneSingle {...commonProps} options={field.options || []} />
         </FieldWrapper>
       )
     case 'multiselect':
         // console.log('en FieldDocumentDF field multiselect',field)
         return(
            <FieldWrapper name={name}>
-            <CustomSelect {...commonProps} options={field.options || []} multiple={true} maxHeight={field.maxHeight} overflowY={field.overflowY} 
+            <SelectStandaloneMulti {...commonProps} options={field.options || []} maxHeight={field.maxHeight} overflowY={field.overflowY} 
             style={field.style}
             />
            </FieldWrapper>
@@ -129,7 +129,7 @@ export const FieldComponentDF: React.FC<FieldComponentDFProps> = ({ field, value
       // return <CustomSelect {...commonProps} options={field.options || []} />;
       return(
         // <FieldWrapper name={name}>
-          <CustomSelect {...commonProps} options={field.options || []} />
+          <SelectStandaloneSingle {...commonProps} options={field.options || []} />
         // </FieldWrapper>
       )
     case 'text':

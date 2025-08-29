@@ -8,7 +8,7 @@ import * as Yup from "yup";;
 import { ActivityType, OptionsSelect } from '@/types/interfaces';
 import { LoadingIndicator } from '../../components/general/LoadingIndicator';
 import { Field, Form, Formik } from 'formik';
-import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';
+import { CustomButton, CustomDate, CustomInput, CustomLabel, SelectFormikSingle } from '../../components/controls';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk, faHome } from '@fortawesome/free-solid-svg-icons';
 // import { loadEjecutores } from '@/utils/loadEjecutores';
@@ -181,7 +181,7 @@ const DefineEjecutorPage = () => {
                 />
                </div> 
                <div className="w-1/5" >
-               <Field as={CustomSelect}
+               <Field as={SelectFormikSingle}
                     label="Ejecutor asignado"
                     name='userEjecutor'
                     options={ejecutoresOptions || []}
@@ -190,7 +190,7 @@ const DefineEjecutorPage = () => {
                     />
                </div>   
                <div className="w-1/5" >
-               <Field as={CustomSelect}
+               <Field as={SelectFormikSingle}
                     label="Periodo control"
                     name='periodoControl'
                     options={plazoControlOptions || []}

@@ -65,6 +65,7 @@ export const CustomGrid = <T,>({
   onRowSelect,
   isEditable,
 }: CustomGridProps<T>) => {
+  // console.log('CustomGrid')
   // if (title==='Actividades actuales') console.log('en CustomGrid columns',title,columns);
   // if (title==='Actividades actuales') console.log('en CustomGrid data.length',data.length);
   const [columnWidths, setColumnWidths]           = useState<Record<string, string>>(
@@ -170,7 +171,6 @@ export const CustomGrid = <T,>({
         <div>
           <div>
             { (paginatedData) ? paginatedData.map((row, rowIndex) => {/* Filas */
-            // if (rowIndex < 3) console.log('row',row,rowIndex)
             return(
               <GridRow key={rowIndex} row={row} actions={filteredActions} onEdit={onEdit} onDelete={onDelete} rowHeight={rowHeight} fontSize={ fontSize}
                 padding={padding} borderColor={borderColor} borderWidth={borderWidth} borderVertical={borderVertical}  actionsTooltips={actionsTooltips}

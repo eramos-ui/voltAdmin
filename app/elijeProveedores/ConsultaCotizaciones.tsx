@@ -22,6 +22,7 @@ interface Row {
     actividad: string;
     
 }
+
 const columns:ColumnConfigType<GridRowType>[] = [
     { key: "idProjectActivity", label: "idProjectActivity", captionPosition: "top",visible: false, editable: false, width: '100px', type: "number", options: undefined },
     { key: "idProject", label: "idProject", captionPosition: "top", visible: false, editable: false, width: '100px', type: "number", options: undefined },
@@ -34,46 +35,39 @@ const columns:ColumnConfigType<GridRowType>[] = [
     { key: "solicitaInfo", label: "Solicitó información", captionPosition: "top", editable: false, width: '150px', type: "string", options: undefined },
     { key: "cotizo", label: "Hay cotización", captionPosition: "top", editable: false, width: '150px', type: "string", options: undefined },
 ]
-
+  
 export const ConsultaCotizaciones = ({idProject, idProjectActivity, title, setShowConsulta}: ConsultaProps) => {
     const [ loading, setLoading             ]                       = useState(true);
     const [ rows, setRows ]                                         = useState<GridRowType[]>([]);
-    useEffect(() => {
-        const leeEmailStatus = async () => {     //  console.log('loadDataActivity',idTask,email); 
-            try {
-                const response = await fetch(`/api/projectActivity/emailStatus?idProject=${idProject}&idProjectActivity=${idProjectActivity}`);    
-                // const res = await fetch(`/api/getToDoListTaskUser?userId=${userId} &idProcessidActivity=${idActivity}`);
-                if (!response.ok) {
+    const leeEmailStatus = async () => {     //  console.log('loadDataActivity',idTask,email); 
+        try {
+            const response = await fetch(`/api/projectActivity/emailStatus?idProject=${idProject}&idProjectActivity=${idProjectActivity}`);    
+            if (!response.ok) {
                 throw new Error(`Failed to fetch form data: ${response.statusText}`);
-                }
-                const data = await response.json();  
-                // console.log('data', data);
-                if (data.projectEmails.length === 0){ 
-                    alert('No hay cotizaciones');
-                    setShowConsulta(false);
-                }
-                const rowsFormted = data.projectEmails.map((row: Row) => ({
-                    idProjectActivity: row.idProjectActivity,
-                    idProject: row.idProject,
-                    idActivity: row.idActivity,
-                    contacto: row.contacto,
-                    nombreProveedor: row.nombreProveedor,
-                    emailProveedor: row.emailProveedor,
-                    createdAt: row.createdAt.split('T')[0],
-                    actividad: row.actividad,
-                }));
-                setRows(rowsFormted);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching email status:', error);
             }
+            const data = await response.json();  
+            // console.log('data en ConsultaCotizaciones', data.projectEmails);
+            const rowsFormated = data.projectEmails.map((row: Row) => ({
+                idProjectActivity: row.idProjectActivity,
+                idProject: row.idProject,
+                idActivity: row.idActivity,
+                contacto: row.contacto,
+                nombreProveedor: row.nombreProveedor,
+                emailProveedor: row.emailProveedor,
+                createdAt: row.createdAt.split('T')[0],
+                actividad: row.actividad,
+            }));
+            setRows(rowsFormated);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            console.error('Error fetching email status:', error);
         }
-        leeEmailStatus();
-        setLoading(false);
-    }, []);
+    }
     useEffect(() => {
-        console.log('en useEffect rows', rows);
-    }, [rows]);
+        leeEmailStatus();        
+    }, []);
+
     const handleBack = () => {
         setShowConsulta(false);
     }
@@ -81,7 +75,8 @@ export const ConsultaCotizaciones = ({idProject, idProjectActivity, title, setSh
         return <LoadingIndicator message={'cargando'} />;
     }
     return (
-        rows.length>0 && 
+        (rows.length>0) 
+        ? 
         <>
             <div>
                 <h1 style={{ marginLeft:5, marginTop:10 }}>{title}</h1>
@@ -103,5 +98,18 @@ export const ConsultaCotizaciones = ({idProject, idProjectActivity, title, setSh
                 />
             </div>
         </>        
-    )    
+        :
+        <>
+            <div>
+                <p>No hay cotizaciones para la actividad </p>
+            </div>      
+            <div className="mt-3 flex items-start ">
+                <CustomButton buttonStyle="primary" size="small" htmlType="button" label="Volver al página anterior" tooltipContent='Volver a seleccionar otra actividad'
+                    tooltipPosition='top' style={{ marginLeft:5 }}icon={<FontAwesomeIcon icon={faArrowRightToBracket} size="lg" color="white" />} onClick={ handleBack }
+                />
+            </div>
+
+        </>
+    )  
+      
 }

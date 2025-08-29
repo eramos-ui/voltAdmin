@@ -3,7 +3,7 @@ import { Formik, useFormikContext } from "formik";
 import * as Yup from "yup";
 import { CustomInput } from "../controls/CustomInput";
 import { CustomButton } from "../controls/CustomButton";
-import { CustomSelect } from "../controls/CustomSelect";
+import { SelectFormikMulti, SelectFormikSingle } from "../controls";
 import { CustomFileInput } from "../controls/CustomFileInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEraser, faFloppyDisk,} from '@fortawesome/free-solid-svg-icons';
@@ -128,12 +128,18 @@ const DynamicForm = ({ columns, initialValues, onSave, onCancel, rowIndex, handl
                                       <CustomDate label={col.headerName} name={col.field} theme="light" width="80px" value={values[col.field]}
                                       disabled={isDisabled} format={col.format} required={col.required} placeholder={`Ingrese ${col.headerName.toLowerCase()}`}
                                       />
-                                  ) : col.inputType === "select" && col.options ? (
-                                      <CustomSelect  id={col.field} name={col.field} label={col.headerName} options={col.options} value={values[col.field]}
-                                          multiple={col.multiple} onChange={(value) => handleChange({ target: { name: col.field, value } })}
+                                  ) : col.inputType === "select" && col.options && !col.multiple ? (
+                                      <SelectFormikSingle  id={col.field} name={col.field} label={col.headerName} options={col.options} 
+                                          value={values[col.field]} onValueChange={(value:any) => handleChange({ target: { name: col.field, value } })}
                                           captionPosition={col.captionPosition || "top"} theme="light"  width={col.width}  required={col.required}
-                                      />
-                                  ) : col.inputType === "selectIcon" && col.options ? (
+                                      />                                  
+                                  ) : col.inputType === "select" && col.options && col.multiple ?(
+                                    <SelectFormikMulti  id={col.field} name={col.field} label={col.headerName} options={col.options} value={values[col.field]}
+                                     onValueChange={(value:any) => handleChange({ target: { name: col.field, value } })}
+                                    captionPosition={col.captionPosition || "top"} theme="light"  width={col.width}  required={col.required}
+                                    />                                  
+                                  ) :
+                                  col.inputType === "selectIcon" && col.options ? (
                                       <CustomSelectIcon name={col.field} label="Selecciona la forma del techo" options={col.options} value={values[col.field]} width={col.width}
                                           onChange={(value) => {
                                               setFieldValue(col.field, value);

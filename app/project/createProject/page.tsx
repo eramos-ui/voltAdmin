@@ -39,6 +39,10 @@ const validationSchema = Yup.object({
     nivelPiedras: Yup.string().required("El nivel de piedras es obligatorio"),
     nivelFreatico: Yup.string().required("El nivel freático es obligatorio"),
   });  
+const columnsActivities:any[]=activityColumns.map(obj =>{//Ajuste previo de la columnas de las activities
+  let { rowFormEdit ,...rest}=obj;
+  return {...rest, row:obj.rowFormEdit,field:obj.key,headerName:obj.label,columnType:obj.inputType };//, width:obj.widthFormEdit
+}); 
 const NewProjectPage = () => {
   const router                                                  = useRouter();
   const searchParams                                            = useSearchParams();
@@ -51,7 +55,7 @@ const NewProjectPage = () => {
   const [ geoJSONDataL, setGeoJSONDataL ]                       = useState<FeatureCollection<Geometry> | null>(null);//la L es por local para no confundir con setGeoJSONData del context
   const { setGeoJSONData, setSelectedKmlFile, selectedKmlFile } = useContext(MapContext);
   const [ isModalOpen, setIsModalOpen ]                         = useState(false);
-  const [ columnsActivities, setColumnsActivities ]             = useState<any[]>(activityColumns);
+  // const [ columnsActivities, setColumnsActivities ]             = useState<any[]>(activityColumns);
   const [ selectedRow, setSelectedRow ]                         = useState<GridRowType | null>(null);//de las activities
   const [ isAdding, setIsAdding ]                               = useState(false);
   const [ isEditing, setIsEditing ]                             = useState(false);
@@ -70,7 +74,19 @@ const NewProjectPage = () => {
      userModification:"", dateModification: "",state: "draft", tipoTerreno:"", nivelPiedras:"", nivelFreatico:0, nroInstalaciones:1,
   } );
  const { refreshMenu } = useMenu();
+
   // console.log('ubicacionPanel en initialValues ', initialValues.ubicacionPanel);//5 es piso si un nuevo project
+  // console.log('activityColumns',activityColumns)
+  // useEffect(()=>{//para modificar el atributo rowFormEdit a row que usa DynamicForm, la fila de edición de la row que se edita
+  //   if (columnsActivities){
+  //       const newColumnsActitivies=columnsActivities.map(obj =>{
+  //       let { rowFormEdit ,...rest}=obj;
+  //       return {...rest, row:obj.rowFormEdit,field:obj.key,headerName:obj.label,columnType:obj.inputType };//, width:obj.widthFormEdit
+  //     });    
+  //     // console.log('newColumnsActitivies',newColumnsActitivies)
+  //     setColumnsActivities(newColumnsActitivies )
+  //   }
+  // },[]);
  const fetchRegiones = async (): Promise<OptionsSelect[]> => {
   const res = await fetch('/api/catalogs/regiones');
   if (!res.ok) throw new Error('Error al cargar regiones');
@@ -83,16 +99,7 @@ const NewProjectPage = () => {
   }, [values.activities]);
   return null; // no renderiza nada
 };
-useEffect(()=>{//para modificar el atributo rowFormEdit a row que usa DynamicForm, la fila de edición de la row que se edita
-  if (columnsActivities){
-      const newColumnsActitivies=columnsActivities.map(obj =>{
-      let { rowFormEdit ,...rest}=obj;
-      return {...rest, row:obj.rowFormEdit,field:obj.key,headerName:obj.label,columnType:obj.inputType };//, width:obj.widthFormEdit
-    });    
-    // console.log('newColumnsActitivies',newColumnsActitivies)
-    setColumnsActivities(newColumnsActitivies )
-  }
-},[])
+
 useEffect(() => {
   fetchRegiones().then(setRegiones);
 }, []);
@@ -153,6 +160,10 @@ useEffect(() => {
     };
     init();
  }, [idTask, session?.user.id, setLoading,  loadProject]); //initialValues, setInitialValues,
+ if (!activityColumns || activityColumns.length === 0){
+  setError('No se puede cargar la app porque no está definido activityColumns');
+  return;
+ }
  const handleFileUpload = async (file: File | null) => { 
     if (!file) {
       setError("No se seleccionó ningún archivo");
@@ -213,7 +224,7 @@ useEffect(() => {
     console.log('en handleSaveComplete idTask',idTask);
     const values={...vals,state:'complete',userModification,userId,userName,idTask:(idTask>0)?idTask:0};
     console.log('en handleSaveComplete values',values);
-return;
+
     if (vals.projectName.length === 0) {
       window.alert("Para guardar el proyecto, mínimo debe ingresar el nombre del proyecto y éste debe ser único.");
       return;      
@@ -353,7 +364,8 @@ return;
                     const fechaInicio=String(updatedRow?.fechaInicio);
                     const fechaTermino=String(updatedRow?.fechaTermino);
                     const newDuracion=calculateDuration(fechaInicio,fechaTermino);                  
-                    return {...row,fechaInicio,fechaTermino,duracion:newDuracion, presupuesto:updatedRow.presupuesto}
+                    return {...row,actividad:updatedRow.actividad,fechaInicio,fechaTermino,duracion:newDuracion, 
+                      presupuesto:updatedRow.presupuesto};
                   } else{
                     return row;
                   }

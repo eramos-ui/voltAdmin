@@ -1,7 +1,7 @@
 import { FormFieldDFType } from "@/types/interfaceDF"; 
    
 
-import { CustomFileInput,  CustomInput, CustomSelect } from "@/components/controls";
+import { CustomFileInput,  CustomInput,  SelectFormikMulti, SelectStandaloneMulti, SelectStandaloneSingle } from "@/components/controls";
       
 //import { fetchOptionsFromDatabase } from '@/utils/fetchOptionsFromDatabase';
 import { useEffect, useState } from "react";
@@ -133,16 +133,19 @@ export const FieldComponent: React.FC<{ field: FormFieldDFType, row:any,
         const dataSelect=(options && options.length>0 )?staticOptions : datosSelect;
         return (
           dataSelect &&
-          <CustomSelect label={label}  width= {field.width } options={dataSelect} value={String(field?.value)}
-              onChange={(value)=>handleChangeRow(value,fieldName,dataSelect)}
+          <SelectStandaloneSingle label={label}  width= {field.width } options={dataSelect} 
+           value={String(field?.value)}
+          onValueChange={(value)=>handleChangeRow(value,fieldName,dataSelect)}
           />
         )
        case 'multiselect'://falta probar
+       console.log('caso multiselect en FieldComponent field No implementado',field)
        return (
         staticOptions &&
-        <CustomSelect label={label}  width= {field.width } options={staticOptions} multiple={true} 
-            value={String(field?.value)} //es un array de string
-            onChange={(values)=>handleChangeRow(values,fieldName,staticOptions)}
+        <SelectStandaloneMulti label={label}  width= {field.width } options={staticOptions} 
+           //name={'selectProveedor'}
+            //value={field?.value} //es un array de string
+            onValueChange={(values)=>handleChangeRow(values,fieldName,staticOptions)}
         />)
 
       case 'number':

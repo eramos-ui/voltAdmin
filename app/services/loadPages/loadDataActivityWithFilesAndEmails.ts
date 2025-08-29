@@ -35,7 +35,7 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
     // console.log(' en loadDataActivity dataEmailTemplates',dataEmailTemplates);
     const responseEmpresa=await fetch(`/api/empresa`);
     const empresa=await responseEmpresa.json();
-    console.log(' en loadDataActivity empresa',empresa);
+    // console.log(' en loadDataActivity empresa',empresa);
     // const emailTemplatesFull=typeof dataEmailTemplates.bodyTemplate ==='string' ?JSON.parse( dataEmailTemplates.emailTemplate):dataEmailTemplates.emailTemplate;//para llenar el template de email
     const emailTemplatesFull=dataEmailTemplates;
     // console.log(' en loadDataActivity emailTemplatesFull',emailTemplatesFull, typeof emailTemplatesFull);
@@ -76,7 +76,8 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
         bodyTemplate: email.bodyTemplate, metadataJSON:metadataJS } }) 
     }
   // console.log(' en loadDataActivity emailTemplate',emailTemplate);
-  const dataProveedores:ProveedorType[]=await getUsersFullByPerfil('Proveedor');
+  const dataProveedores:ProveedorType[]=await getUsersFullByPerfil('Proveedores');
+  // console.log('en loadDataActivity dataProveedores',dataProveedores)
   let metadataJS:any;
   // const fechaInicio=processData.attributes.find((x:any )=> x.idAttribute === 'fechaInicio').value;
   // const fechatermino=processData.attributes.find((x:any )=> x.idAttribute === 'fechaTermino').value;
@@ -111,9 +112,9 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
         ${empresa.razonSocial}
         ${empresa.subNombre}
         cel: ${empresa.phone}
-        ${email}`
+        correo: ${email}`
       });
-      // console.log('placeholders',placeholders);
+      //  console.log('placeholders',placeholders);
       return {...proveedor, placeholders, asuntoPlaceholders};
       });
 

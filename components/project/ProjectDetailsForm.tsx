@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { useFormikContext, Field  } from "formik";
 import _ from 'lodash';
 import { CustomInput } from "@/components/controls/CustomInput";
-import { CustomSelect } from "@/components/controls/CustomSelect";
 import  CustomModal  from "@/components/general/CustomModal";
 import DynamicForm from "../general/DynamicForm";
-import { CustomGrid } from "../controls";
+import { CustomGrid, SelectFormikSingle } from "../controls";
 import { ColumnConfigType, empalmesGridType, GridRowType, OptionSelectIcon, ProjectFormValuesType } from "@/types/interfaces";
 import { empalmeColumns, empalmeColumnsDynamic, instalacionesColumns, instalacionesColumnsDynamic, techoColumns, techoColumnsDynamic } from "@/data/modalColumns";
 import { validaModalInstalacion } from "@/utils/validaModalInstalacion";
@@ -312,8 +311,8 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
             <div className="w-2/12">
               <Field name="tipoTerreno">
                 {({ field }: any) => (
-                  <CustomSelect label="Tipo terreno" options={optionsLandType} placeholder="Elija tipo terreno" required 
-                    theme="light" width="100%" value={values.tipoTerreno} onChange={(val) => setFieldValue("tipoTerreno", val)}
+                  <SelectFormikSingle label="Tipo terreno" options={optionsLandType} placeholder="Elija tipo terreno" required 
+                    name='tipoTerreno' theme="light" width="100%" value={values.tipoTerreno} onValueChange={(val) => setFieldValue("tipoTerreno", val)}
                   />
                 )}
               </Field>
@@ -321,8 +320,8 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
             <div className="w-2/12">
                 <Field name="nivelPiedras" error={touched.nivelPiedras && errors.nivelPiedras ? errors.nivelPiedras : undefined}>
                   {({ field }: any) => (
-                    <CustomSelect label="Nivel de piedras" options={optionsStoneType} placeholder="Elija nivel piedras" required theme="light" 
-                        captionPosition="top" width="100%" value={values.nivelPiedras} onChange={(val) => setFieldValue("nivelPiedras", val)}
+                    <SelectFormikSingle label="Nivel de piedras" options={optionsStoneType} placeholder="Elija nivel piedras" required theme="light" 
+                       name={'nivelPiedras'} captionPosition="top" width="100%" value={values.nivelPiedras} onValueChange={(val) => setFieldValue("nivelPiedras", val)}
                     />
                   )}
                 </Field>

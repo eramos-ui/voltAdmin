@@ -13,8 +13,10 @@ export { CustomTooltip }  from "./CustomTooltip";
 export { CustomToggleSwitch } from "./CustomToggleSwitch";
 export { CustomUploadExcel } from "./CustomUploadExcel";
 
-
-
-
+export * from './Select.types';
+export * from './SelectStandaloneSingle';
+export * from './SelectStandaloneMulti';
+export * from './SelectFormikSingle';
+export * from './SelectFormikMulti';
 
 

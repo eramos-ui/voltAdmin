@@ -6,9 +6,9 @@ import { useSession } from 'next-auth/react';
 import { Field, Form, Formik, useFormikContext  } from 'formik';
 import * as Yup from "yup";;
 import { loadDataActivityWithFilesAndEmails } from '@/app/services/loadPages/loadDataActivityWithFilesAndEmails';
-import { ActivityEmailFilesType,  OptionsSelect } from '@/types/interfaces';
+import { ActivityEmailFilesType,  GridRowType,  OptionsSelect } from '@/types/interfaces';
 import { LoadingIndicator } from '../../components/general/LoadingIndicator';
-import { CustomButton, CustomDate, CustomInput, CustomLabel, CustomSelect } from '../../components/controls';
+import { CustomButton, CustomDate, CustomInput, CustomLabel, SelectFormikSingle } from '../../components/controls';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome, faSave, faCancel, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { compareTwoObj } from '@/utils/compareTwoObj';
@@ -18,11 +18,23 @@ import { replacePlaceholders } from '@/utils/replacePlaceholders';
 import { SendEmailButton } from './components/SendEmailButton';
 import { sendingEmails } from '../services/projectEmails/sendEmailAndRegister';
 import { ConsultaCotizaciones } from './ConsultaCotizaciones';
+import { useMenu } from '@/context/MenuContext';
 
 const validationSchema = Yup.object({
     proveedoresSelected: Yup.array().min(1, "Debe seleccionar al menos un proveedor"),
     selectedTemplate: Yup.object().nullable().required("Debe seleccionar una plantilla"),
 });
+interface Row {//para consulta de cotizaciones enviadas
+  idProjectActivity: number;
+  idProject: number;
+  idActivity: number;
+  contacto: string;
+  nombreProveedor: string;
+  emailProveedor: string;
+  createdAt: string;
+  actividad: string;
+  
+}
 // console.log('en ElijeProveedoresPage');
 const ElijeProveedoresPage = () => {
     const router                                                    = useRouter();
@@ -40,6 +52,7 @@ const ElijeProveedoresPage = () => {
     const [ proveedorEdit, setProveedorEdit ]                       = useState<string>('');//fuera de formik
     const [ placeholders, setPlaceholders   ]                       = useState<Record<string, string>>({ });//fuera de formik
     const [ asuntoPlaceholders, setAsuntoPlaceholders   ]           = useState<Record<string, string>>({ });//fuera de formik
+    // const [ rows, setRows ]                                         = useState<GridRowType[]>([]);//para consulta de cotizaciones enviadas
     const [ initialValues, setInitialValues ]                       = useState <ActivityEmailFilesType>({
         numActividad:'', actividad:'', fechaInicio: '' ,fechaTermino:'', duracion: 0 ,presupuesto:0,idTask:0, idTransaction:0,
         idProjectActivity:0, idProject: 0, projectName: '', userResponsable:'', formaEjecucion:'', periodoControl:'', userEjecutor:'',
@@ -49,6 +62,7 @@ const ElijeProveedoresPage = () => {
         editableBody:'', editableAsunto:''
      }
     );
+    const { refreshMenu } = useMenu();
   const SyncFields = () => {
     const { values, setFieldValue } = useFormikContext<any>();  
     useEffect(() => {
@@ -65,16 +79,17 @@ const ElijeProveedoresPage = () => {
         if (proveedoresSelected && proveedoresSelected.length>0){            
           setFieldValue("proveedoresSelected", proveedoresSelected);
         }
-      }        
-    }, [values.proveedoresSelected,values.selectedTemplate,values.proveedores,setFieldValue]); 
+      } 
+    }, [values.proveedoresSelected,values.selectedTemplateId,values.proveedores,setFieldValue]); 
     return null; // No renderiza nada
   };    
   useEffect(() => {
       const fetchData= async (idTask:number) => {
         try{
           const userEmail=session?.user.email?session?.user.email:'';  
-          const userName=session?.user.name?session?.user.name:'';        
-          if (userEmail)  await loadDataActivityWithFilesAndEmails(idTask, userEmail, userName, setInitialValues);
+          const userName=session?.user.name?session?.user.name:'';   
+          /*Aquí lee la data de la empresa, del jefe de proyecto y la task que van en initialValues */     
+          if (userEmail) await loadDataActivityWithFilesAndEmails( idTask, userEmail, userName, setInitialValues);
         }catch (err){
           console.log('error', err);
         }
@@ -90,99 +105,126 @@ const ElijeProveedoresPage = () => {
             setLoading(false);
         }
   },[initialValues.idProjectActivity]);
-     useEffect(()=>{
-      if (initialValues.proveedores && initialValues.proveedores.length>0 ){
-        setProveedoresOptions(initialValues.proveedores.map( (proveedor: any) =>  { return { label:proveedor.name, value:proveedor._id.toString() }}));
-      }
-     },[initialValues.proveedores]);
-     useEffect(()=>{
-      if (initialValues.jsFiles && initialValues.jsFiles.length>0 )//por que hay archivos repetidos le concatena al id el nombre del archivo
-         setFilesOptions(initialValues.jsFiles.map( (f: any) =>  { return { label:f.filename, value:f._id }} )); 
-        //setFilesOptions(initialValues.jsFiles.map( (f: any) =>  { return { label:f.descripcion, value:f.descripcion+'-'+f._id }} )); 
-     },[initialValues.jsFiles]);
-     useEffect(()=>{
-      // console.log('useEffect initialValues.emailTemplate',initialValues.emailTemplate);
-      if (initialValues.emailTemplate && initialValues.emailTemplate.length>0 )
-       setEmailOptions(initialValues.emailTemplate.map( (f: any) =>  { return { label:f.templateName, value:f.idEmailTemplate }} ));      
-     },[initialValues.emailTemplate ]);
-     const handleExit = () => {
-       let confirmed=true;
-       confirmed = window.confirm(String.fromCodePoint(0x26A0) +"¿Está seguro de cerrar el formulario y perder lo modificado?" );
-       if (confirmed)  router.back();
-      };
-     if (loading) {// Calculamos valores y renderizamos el loading fuera del return
-       return <LoadingIndicator message={'cargando'} />;
-     }
-     if (sendingEmail) {
-       return <LoadingIndicator message={'enviando correos'} />;
-     }
-    const handlePlaceholderChange=( proveedorId:any,proveedores:any) =>{// 📌 Función para actualizar los valores de los placeholders dada la selección de un proveedor a editar
+  useEffect(()=>{
+  if (initialValues.proveedores && initialValues.proveedores.length>0 ){
+    setProveedoresOptions(initialValues.proveedores.map( (proveedor: any) =>  { return { label:proveedor.name, value:proveedor._id.toString() }}));
+  }
+  },[initialValues.proveedores]);
+  useEffect(()=>{
+  if (initialValues.jsFiles && initialValues.jsFiles.length>0 )//por que hay archivos repetidos le concatena al id el nombre del archivo
+      setFilesOptions(initialValues.jsFiles.map( (f: any) =>  { return { label:f.filename, value:f._id }} )); 
+    //setFilesOptions(initialValues.jsFiles.map( (f: any) =>  { return { label:f.descripcion, value:f.descripcion+'-'+f._id }} )); 
+  },[initialValues.jsFiles]);
+  useEffect(()=>{
+    // console.log('useEffect initialValues.emailTemplate',initialValues.emailTemplate);
+  if (initialValues.emailTemplate && initialValues.emailTemplate.length>0 )
+    setEmailOptions(initialValues.emailTemplate.map( (f: any) =>  { return { label:f.templateName, value:f.idEmailTemplate }} ));      
+  },[initialValues.emailTemplate ]);
+    //  useEffect(() =>{ console.log('en useEffect emailOptions',emailOptions)  },[emailOptions])
+  
+  const handleExit = () => {
+    let confirmed=true;
+    confirmed = window.confirm(String.fromCodePoint(0x26A0) +"¿Está seguro de cerrar el formulario y perder lo modificado?" );
+    if (confirmed)  router.back();
+  };
+  if (loading) {// Calculamos valores y renderizamos el loading fuera del return
+    return <LoadingIndicator message={'cargando'} />;
+  }
+  if (sendingEmail) {
+    return <LoadingIndicator message={'enviando correos'} />;
+  }
+  const handlePlaceholderChange=( proveedorId:any,proveedores:any) =>{// 📌 Función para actualizar los valores de los placeholders dada la selección de un proveedor a editar
       const id=proveedorId;
-       if (proveedores && id !== proveedorEdit.toString()){//proveedores tiene la actual versión de los proveedores (placeholders)
-        const newProveedores= proveedores.map( (proveedor:any) => proveedor.id === id ? {...proveedor, placeholders }:proveedor );  
-        const sinCambios=compareTwoObj(proveedores,newProveedores);//si no hubo cambios
-        if (!sinCambios){
-          let confirmed=true;
-          confirmed = window.confirm(String.fromCodePoint(0x26A0) +" Al cambiar de proveedor, perderá lo realizado. Para guardar presione aquí <cancelar> y luego, <guardar cambios> " );
-          if (!confirmed) return;
-        }  
-       }
-       const found=proveedores?.filter((obj:any) => obj._id.toString() === id)[0];      
-       if (found){
-        setProveedorEdit(id);      
-        const newPlaceholders=found.placeholders;
-        setPlaceholders(newPlaceholders);
-        const newAsuntoPlaceholders=found.asuntoPlaceholders;
-        setAsuntoPlaceholders(newAsuntoPlaceholders);
-        if (id.length > 0 && found.asuntoPlaceholders && initialValues.emailTemplate && initialValues.emailTemplate.length > 0) {
-          const newAsuntoEditable = replacePlaceholders(initialValues.emailTemplate[0].subjectTemplate, found.asuntoPlaceholders);
-          if (asuntoPlaceholders !== newAsuntoPlaceholders) {
-            setAsuntoPlaceholders(newAsuntoPlaceholders);
-          }
-        }         
-        if (id.length > 0 && found.placeholders && initialValues.emailTemplate && initialValues.emailTemplate.length > 0) {
-
-          const newEditableBody = replacePlaceholders(initialValues.emailTemplate[0].bodyTemplate, found.placeholders);
-          if (editableBody !== newEditableBody) {
-            setEditableBody(newEditableBody);
-          }
-        }         
+    //  console.log('en handlePlaceholderChange proveedorId', proveedorId)
+      if (proveedores && id !== proveedorEdit.toString()){//proveedores tiene la actual versión de los proveedores (placeholders)
+      const newProveedores= proveedores.map( (proveedor:any) => proveedor.id === id ? {...proveedor, placeholders }:proveedor );  
+      const sinCambios=compareTwoObj(proveedores,newProveedores);//si no hubo cambios
+      if (!sinCambios){
+        let confirmed=true;
+        confirmed = window.confirm(String.fromCodePoint(0x26A0) +" Al cambiar de proveedor, perderá lo realizado. Para guardar presione aquí <cancelar> y luego, <guardar cambios> " );
+        if (!confirmed) return;
+      }  
       }
-     }
-     // 📌 Función para actualizar los valores del email, por ahora sólo se puede cambiar Observacion y las fechas de entrega del trabajo y de respuesta de cotización
-     const handleTemplateChange = (values:any,key: string, value: string) => {//placeholders es Json con los metadatos, aquí los actualiza en el preview email
-        setPlaceholders((prev) => {
-          const newPlaceholders = { ...prev, [key]: value };
-          if (values.selectedTemplate) {// 📌 Actualiza el editableBody cada vez que cambian los placeholders
-            setEditableBody(replacePlaceholders(values.selectedTemplate.bodyTemplate, newPlaceholders));
-          }
-          return newPlaceholders;
-        });
-      };
-     const handleSendEmail =  async (vals: ActivityEmailFilesType) => {// 📌 Función para "enviar" el email      
-      if (!vals.selectedTemplate) return alert("Selecciona una plantilla antes de enviar.");
-      if (!vals.proveedoresSelected || vals.proveedoresSelected.length === 0 || !vals.proveedores || vals.proveedores.length === 0) return alert("Seleccione proveedores a enviar correo.");
-      setSendingEmail(true);
-      const finListaProveedores='completada';//el otro es 'pendiente'
-      const userEmail=(session?.user.email)?session?.user.email:'';
-      await sendingEmails( vals, userEmail, idTask, finListaProveedores);
-      setSendingEmail(false);
-      router.push('/');
+      const found=proveedores?.filter((obj:any) => obj._id.toString() === id)[0];      
+      if (found){
+      setProveedorEdit(id);      
+      const newPlaceholders=found.placeholders;
+      setPlaceholders(newPlaceholders);
+      const newAsuntoPlaceholders=found.asuntoPlaceholders;
+      setAsuntoPlaceholders(newAsuntoPlaceholders);
+      if (id.length > 0 && found.asuntoPlaceholders && initialValues.emailTemplate && initialValues.emailTemplate.length > 0) {
+        const newAsuntoEditable = replacePlaceholders(initialValues.emailTemplate[0].subjectTemplate, found.asuntoPlaceholders);
+        if (asuntoPlaceholders !== newAsuntoPlaceholders) {
+          setAsuntoPlaceholders(newAsuntoPlaceholders);
+        }
+      }         
+      if (id.length > 0 && found.placeholders && initialValues.emailTemplate && initialValues.emailTemplate.length > 0) {
+
+        const newEditableBody = replacePlaceholders(initialValues.emailTemplate[0].bodyTemplate, found.placeholders);
+        if (editableBody !== newEditableBody) {
+          setEditableBody(newEditableBody);
+        }
+      }         
+    }
+    }
+    // 📌 Función para actualizar los valores del email, por ahora sólo se puede cambiar Observacion y las fechas de entrega del trabajo y de respuesta de cotización
+  const handleTemplateChange = (values:any,key: string, value: string) => {//placeholders es Json con los metadatos, aquí los actualiza en el preview email
+      //  console.log('en handleTemplateChange value', value)  
+      setPlaceholders((prev) => {
+        const newPlaceholders = { ...prev, [key]: value };
+        if (values.selectedTemplate) {// 📌 Actualiza el editableBody cada vez que cambian los placeholders
+          setEditableBody(replacePlaceholders(values.selectedTemplate.bodyTemplate, newPlaceholders));
+        }
+        return newPlaceholders;
+      });
     };
-    const handleSubmit = (values: any) => {//no se ejecuta
-        console.log("Formulario enviado con valores:", values);
-    };
-    // const handleConsultaCotizaciones = () => {
-    //   console.log('Consultando cotizaciones');
-    // };
-    const ShowPreviewEmail =() =>{
+    const handleSendEmail =  async (vals: ActivityEmailFilesType) => {// 📌 Función para "enviar" el email      
+    if (!vals.selectedTemplate) return alert("Selecciona una plantilla antes de enviar.");
+    if (!vals.proveedoresSelected || vals.proveedoresSelected.length === 0 || !vals.proveedores || vals.proveedores.length === 0) return alert("Seleccione proveedores a enviar correo.");
+    setSendingEmail(true);
+    const finListaProveedores='pendiente';//el otro es 'pendiente' 'completada'
+    const userEmail=(session?.user.email)?session?.user.email:'';
+    await sendingEmails( vals, userEmail, idTask, finListaProveedores);
+    setSendingEmail(false);
+    router.push('/');
+    refreshMenu();//para refrescar el menú dinámico
+  };
+  const handleSubmit = (values: any) => {//no se ejecuta
+      console.log("Formulario enviado con valores:", values);
+  };
+  // const handleConsultaCotizaciones = () => {
+  //   console.log('Consultando cotizaciones');
+  // };
+  const ShowPreviewEmail =() =>{
+      // console.log('en ShowPreviewEmail',proveedorEdit.length)
       const { values, setFieldValue } = useFormikContext<any>();
       if (proveedorEdit.length ===0) return null;
       return  <PreviewEmail editableBody={editableBody} values={values} placeholders={placeholders}  asuntoPlaceholders={asuntoPlaceholders} /> 
-    }
-    return( // { console.log('JSX AdminActivity proveedorEdit',proveedorEdit, proveedorEdit.length) }  
+  }
+  const handleShowCotizaciones= async() =>{
+            try {
+            const response = await fetch(`/api/projectActivity/emailStatus?idProject=${initialValues.idProject}&idProjectActivity=${initialValues.idProjectActivity}`);    
+            if (!response.ok) {
+                throw new Error(`Failed to fetch form data: ${response.statusText}`);
+            }
+            const data = await response.json();  
+            // console.log('data', data);
+            if (data.projectEmails.length === 0){ 
+                alert('No hay cotizaciones enviadas.');
+                setShowConsulta(false);
+                return;
+            }
+            setShowConsulta(true);
+   
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching email status:', error);
+        }
+  }
+  return( // { console.log('JSX AdminActivity proveedorEdit',proveedorEdit, proveedorEdit.length) }  
     <>  
-      { showConsulta ? <ConsultaCotizaciones idProject={initialValues.idProject} idProjectActivity={270} setShowConsulta={setShowConsulta}
+    {/* { console.log('JSX AdminActivity proveedorEdit',proveedorEdit, proveedorEdit.length) }  */}
+      { showConsulta ? <ConsultaCotizaciones idProject={initialValues.idProject} idProjectActivity={initialValues.idProjectActivity} setShowConsulta={setShowConsulta}
       title={`Cotizaciones enviadas para la actividad ${initialValues.numActividad} ${initialValues.actividad} del proyecto ${initialValues.projectName}`} /> 
       :
       (
@@ -191,14 +233,14 @@ const ElijeProveedoresPage = () => {
        <p  className="text-2xl font-bold text-center"> {`Proceso: (N°${initialValues.idProject}) "${initialValues.projectName}"`}</p>
        <Formik initialValues={initialValues} validationSchema={validationSchema} enableReinitialize  onSubmit={handleSubmit} >
          {({ values, errors, touched, setFieldValue }) => {//, handleSubmit ejecución manual de handleSubmit          
+        //  useEffect(() => { console.log('🔍 Formik values actualizados:', values.editableBody, values.selectedTemplateId);}, [values.editableBody,values.selectedTemplateId]); 
           const handleSaveEditValue=() =>{//para guardar el template editado 
             if (values.proveedores){
               const newProveedores= values.proveedores.map( (proveedor:any) => proveedor._id.toString() === proveedorEdit ? {...proveedor, placeholders }:proveedor );  
               const sinCambios=compareTwoObj(values.proveedores,newProveedores);//si hubo cambios
                if (!sinCambios){  
                 setFieldValue("proveedores", newProveedores); setProveedorEdit('');
-                setTimeout(() => { window.confirm(String.fromCodePoint(0x2705)+"Modificaciones guardadas"); window.focus();}, 0);
-               
+                setTimeout(() => { window.confirm(String.fromCodePoint(0x2705)+"Modificaciones guardadas"); window.focus();}, 0);               
                }           
             }
             setProveedorEdit('');
@@ -220,7 +262,7 @@ const ElijeProveedoresPage = () => {
             <Form id="emailForm" >
               <div className="mb-1 justify-center flex">
                 <CustomButton buttonStyle="secondary" size="small"  label="Cotizaciones enviadas" style={{ marginTop:15 , marginLeft:30 }} 
-                  icon={<FontAwesomeIcon icon={faMagnifyingGlass} size="lg" color="white" />} onClick={() => setShowConsulta(true)} 
+                  icon={<FontAwesomeIcon icon={faMagnifyingGlass} size="lg" color="white" />} onClick={ handleShowCotizaciones} 
                   tooltipContent='Consultar cotizaciones ya enviadas' tooltipPosition='right'
                 />
               </div>
@@ -274,9 +316,9 @@ const ElijeProveedoresPage = () => {
                         <>
                          {(values.proveedores && values.proveedores.length>0 && values.proveedoresSelected && values.proveedoresSelected.length>0) &&
                             <div className="grid-cols-3 gap-1 mb-4 ml-1" >
-                              <label className="block text-sm font-medium">Elija proveedor a revisar</label>
-                              <CustomSelect label='' width='180px' theme="light" 
-                                onChange={(e:any) =>{ handlePlaceholderChange(e, values.proveedores)}}
+                              {/* <label className="block text-sm font-medium">Elija proveedor a revisar</label> */}
+                              <SelectFormikSingle label='Elija proveedor a revisar' width='180px' theme="light"  name={'selectProveedor'}
+                                onValueChange={(e:any) =>{ handlePlaceholderChange(e, values.proveedores)}}
                                 options={values.proveedoresSelected.map((p:any) => { 
                                   const provFound=values?.proveedores?.find((pr:any) => pr._id.toString() === p );
                                   if (!provFound) { return {value:p,label:p} } 
@@ -288,9 +330,10 @@ const ElijeProveedoresPage = () => {
                         </>
                         }
                         </div>
-                        {  proveedorEdit && proveedorEdit.length>0  &&
+                        {/* {  proveedorEdit && proveedorEdit.length>0  && */}
                         <div className="grid grid-cols-2 gap-3 mb-4">
-                        {Object.keys(placeholders).map((key) =>{ //console.log('key',key,placeholders[key])                          
+                        {Object.keys(placeholders).map((key) =>{ //
+                        // console.log('key',key,placeholders[key])                          
                           return(// 🔹 sobre la key que se puede cambiar los valores-sólo se puede cambiar Observacion y las fechas de entrega del trabajo y de respuesta de cotización
                             key !== "CotizacionURL" &&  key !== "Actividad" &&   key !== "NombreContratante" &&( key === "Observacion" // 🔹 Observacion ocupa una fila completa
                               ? <div key={key} className="col-span-2">
@@ -324,7 +367,7 @@ const ElijeProveedoresPage = () => {
                         }
                         )}
                         </div>
-                        }
+                        {/* } */}
                       </>
                   </div>
                 )}

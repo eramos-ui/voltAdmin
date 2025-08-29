@@ -28,7 +28,7 @@ export interface ButtonConfigDFType {
     autoComplete?:'on' |'off';
     placeholder?: string;
     visible?: boolean;
-    value: string | number | boolean | undefined;
+    value: string | number | boolean | undefined | Array<string | number>;
     rowToShow: number;
     width: string; 
     registroInicialSelect:string;//el registro que aparece en 1er lugar

@@ -1,5 +1,5 @@
 import { Field, FormikHelpers, useFormikContext } from "formik";
-import { CustomSelect } from "@/components/controls";
+import { SelectFormikMulti } from "@/components/controls";
 import { useEffect } from "react";
 
 interface ProveedorSelectionProps {
@@ -21,7 +21,7 @@ export const ProveedorSelection = ({ proveedoresOptions, filesOptions }: Proveed
     <div className="mb-1 flex items-start space-x-2">
       {proveedoresOptions.length > 0 && (
         <div className="w-3/8">
-          <Field as={CustomSelect} multiple={true}
+          <Field as={SelectFormikMulti}
             label="Proveedores a cotizar"
             name='proveedoresSelected'//esto induce a Formik a actualizar el campo proveedoresSelected
             options={proveedoresOptions || []}
@@ -32,7 +32,7 @@ export const ProveedorSelection = ({ proveedoresOptions, filesOptions }: Proveed
       )}
       {filesOptions.length > 0 && (
         <div className="w-5/8">
-          <Field as={CustomSelect} multiple={true}
+          <Field as={SelectFormikMulti} multiple={true}
             label="Anexos a adjuntar"
             name='anexosSelected'//esto induce a Formik a actualizar el campo anexosSelected
             options={filesOptions || []}
