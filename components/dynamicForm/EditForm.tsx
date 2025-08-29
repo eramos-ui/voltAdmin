@@ -298,7 +298,7 @@ export const EditForm: React.FC<EditFormProps> = ({
          validateOnBlur={true} //ejecuta la validación Yup cuando el usuario sale del campo
          validateOnChange={true}//para que se ejecute la validación cuando el usuario cambia el valor del campo y borre el error
          validate={async (values) => {
-        //  console.log("🔎 validate ejecutado con:", values);
+          console.log("🔎 validate ejecutado con:", values);
           const schema = getValidationSchemaDynamicForm(fields);
           try {
             await schema.validate(values, { abortEarly: false });

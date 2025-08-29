@@ -1,7 +1,7 @@
 import { FormFieldDFType } from "@/types/interfaceDF"; 
 //import { FormikErrors, FormikTouched  } from "formik";
 
-import { CustomFileInput,  CustomInput, SelectStandaloneSingle, CustomDate, CustomLabel, SelectStandaloneMulti } from "@/components/controls";
+import { CustomFileInput,  CustomInput, SelectStandaloneSingle, CustomDate, CustomLabel, SelectStandaloneMulti, CustomSelect } from "@/components/controls";
       
 import { useState } from "react";
 import { LoadingIndicator } from "../general/LoadingIndicator";
@@ -129,7 +129,7 @@ export const FieldComponentDF: React.FC<FieldComponentDFProps> = ({ field, value
       // return <CustomSelect {...commonProps} options={field.options || []} />;
       return(
         // <FieldWrapper name={name}>
-          <SelectStandaloneSingle {...commonProps} options={field.options || []} />
+          <CustomSelect {...commonProps} options={field.options || []} />
         // </FieldWrapper>
       )
     case 'text':
