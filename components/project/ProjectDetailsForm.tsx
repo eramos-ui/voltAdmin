@@ -55,7 +55,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
     }
   };
   useEffect(()=>{
-    // console.log('🔑 useEffect techoGrid');
+     console.log('🔑 useEffect techoGrid',values.instalacionesGrid, selectedInstalacion,values.techoGrid);
     const ajustaFilasAguasInstalacion=()=>{
       const currentTechoGrid = Array.isArray(values.techoGrid) ? values.techoGrid : [];
       const rowInstalacion=Array.isArray( values.instalacionesGrid.filter(rw => rw.nroInstalacion === selectedInstalacion))
@@ -75,7 +75,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
       }
     }
     if (selectedInstalacion >0 ){ ajustaFilasAguasInstalacion();   }
-  },[values.instalacionesGrid, selectedInstalacion,setFieldValue,values.techoGrid]); //, setFieldValue, values.techoGrid (*) ocasiona loop
+  },[]); //values.instalacionesGrid, selectedInstalacion,setFieldValue,values.techoGrid, setFieldValue, values.techoGrid (*) ocasiona loop
   useEffect(() => {
     //  console.log('🔑 useEffect instalacionesGrid',values.nroInstalaciones);
     if (values.nroInstalaciones && values.nroInstalaciones > 0) {
@@ -91,7 +91,7 @@ export const ProjectDetailsForm: React.FC<ProjectDetailsFormProps> = ({ errors, 
         setFieldValue("instalacionesGrid", values.instalacionesGrid.slice(0, newLength));
       }
     }
-  }, [values.nroInstalaciones,setFieldValue,values.instalacionesGrid]); //, setFieldValue, values.instalacionesGrid
+  }, []); //values.nroInstalaciones,setFieldValue,values.instalacionesGrid, setFieldValue, values.instalacionesGrid
   // useEffect(() => {    
   //   if (values.nroEmpalmes && values.nroEmpalmes > 0) {
   //     const currentEmpalmesGrid = Array.isArray(values.empalmesGrid) ? values.empalmesGrid : [];

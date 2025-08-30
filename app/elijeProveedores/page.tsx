@@ -178,11 +178,11 @@ const ElijeProveedoresPage = () => {
         return newPlaceholders;
       });
     };
-    const handleSendEmail =  async (vals: ActivityEmailFilesType) => {// 📌 Función para "enviar" el email      
+  const handleSendEmail =  async (vals: ActivityEmailFilesType,caso:string) => {// 📌 Función para "enviar" el email      
     if (!vals.selectedTemplate) return alert("Selecciona una plantilla antes de enviar.");
     if (!vals.proveedoresSelected || vals.proveedoresSelected.length === 0 || !vals.proveedores || vals.proveedores.length === 0) return alert("Seleccione proveedores a enviar correo.");
     setSendingEmail(true);
-    const finListaProveedores='pendiente';//el otro es 'pendiente' 'completada'
+    const finListaProveedores=(caso ==='pendiente')?'pendiente':'completada';//el otro es 'pendiente' 'completada'
     const userEmail=(session?.user.email)?session?.user.email:'';
     await sendingEmails( vals, userEmail, idTask, finListaProveedores);
     setSendingEmail(false);
@@ -202,24 +202,24 @@ const ElijeProveedoresPage = () => {
       return  <PreviewEmail editableBody={editableBody} values={values} placeholders={placeholders}  asuntoPlaceholders={asuntoPlaceholders} /> 
   }
   const handleShowCotizaciones= async() =>{
-            try {
-            const response = await fetch(`/api/projectActivity/emailStatus?idProject=${initialValues.idProject}&idProjectActivity=${initialValues.idProjectActivity}`);    
-            if (!response.ok) {
-                throw new Error(`Failed to fetch form data: ${response.statusText}`);
-            }
-            const data = await response.json();  
-            // console.log('data', data);
-            if (data.projectEmails.length === 0){ 
-                alert('No hay cotizaciones enviadas.');
-                setShowConsulta(false);
-                return;
-            }
-            setShowConsulta(true);
-   
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching email status:', error);
+      try {
+        const response = await fetch(`/api/projectActivity/emailStatus?idProject=${initialValues.idProject}&idProjectActivity=${initialValues.idProjectActivity}`);    
+        if (!response.ok) {
+            throw new Error(`Failed to fetch form data: ${response.statusText}`);
         }
+        const data = await response.json();  
+        // console.log('data', data);
+        if (data.projectEmails.length === 0){ 
+            alert('No hay cotizaciones enviadas.');
+            setShowConsulta(false);
+            return;
+        }
+        setShowConsulta(true);
+
+        setLoading(false);
+    } catch (error) {
+        console.error('Error fetching email status:', error);
+    }
   }
   return( // { console.log('JSX AdminActivity proveedorEdit',proveedorEdit, proveedorEdit.length) }  
     <>  

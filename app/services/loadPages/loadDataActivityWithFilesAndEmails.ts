@@ -20,34 +20,34 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
         throw new Error(`Failed to fetch form data: ${responseProcess.statusText}`);
     }
     const processData = await responseProcess.json();
-    //  console.log('response en processData process',processData);
+    // console.log('response en processData process',processData);
 
     const responseProjectActivity=await fetch(`/api/projectActivity/by-id?idProjectActivity=${processData.nroDocumento}`);//Lee el documento de la actividad
     if (!responseProjectActivity.ok) {
         throw new Error(`Failed to fetch form data: ${responseProjectActivity.statusText}`);
     }
     const projectActivityData = await responseProjectActivity.json();
-    // console.log('response en projectActivityData projectActivity',projectActivityData);
+  //  console.log('response en projectActivityData projectActivity',projectActivityData);
 
     const responseEmailTemplates=await fetch(`/api/emailTemplates/list`);
 
     const dataEmailTemplates=await responseEmailTemplates.json();//en bodyTemplate de dataEmailTemplates esta lo que se debe mostrar en el email como metadata 
-    // console.log(' en loadDataActivity dataEmailTemplates',dataEmailTemplates);
+  //  console.log(' en loadDataActivity dataEmailTemplates',dataEmailTemplates);
     const responseEmpresa=await fetch(`/api/empresa`);
     const empresa=await responseEmpresa.json();
     // console.log(' en loadDataActivity empresa',empresa);
     // const emailTemplatesFull=typeof dataEmailTemplates.bodyTemplate ==='string' ?JSON.parse( dataEmailTemplates.emailTemplate):dataEmailTemplates.emailTemplate;//para llenar el template de email
     const emailTemplatesFull=dataEmailTemplates;
-    // console.log(' en loadDataActivity emailTemplatesFull',emailTemplatesFull, typeof emailTemplatesFull);
+    //  console.log(' en loadDataActivity emailTemplatesFull',emailTemplatesFull, typeof emailTemplatesFull);
     
     const responseProject=await fetch(`/api/projects/${projectActivityData.idProject}`);
     const dataProject=await responseProject.json();
-    //  console.log(' en loadDataActivity dataProject',dataProject);
+      // console.log(' en loadDataActivity dataProject',dataProject);
     const responseUploadsFiles=await fetch(`/api/files/by-project?idProject=${dataProject.idProject}`);
     const dataUploadsFiles=await responseUploadsFiles.json();
     // console.log(' en loadDataActivity dataUploadsFiles',dataUploadsFiles);
     const jsFiles=dataUploadsFiles.map((fil:any) => {//transforma el archivo de dataUploadsFiles a jsFiles
-    // console.log(' en loadDataActivity fil',fil);
+    //  console.log(' en loadDataActivity fil',fil);
     
     return {//los 2 primeros son para el selector de archivos 
       _id: fil._id?.toString() ?? '',//este además es identificado único del archivo uploads.files
@@ -91,7 +91,7 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
   // console.log('metadataJS',metadataJS);
   const proveedoresMetadata=dataProveedores.map((prov:any) => {//A proveedores se le agrega placeholders (texto del email)
     const proveedor={...prov};
-    // console.log('proveedor',proveedor);
+    //  console.log('proveedor',proveedor);
     // console.log('metadataJS',metadataJS);
     const asunto=emailTemplate[0].subjectTemplate;//el asunto del email también tiene metadatos
     const asuntoPlaceholders=buildTemplateObject(asunto,{

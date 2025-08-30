@@ -183,8 +183,8 @@ export const CustomGrid = <T,>({
           </div>
         </div>
       </div>
-      { data && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "10px", gap: "10px" }}>  {/* Controles de paginación */}
+      { data && (//,marginLeft:"50px" justifyContent: "left"
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "10px", gap: "10px" }}>  {/* Controles de paginación */}
           <span> Página {currentPage+1 } de {totalPages}, son {data.length} filas   </span>
             {currentPage > 0 && (
                 <CustomButton size='small'  buttonStyle="primary" theme="light" label="Pág. Anterior"

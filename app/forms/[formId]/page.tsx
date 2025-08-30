@@ -317,7 +317,7 @@ import { EditForm } from '@/components/dynamicForm/EditForm';
     }
     </>  
   );
-};
+}; 
 export default FormPage;
 // "use client";
 // import { useEffect, useState } from 'react';
