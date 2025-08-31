@@ -1,5 +1,6 @@
 import { ActivityEmailFilesType, EmailTemplateType, FilesType, ProveedorType } from "@/types/interfaces";
 import { getUsersFullByPerfil } from "../users/getUsersFullByPerfil";
+import { ProjectEmail } from '../../../models/ProjectEmail';
 
 export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:string,userName:string,setInitialValues:(x:ActivityEmailFilesType) => void)=>{
   if (idTask <=0 || email===''){
@@ -76,8 +77,21 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
         bodyTemplate: email.bodyTemplate, metadataJSON:metadataJS } }) 
     }
   // console.log(' en loadDataActivity emailTemplate',emailTemplate);
-  const dataProveedores:ProveedorType[]=await getUsersFullByPerfil('Proveedores');
+  const dataProveedores:ProveedorType[]=await getUsersFullByPerfil('Proveedores'); 
   // console.log('en loadDataActivity dataProveedores',dataProveedores)
+  // console.log('dataProject.idProject,idProjectActivity',dataProject.idProject,projectActivityData.idProjectActivity)
+  const respProveedoresCotizados= await fetch(`/api/projectActivity/emailStatus?idProject=${dataProject.idProject}&idProjectActivity=${projectActivityData.idProjectActivity}`);    
+  
+  const proveedoresCot=await respProveedoresCotizados.json() ;
+  const proveedoresCotizados=proveedoresCot.projectEmails;
+  // console.log('proveedoresCotizados',proveedoresCotizados)
+  const proveedores=dataProveedores.map( prov =>{
+    const foundCotizado=proveedoresCotizados.find((pr:any) => pr.nombreProveedor === prov.name )
+    if ( foundCotizado) {
+      return {...prov, name:prov.name+' (COT)'}
+    }else { return prov}
+  })
+  // console.log('resultado proveedores',proveedores)
   let metadataJS:any;
   // const fechaInicio=processData.attributes.find((x:any )=> x.idAttribute === 'fechaInicio').value;
   // const fechatermino=processData.attributes.find((x:any )=> x.idAttribute === 'fechaTermino').value;
@@ -89,7 +103,7 @@ export const loadDataActivityWithFilesAndEmails= async (idTask: number,email:str
   
   metadataJS=emailTemplate[0].bodyTemplate;
   // console.log('metadataJS',metadataJS);
-  const proveedoresMetadata=dataProveedores.map((prov:any) => {//A proveedores se le agrega placeholders (texto del email)
+  const proveedoresMetadata=proveedores.map((prov:any) => {//A proveedores se le agrega placeholders (texto del email)
     const proveedor={...prov};
     //  console.log('proveedor',proveedor);
     // console.log('metadataJS',metadataJS);

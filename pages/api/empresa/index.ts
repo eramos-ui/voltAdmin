@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectDB();
     const empresa = await Empresa.findOne();
-console.log('en Api /empresa empresa',empresa)
+// console.log('en Api /empresa empresa',empresa)
     if (!empresa) {
       return res.status(404).json({ error: 'Empresa no encontrada' });
     }

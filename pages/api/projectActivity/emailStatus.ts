@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         idProject: Number(idProject),
         idProjectActivity: Number(idProjectActivity)
       });
-  console.log('projectEmails', projectEmails);
+  // console.log('projectEmails', projectEmails);
     //   if (!projectActivity) {
     //     return res.status(404).json({ error: 'No se encontró la actividad del proyecto' });
     //   }
