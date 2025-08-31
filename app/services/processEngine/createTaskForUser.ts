@@ -31,8 +31,7 @@ export const createTaskForUser = async (
   const specificUser = userSpecific
   ? context[userSpecific] ?? undefined
   : undefined;
-   console.log('en createTaskForUser activityPropsData',activityPropsData);
-   console.log('en createTaskForUser specificUser',specificUser);
+  console.log('en createTaskForUser specificUser',specificUser);
   const nameActivityInDiagram = activityPropsData?.nameActivity;
   if (!processDoc) {
     console.warn(`No se encontró proceso con idProcessInstance=${idProcessInstance}`);
@@ -68,6 +67,6 @@ export const createTaskForUser = async (
   console.log('en createTaskForUser newTask',newTask);
    await newTask.save();
 
-  console.log(`✅ Nueva Task creada: idTask=${idTask}, actividad=${activity.nameActivity}, tipoDocumento=${tipoDocumento}, nroDocumento=${nroDocumento}, taskStatus=${newTask.taskStatus}, specificUser=${specificUser}`);
+  // console.log(`✅ Nueva Task creada: idTask=${idTask}, actividad=${activity.nameActivity}, tipoDocumento=${tipoDocumento}, nroDocumento=${nroDocumento}, taskStatus=${newTask.taskStatus}, specificUser=${specificUser}`);
 
 };

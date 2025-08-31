@@ -6,7 +6,7 @@ import { ProjectActivity } from '@/models/ProjectActivity';
 import { createInitialWorkflowData } from '@/app/services/processEngine/createInitialWorkflow';
 
 export const crearSubProcesoGantt = async ( idProcessInstance: number,tipoDocumento:string,nroDocumento:number): Promise<void> => {
-  console.log('🚀 Iniciando creación de subprocesos Gantt');
+  console.log('🚀 Iniciando crearSubProcesoGantt');
    // 1. Obtener el documento Project vinculado
   const proyecto = await Project.findOne({ idProject:nroDocumento }).lean<ProjectDocument>();
   if (!proyecto) throw new Error('No se encontró el proyecto asociado');

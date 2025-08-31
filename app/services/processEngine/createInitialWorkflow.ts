@@ -92,7 +92,7 @@ export const createInitialWorkflowData= async(params: WorkflowParams) => {
       taskData.specificUser=userSpecific;
     }
     await Task.create(taskData); //, { session }
-
+    console.log('en createInitialWorkflowData newTask',Task)  
     // await Task.create([{
     //   idTask,
     //   idProcessInstance,
