@@ -1,6 +1,6 @@
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { faHome, faInfoCircle, faCogs, faUsers, faBuilding, faGlobe, faDesktop, faUserEdit , faToolbox, faTable , 
-   faUsersCog, faCog, faPeopleGroup, faBuildingShield, faSolarPanel, faList, faGear, faClipboardQuestion, faTableList,  } 
+   faUsersCog, faCog, faPeopleGroup, faBuildingShield, faSolarPanel, faList, faGear, faClipboardQuestion, faTableList, faEraser } 
 from '@fortawesome/free-solid-svg-icons';//https://fontawesome.com/v6/icons?o=r&s=solid
 // import { AccountCircleOutlined,  LoginOutlined, VpnKeyOutlined, PaidOutlined,  DisplaySettingsOutlined, WidthNormalOutlined ,
 //   VisibilityOutlined ,ReplayOutlined , AccountBalanceOutlined,  ListOutlined, ExpandLess, ExpandMore, StarBorder, LogoutOutlined,
@@ -34,5 +34,6 @@ export const iconMap: { [key: string]: IconDefinition } = {
   faGear,
   faClipboardQuestion,
   faTableList,  
+  faEraser,
 };
 
