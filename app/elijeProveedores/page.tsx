@@ -178,12 +178,15 @@ const ElijeProveedoresPage = () => {
         return newPlaceholders;
       });
     };
-  const handleSendEmail =  async (vals: ActivityEmailFilesType,caso:string) => {// 📌 Función para "enviar" el email      
+  const handleSendEmail =  async (vals: ActivityEmailFilesType,caso:string) => {// 📌 Función para "enviar" el email  
+    
     if (!vals.selectedTemplate) return alert("Selecciona una plantilla antes de enviar.");
     if (!vals.proveedoresSelected || vals.proveedoresSelected.length === 0 || !vals.proveedores || vals.proveedores.length === 0) return alert("Seleccione proveedores a enviar correo.");
+    
     setSendingEmail(true);
     const finListaProveedores=(caso ==='pendiente')?'pendiente':'completada';//el otro es 'pendiente' 'completada'
     const userEmail=(session?.user.email)?session?.user.email:'';
+    //console.log('en elijePorveedores handleSendEmail',vals, userEmail, idTask, finListaProveedores);
     await sendingEmails( vals, userEmail, idTask, finListaProveedores);
     setSendingEmail(false);
     router.push('/');

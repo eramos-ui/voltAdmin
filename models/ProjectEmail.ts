@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 const { Schema, model, models } = mongoose;
 const anexoSchema = new Schema({
-    fileId: {type: String, required: true},
+    fileId: {type: String, required: false},
     fileType: {type: String, required: true},
     fileName: {type: String, required: true},
     fileSize: {type: Number, required: true},

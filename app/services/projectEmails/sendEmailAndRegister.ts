@@ -5,8 +5,9 @@
  */
 
 // import { ProveedorType } from "@/types/interfaces";
- import { replacePlaceholders } from "@/utils/replacePlaceholders";
 // import { updateActivity } from "../projectActivity/updateActivity";
+
+import { replacePlaceholders } from "@/utils/replacePlaceholders";
 // const dominio= process.env.NEXT_PUBLIC_DOMAIN; 
 export const sendingEmails= async ( vals:any, userEmail: string, idTask:number, finListaProveedores:string )=>{
   const idProjectActivity=vals.idProjectActivity;
@@ -68,7 +69,7 @@ export const sendingEmails= async ( vals:any, userEmail: string, idTask:number, 
       idProcess:3,
    
      };
-      // console.log('emailData',emailData);
+    //  console.log('emailData',emailData);
     try {
       // console.log("Payload enviado a /api/sendEmailAndLog:", emailData);
       const response = await fetch("/api/sendEmailAndLog", {

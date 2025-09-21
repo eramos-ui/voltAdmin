@@ -1,7 +1,7 @@
 // pages/api/admin/reset-demo.ts (Next.js Pages Router)
 import type { NextApiRequest, NextApiResponse } from "next";
 import mongoose from "mongoose";
-import { connectDB } from "@/lib/db"; // tu conector
+import { connectDB } from "@/lib/db"; 
 import { Project } from "@/models/Project";
 import { ProjectActivity } from "@/models/ProjectActivity";
 import { ProjectEmail } from "@/models/ProjectEmail";
@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   };
 
   if (dryRun) {
-    return res.json({ ok: true, dryRun: true, countsBefore });
+    return res.json({ ok: true, simulacion: true, countsBefore });
   }
 
   // ⚙️ Si tienes réplica, puedes usar transacción. Si no, hacemos secuencial.
